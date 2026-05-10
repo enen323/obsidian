@@ -1,6 +1,7 @@
 import { getAllPosts, getAllFields, getFeaturedPosts } from "@/lib/posts";
 import FieldGrid from "@/components/ui/field-grid";
 import TutorialCard from "@/components/ui/tutorial-card";
+import EmailSubscribe from "@/components/email-subscribe";
 import enMessages from "../../../messages/en.json";
 import zhMessages from "../../../messages/zh.json";
 
@@ -60,6 +61,11 @@ export default async function HomePage({
             <TutorialCard key={post.url} post={post} lang={locale} />
           ))}
         </div>
+      </section>
+
+      {/* Email Subscribe */}
+      <section className="mt-12">
+        <EmailSubscribe locale={locale} />
       </section>
     </div>
   );
