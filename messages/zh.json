@@ -1,0 +1,40 @@
+{
+  "nav": {
+    "home": "首页",
+    "about": "关于",
+    "privacy": "隐私政策",
+    "search": "搜索教程..."
+  },
+  "home": {
+    "heroTitle": "软件实操教程",
+    "heroSubtitle": "从入门到精通, 免费学习各类软件操作技巧",
+    "fields": "领域分类",
+    "latestTutorials": "最新教程",
+    "recommendedTools": "推荐工具",
+    "viewAll": "查看全部"
+  },
+  "field": {
+    "design": "设计",
+    "dev": "开发",
+    "office": "办公",
+    "productivity": "效率",
+    "video": "视频",
+    "ai": "人工智能",
+    "all": "全部分类"
+  },
+  "article": {
+    "readTime": "{minutes} 分钟阅读",
+    "relatedTutorials": "相关教程",
+    "tableOfContents": "目录",
+    "level": "难度",
+    "beginner": "入门",
+    "intermediate": "中级",
+    "advanced": "高级",
+    "affiliateDisclaimer": "本站部分链接为联盟链接, 通过购买产品您将支持本站且无需额外费用。",
+    "recommendedTool": "推荐工具"
+  },
+  "footer": {
+    "description": "免费软件实操教程平台, 助你掌握各类软件技能。",
+    "affiliateDisclaimer": "部分链接为联盟链接, 购买产品将支持本站运营。"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "privacy": "Privacy",
+    "search": "Search tutorials..."
+  },
+  "home": {
+    "heroTitle": "Software Tutorials",
+    "heroSubtitle": "Learn software skills for free, from beginner to advanced",
+    "fields": "Categories",
+    "latestTutorials": "Latest Tutorials",
+    "recommendedTools": "Recommended Tools",
+    "viewAll": "View All"
+  },
+  "field": {
+    "design": "Design",
+    "dev": "Development",
+    "office": "Office",
+    "productivity": "Productivity",
+    "video": "Video",
+    "ai": "AI",
+    "all": "All Categories"
+  },
+  "article": {
+    "readTime": "{minutes} min read",
+    "relatedTutorials": "Related Tutorials",
+    "tableOfContents": "Table of Contents",
+    "level": "Level",
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+    "affiliateDisclaimer": "Some links on this site are affiliate links. We may earn a commission at no extra cost to you.",
+    "recommendedTool": "Recommended Tool"
+  },
+  "footer": {
+    "description": "Free software tutorial platform. Master software skills with practical guides.",
+    "affiliateDisclaimer": "Some links are affiliate links. Purchases support this site's operation."
+  }
+}
