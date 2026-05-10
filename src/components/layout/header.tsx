@@ -3,8 +3,18 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import LanguageSwitcher from "./language-switcher";
+import SearchDialog from "@/components/search-dialog";
 
-export default function Header({ lang }: { lang: string }) {
+interface SearchPost {
+  title: string;
+  description: string;
+  url: string;
+  field: string;
+  software: string;
+  level: string;
+}
+
+export default function Header({ lang, allPosts }: { lang: string; allPosts?: SearchPost[] }) {
   const t = useTranslations("nav");
 
   return (
@@ -22,6 +32,7 @@ export default function Header({ lang }: { lang: string }) {
           <Link href={`/${lang}/about`} className="text-sm font-medium text-gray-600 hover:text-brand-600">
             {t("about")}
           </Link>
+          {allPosts && <SearchDialog posts={allPosts} searchPlaceholder={t("search")} />}
           <LanguageSwitcher lang={lang} />
         </nav>
       </div>

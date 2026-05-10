@@ -6,6 +6,7 @@ import enMessages from "../../../messages/en.json";
 import { I18nProvider } from "./i18n-provider";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
+import { getAllPosts } from "@/lib/posts";
 
 type Props = {
   children: ReactNode;
@@ -30,12 +31,21 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   const messages = messagesMap[locale as keyof typeof messagesMap];
 
+  const allPosts = getAllPosts(locale).map((p) => ({
+    title: p.title,
+    description: p.description,
+    url: p.url,
+    field: p.field,
+    software: p.software,
+    level: p.level,
+  }));
+
   return (
     <html lang={locale}>
       <body>
         <I18nProvider locale={locale} messages={messages}>
           <div className="flex min-h-screen flex-col">
-            <Header lang={locale} />
+            <Header lang={locale} allPosts={allPosts} />
             <main className="flex-1">{children}</main>
             <Footer lang={locale} />
           </div>
