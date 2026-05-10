@@ -31,7 +31,9 @@ export function getAllPosts(lang: string): TutorialPost[] {
           level: meta.level || "beginner",
           language: lang,
           slug,
-          date: meta.date || "2026-01-01",
+          date: typeof meta.date === "object"
+            ? (meta.date as Date).toISOString().split("T")[0]
+            : String(meta.date || "2026-01-01"),
           readTime: meta.readTime || 5,
           path: fullPath,
           url: `/${lang}/${meta.field || field}/${meta.software || software}/${slug}`,
