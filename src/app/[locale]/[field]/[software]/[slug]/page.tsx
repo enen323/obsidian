@@ -7,6 +7,7 @@ import { locales } from "../../../../../../i18n/request";
 import { mdxComponents } from "@/components/mdx/components";
 import MdxLayout from "@/components/mdx/mdx-layout";
 import GiscusComments from "@/components/giscus-comments";
+import Script from "next/script";
 
 export function generateStaticParams() {
   const slugs: {
@@ -83,6 +84,22 @@ export default async function ArticlePage({
 
   return (
     <>
+      <Script
+        id="article-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: post.title,
+            description: post.description,
+            datePublished: post.date,
+            author: { "@type": "Person", name: "Obsidian" },
+            about: { "@type": "SoftwareApplication", name: post.software },
+            inLanguage: locale,
+          }),
+        }}
+      />
       <MdxLayout post={post} allPosts={allPosts} lang={locale}>
         {content}
       </MdxLayout>
