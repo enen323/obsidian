@@ -4,6 +4,8 @@ import { locales } from "../../../i18n/request";
 import zhMessages from "../../../messages/zh.json";
 import enMessages from "../../../messages/en.json";
 import { I18nProvider } from "./i18n-provider";
+import Header from "@/components/layout/header";
+import Footer from "@/components/layout/footer";
 
 type Props = {
   children: ReactNode;
@@ -32,7 +34,11 @@ export default async function LocaleLayout({ children, params }: Props) {
     <html lang={locale}>
       <body>
         <I18nProvider locale={locale} messages={messages}>
-          {children}
+          <div className="flex min-h-screen flex-col">
+            <Header lang={locale} />
+            <main className="flex-1">{children}</main>
+            <Footer lang={locale} />
+          </div>
         </I18nProvider>
       </body>
     </html>
