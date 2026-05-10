@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { ReactNode } from "react";
+import Script from "next/script";
 import { locales } from "../../../i18n/request";
 import zhMessages from "../../../messages/zh.json";
 import enMessages from "../../../messages/en.json";
@@ -41,16 +42,15 @@ export default async function LocaleLayout({ children, params }: Props) {
   }));
 
   return (
-    <html lang={locale}>
-      <body>
-        <I18nProvider locale={locale} messages={messages}>
-          <div className="flex min-h-screen flex-col">
-            <Header lang={locale} allPosts={allPosts} />
-            <main className="flex-1">{children}</main>
-            <Footer lang={locale} />
-          </div>
-        </I18nProvider>
-      </body>
-    </html>
+    <>
+      <Script id="set-lang" strategy="afterInteractive">{`document.documentElement.lang="${locale}";`}</Script>
+      <I18nProvider locale={locale} messages={messages}>
+        <div className="flex min-h-screen flex-col">
+          <Header lang={locale} allPosts={allPosts} />
+          <main className="flex-1">{children}</main>
+          <Footer lang={locale} />
+        </div>
+      </I18nProvider>
+    </>
   );
 }
