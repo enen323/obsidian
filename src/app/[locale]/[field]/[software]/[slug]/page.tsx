@@ -6,6 +6,7 @@ import { getAllPosts, getPostBySlug } from "@/lib/posts";
 import { locales } from "../../../../../../i18n/request";
 import { mdxComponents } from "@/components/mdx/components";
 import MdxLayout from "@/components/mdx/mdx-layout";
+import GiscusComments from "@/components/giscus-comments";
 
 export function generateStaticParams() {
   const slugs: {
@@ -81,8 +82,11 @@ export default async function ArticlePage({
   });
 
   return (
-    <MdxLayout post={post} allPosts={allPosts} lang={locale}>
-      {content}
-    </MdxLayout>
+    <>
+      <MdxLayout post={post} allPosts={allPosts} lang={locale}>
+        {content}
+      </MdxLayout>
+      <GiscusComments lang={locale} />
+    </>
   );
 }
