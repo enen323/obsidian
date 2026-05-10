@@ -1,7 +1,9 @@
 import Toc from "@/components/ui/toc";
 import Sidebar from "@/components/layout/sidebar";
 import AffiliateDisclaimer from "@/components/affiliate/affiliate-disclaimer";
+import AffiliateBanner from "@/components/affiliate/affiliate-banner";
 import { formatDate } from "@/lib/utils";
+import { getAffiliateLinks } from "@/lib/posts";
 import type { TutorialPost } from "@/types";
 import zhMessages from "../../../messages/zh.json";
 import enMessages from "../../../messages/en.json";
@@ -28,7 +30,7 @@ export default function MdxLayout({
         <h1 className="text-3xl font-bold text-gray-900">{post.title}</h1>
         <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-gray-500">
           <span>{post.software}</span>
-          <span>{post.readTime} min read</span>
+          <span>{t?.readTime?.replace("{minutes}", String(post.readTime)) || `${post.readTime} min read`}</span>
           <span>{formatDate(post.date, lang)}</span>
         </div>
       </header>
@@ -42,6 +44,7 @@ export default function MdxLayout({
 
         {/* Content - center */}
         <article className="prose-custom min-w-0 flex-1">
+          <AffiliateBanner links={getAffiliateLinks(post)} lang={lang} />
           {children}
           <div className="mt-8 border-t border-gray-200 pt-6">
             <AffiliateDisclaimer />

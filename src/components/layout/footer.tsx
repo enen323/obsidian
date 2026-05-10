@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 
 export default function Footer({ lang }: { lang: string }) {
   const t = useTranslations("footer");
+  const nav = useTranslations("nav");
 
   return (
     <footer className="border-t border-gray-200 bg-gray-50">
@@ -17,9 +18,9 @@ export default function Footer({ lang }: { lang: string }) {
           <p className="max-w-md text-sm text-gray-500">{t("description")}</p>
           <p className="max-w-lg text-xs text-gray-400">{t("affiliateDisclaimer")}</p>
           <nav className="flex gap-6 text-sm text-gray-500">
-            <Link href={`/${lang}`}>Home</Link>
-            <Link href={`/${lang}/about`}>About</Link>
-            <Link href={`/${lang}/privacy`}>Privacy</Link>
+            <Link href={`/${lang}`}>{nav("home")}</Link>
+            <Link href={`/${lang}/about`}>{nav("about")}</Link>
+            <Link href={`/${lang}/privacy`}>{nav("privacy")}</Link>
           </nav>
           <p className="text-xs text-gray-400">© {new Date().getFullYear()} Obsidian.</p>
         </div>
