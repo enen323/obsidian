@@ -12,10 +12,10 @@ export default function GiscusComments({ lang }: { lang: string }) {
 
     const script = document.createElement("script");
     script.src = "https://giscus.app/client.js";
-    script.setAttribute("data-repo", "your-username/obsidian");
-    script.setAttribute("data-repo-id", "YOUR_REPO_ID");
-    script.setAttribute("data-category", "Comments");
-    script.setAttribute("data-category-id", "YOUR_CATEGORY_ID");
+    script.setAttribute("data-repo", "enen323/obsidian");
+    script.setAttribute("data-repo-id", "R_kgDOSZdilA");
+    script.setAttribute("data-category", "Announcements");
+    script.setAttribute("data-category-id", "DIC_kwDOSZdilM4C8t_u");
     script.setAttribute("data-mapping", "pathname");
     script.setAttribute("data-strict", "0");
     script.setAttribute("data-reactions-enabled", "1");
