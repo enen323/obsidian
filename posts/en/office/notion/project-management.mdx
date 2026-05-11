@@ -1,0 +1,307 @@
+---
+title: "Notion Project Management: Kanban to Timeline"
+description: Manage projects and team collaboration in Notion
+field: office
+software: notion
+level: intermediate
+language: en
+slug: project-management
+date: 2026-05-11
+readTime: 14
+translationOf: /zh/office/notion/project-management
+affiliateLinks:
+  - name: Notion Plus
+    url: https://www.notion.so/pricing
+    description: Notion Plus plan for individuals and teams
+    vendor: Notion
+  - name: Notion Team
+    url: https://www.notion.so/pricing
+    description: Notion Team plan for collaboration
+    vendor: Notion
+---
+
+> **Version:** Notion (Web/Desktop app, updated continuously; Timeline/Gantt view requires a Plus or Team plan)
+> **Difficulty:** ★★★☆☆ (3/5)
+> **Time:** 40-55 minutes
+
+---
+
+You track projects in a spreadsheet. Status updates come through Slack messages. Assignments live in your head. When someone asks "What is blocking the launch?" you spend 20 minutes piecing together information from three different sources.
+
+Spreadsheets are not project management tools. Email threads are not project management tools. Your memory is definitely not a project management tool. Yet most teams use exactly this combination and wonder why projects slip.
+
+Notion can replace all of these with a single project management system. This tutorial teaches you how to build a complete project management workspace: a Kanban board for task tracking, a Timeline view for scheduling, a task assignment system with notifications, progress tracking with formulas, and a team collaboration hub.
+
+---
+
+## Preparation
+
+- **Software:** Notion desktop or web app. A free account works for individual use. Notion Plus or Team is required for the **Timeline** (Gantt) view and guest sharing.
+- **OS:** Windows 10/11, macOS 12+, or any modern browser.
+- **Prerequisites:** Completion of the [Workspace Setup Guide](/en/office/notion/workspace-setup) or equivalent familiarity with Notion pages, databases, properties, and views.
+- **Sample Scenario:** A mock project with 5-10 tasks, 2-3 team members, and milestones. You can use a real project if you have one.
+- **Team Setup (optional):** If collaborating, invite team members to your workspace (Share > Add members). For solo practice, use Text properties to simulate team member names.
+
+---
+
+## Core Workflow
+
+### Step 1: Build a Kanban Board for Task Tracking
+
+**Why:** Kanban boards visualize workflow. You see at a glance which tasks are pending, in progress, and done. This replaces the status-update meeting.
+
+**Create the Tasks database:**
+1. Create a new page: type `/table` > name it "Tasks."
+2. Add these properties:
+
+| Property | Type | Options |
+|---|---|---|
+| Task Name | Title (default) | -- |
+| Status | Select | Backlog, To Do, In Progress, In Review, Done, Cancelled |
+| Priority | Select | Critical, High, Medium, Low |
+| Assignee | Person (or Text for solo) | Team member names |
+| Due Date | Date | Task deadline |
+| Project | Relation | Link to a Projects database |
+| Tags | Multi-select | Bug, Feature, Improvement, Documentation |
+
+**Create the Kanban view:**
+1. At the top of the database, click **+** > **Board**.
+2. Name the view "Kanban."
+3. Set **Group by** to **Status**.
+4. (Optional) Set **Sort by** to **Priority** descending -- critical tasks appear at the top of each column.
+5. Drag a task card from "To Do" to "In Progress" to update its status visually.
+
+**Customize card preview:**
+1. Click the view settings (three dots next to the view name) > **Layout**.
+2. Under **Card Preview**, check: "Assignee," "Priority," "Due Date."
+3. Now each card shows the key info without opening it.
+
+**Expected result:** A visual Kanban board with columns for each status. Cards show assignee, priority, and due date. Dragging a card updates its status.
+
+**Stop condition:** You have 5+ tasks in the board across at least 3 columns, and you can change a task's status by dragging it to another column.
+
+### Step 2: Add a Timeline (Gantt) View for Scheduling
+
+**Why:** The Timeline view shows tasks on a calendar timeline. You see dependencies, overlaps, and scheduling gaps. This replaces the Gantt chart spreadsheet.
+
+**Add a Timeline view:**
+1. In your Tasks database, click **+** > **Timeline**.
+2. Name the view "Timeline."
+3. In the view settings:
+   - **Date:** Select **Due Date** (or create a **Date Range** property -- Start Date and End Date -- if tasks span multiple days).
+   - **Group by:** Select **Assignee** (tasks are color-coded by person).
+4. Tasks now appear as bars on a calendar timeline.
+
+**Set task duration (for tasks spanning multiple days):**
+1. In the Tasks database, add a **Date** property with **End date** enabled.
+2. In the property settings, toggle **End date** ON.
+3. Now edit a task: set Start date = June 1, End date = June 5.
+4. In the Timeline view, the task appears as a 5-day bar.
+
+**Adjust tasks directly on the Timeline:**
+- Drag a bar left/right to change the start date.
+- Drag the edges of a bar to change the duration.
+- Drag a bar to a different group row to reassign the task.
+
+**Expected result:** A visual timeline showing tasks as bars grouped by assignee. You can see who is overallocated (overlapping bars) and where there are scheduling gaps.
+
+**Stop condition:** Your timeline shows at least 5 tasks with different dates and at least one case of overlapping tasks (potential overallocation) visible.
+
+### Step 3: Set Up Task Assignment and Notifications
+
+**Why:** Assigning tasks in Notion is more reliable than verbal assignments or Slack messages. The system tracks who is responsible for what, and Notion notifies them.
+
+**Assign tasks:**
+1. Open a task page or edit the "Assignee" cell in the database.
+2. Click the Assignee cell > start typing a team member's name > select them.
+3. The assignee receives a notification in Notion (bell icon at the top-right).
+
+**Notification types:**
+- **@-mention:** Type `@` followed by a name anywhere in a page. The person gets a notification.
+- **Assign to:** Setting the Assignee property triggers a notification.
+- **Comments:** In any page, select text > **Comment** (or press Ctrl/Cmd + Shift + M). The page owner and mentioned users are notified.
+- **Reminders:** Click the **...** menu on a task > **Remind me** > set a date/time. Notion sends a notification at the specified time.
+
+**Set up a "My Tasks" view for each person:**
+1. In the Tasks database, click **+** > **Table** > name it "My Tasks."
+2. Add a filter: **Assignee contains [your name]**.
+3. Add a second filter: **Status is not Done**.
+4. Add a second filter group (OR): **Status is not Cancelled**.
+5. Save. You now have a personal task list.
+
+**Expected result:** When you assign a task to someone, they see it immediately in their filtered view and receive a notification.
+
+**Stop condition:** You have assigned at least 2 tasks to yourself, verified they appear in a filtered "My Tasks" view, and received a notification.
+
+### Step 4: Track Progress with Formulas
+
+**Why:** Manual status updates are rarely accurate. Formulas give you objective progress metrics based on data you already have.
+
+**Formula examples for project tracking:**
+
+**Formula 1 -- Status color (checkbox for "Is Done?"):**
+Create a **Checkbox** property called "Done" with formula:
+```
+prop("Status") == "Done"
+```
+This is TRUE when status is "Done," FALSE otherwise.
+
+**Formula 2 -- Days until deadline:**
+Create a **Formula** property called "Days Left":
+```
+if(empty(prop("Due Date")), "", round(dateBetween(prop("Due Date"), now(), "days")))
+```
+Positive = days remaining. Negative = overdue. Blank = no deadline set.
+
+**Formula 3 -- Overdue flag:**
+Create a **Formula** property called "Overdue":
+```
+if(and(not(empty(prop("Due Date"))), prop("Due Date") < now(), prop("Status") != "Done"), "Overdue!", "")
+```
+This shows "Overdue!" for tasks past their deadline that are not marked Done.
+
+**Formula 4 -- Priority score (for sorting):**
+```
+ifs(prop("Priority") == "Critical", 4, prop("Priority") == "High", 3, prop("Priority") == "Medium", 2, prop("Priority") == "Low", 1)
+```
+
+**Create a "Progress" view with filters:**
+1. Add a new Table view named "Progress."
+2. Show columns: Task Name, Status, Priority, Assignee, Due Date, Days Left, Overdue.
+3. Sort by: Overdue (descending), then Days Left (ascending).
+
+**Expected result:** Your Tasks database now shows objective progress data. Overdue tasks are flagged automatically. Days remaining are calculated in real time.
+
+**Stop condition:** You have added at least 3 formula properties and created a "Progress" view that highlights overdue tasks.
+
+### Step 5: Create a Team Collaboration Dashboard
+
+**Why:** A dashboard gives a single-pane-of-glass view of project health. Everyone on the team can see the same information without asking for status updates.
+
+**Create a Dashboard page:**
+1. Create a new page named "Project Dashboard."
+2. Add an icon and cover image for visual identity.
+
+**Add linked database views:**
+1. Type `/linked` > select **Tasks** database.
+2. For the first linked view, set it up as a **Board** view filtered to show only **"In Progress" and "In Review"** tasks.
+3. Title the section "Active Work."
+4. Below it, add another linked view of **Tasks** as a **Table** view filtered to show only **Overdue = "Overdue!"** tasks.
+5. Title this section "At Risk."
+
+**Add a project milestones section:**
+1. Create a "Milestones" database (or use a separate database).
+2. Properties: Milestone Name (Title), Date (Date), Status (Select: On Track, At Risk, Delayed, Completed).
+3. On the Dashboard, type `/linked` > select **Milestones** > choose **Timeline** view.
+
+**Embed external content:**
+- Type `/embed` > paste a Google Doc, Figma file, or Miro board link.
+- Type `/web bookmark` > paste a link to a key reference document.
+
+**Share the dashboard:**
+- Click **Share** (top-right) > invite team members > set permission level (Can view, Can comment, Can edit).
+- For external stakeholders, use **Share to web** (get a public link).
+
+**Expected result:** A single page where the team can see active tasks, overdue items, and milestones without asking anyone.
+
+**Stop condition:** Your dashboard has at least 3 linked database views (active work, at-risk items, milestones) and is shared with at least one other person.
+
+---
+
+## Reference Table
+
+| View Type | Best For | Notion Plan |
+|---|---|---|
+| Table | Data entry, bulk editing | Free |
+| Board (Kanban) | Task workflow visualization | Free |
+| Timeline (Gantt) | Scheduling and dependencies | Plus / Team |
+| Calendar | Deadline tracking | Free |
+| List | Quick task overview | Free |
+| Gallery | Visual card display | Free |
+
+| Formula | Purpose | Example |
+|---|---|---|
+| `prop("Status") == "Done"` | Check if a task is complete | `if(prop("Status") == "Done", "Complete", "Incomplete")` |
+| `dateBetween(date1, date2, "days")` | Days between two dates | `dateBetween(prop("Due Date"), now(), "days")` |
+| `ifs(cond1, val1, cond2, val2, ...)` | Multiple conditions (like nested IF) | `ifs(prop("Priority") == "High", 3, prop("Priority") == "Low", 1, true, 2)` |
+| `and(cond1, cond2)` | Both conditions true | `and(prop("Status") != "Done", prop("Due Date") < now())` |
+| `or(cond1, cond2)` | Either condition true | `or(prop("Status") == "Overdue", prop("Priority") == "Critical")` |
+| `empty(prop("X"))` | Check if property is empty | `empty(prop("Due Date"))` |
+| `format(prop("X"))` | Convert number to text | `"Priority: " + format(prop("Priority Score"))` |
+
+**Common keyboard shortcuts for project management:**
+
+| Shortcut | Action |
+|---|---|
+| Ctrl/Cmd + N | New task in the database |
+| Ctrl/Cmd + D | Duplicate task or block |
+| Ctrl/Cmd + Z | Undo (includes moving a card in Kanban) |
+| Space | Open page preview (Quick Preview) |
+| Esc | Close preview |
+| Ctrl/Cmd + Shift + C | Copy block link |
+| Ctrl/Cmd + / | Show all keyboard shortcuts |
+
+---
+
+## Troubleshooting
+
+### 1. Timeline view requires a paid plan
+- **Symptom:** "Timeline" is not available in the view menu.
+- **Root cause:** Timeline view is a paid feature in Notion (Plus plan or higher). Free accounts have Table, Board, Calendar, List, and Gallery.
+- **Fix:** Upgrade your plan at Settings > Plans. Alternatively, use the **Calendar** view as a substitute: create a Calendar view, use the date property for scheduling, and group tasks by assignee using linked views. It is not a Gantt chart, but it shows deadlines and assignees on a timeline.
+
+### 2. Filter exclusions are not working
+- **Symptom:** You added a filter "Status is not Done" but done tasks still appear.
+- **Root cause:** Multiple filter groups with OR logic can override individual filters.
+- **Fix:** Click **Filter** > check the filter group logic. If you see "and" between groups, change it to match your intent. Simplify: remove all filters, add one filter at a time, and verify each one. If you need "Status is not Done AND Status is not Cancelled," add them in the same filter group with AND.
+
+### 3. Relations not showing in Timeline grouping
+- **Symptom:** You want to group the Timeline by "Project" but the Relation property is not available in Group By.
+- **Root cause:** Some property types (like Relation and Rollup) are not available as grouping dimensions in Timeline view.
+- **Fix:** Add a **Select** or **Text** property to the Tasks database that mirrors the project name (or a project category). Use that for grouping. You can automate this with a Formula: `prop("Project Name")` -- but formulas cannot reference relation properties directly in all cases. A simpler approach: add a "Project Category" Select property and keep it in sync manually.
+
+### 4. Formula shows "Type mismatch" error
+- **Symptom:** A formula cell shows a red error: "Type mismatch."
+- **Root cause:** The formula expects one data type (e.g., Number) but the property returns a different type (e.g., Text).
+- **Fix:** Use a conversion function. For example, if "Budget" is a Text property but you need a number: `toNumber(prop("Budget"))`. Check that all properties referenced in the formula have the expected types. Use `format()` to convert numbers to text, and `toNumber()` to convert text to numbers.
+
+### 5. Notifications not being received
+- **Symptom:** You assigned a task to someone, but they did not receive a notification.
+- **Root cause:** The person has notifications disabled, or they are not a workspace member.
+- **Fix:** The assignee should go to **Settings & Members > Notifications** and check their notification preferences. Ensure they have email and/or desktop notifications enabled. If you assigned a task to someone using a Text property (not the Person property), Notion does not send notifications -- the Person property is required for automated notifications.
+
+---
+
+## Expert Tips
+
+**Templates for Task Types:** Instead of a single "Tasks" database for everything, create different templates within the same database. In your Tasks database, click **New** > **+ New template**. Create templates for:
+- **Bug:** Pre-fills tags = "Bug," Priority = "Critical." Adds sections: Steps to Reproduce, Expected Behavior, Actual Behavior.
+- **Feature Request:** Pre-fills tags = "Feature." Adds sections: Use Case, Proposed Solution, Success Criteria.
+- **Meeting Follow-up:** Pre-fills status = "To Do." Adds section: Context (linked to the meeting note).
+
+**Butterfly Automation with Relations:** Create a "Sprints" database with a Date Range property (Start/End). In the Tasks database, add a Relation to Sprints. Now assign tasks to sprints. Create a Sprint board that shows all tasks for each sprint. When a sprint ends, bulk-update all unfinished tasks to the next sprint by dragging them. This gives you a lightweight Scrum board without third-party tools.
+
+**Rollup for Burndown Charts:** In your Sprints database, add a Rollup property that counts tasks from the Tasks relation. Add another Rollup that counts only "Done" tasks. Create a Formula: `prop("Done Count") / prop("Total Count") * 100` to get the completion percentage. You now have an automated burndown metric. Export this data periodically to chart progress in a separate tool.
+
+**Database Templates with Auto-Dates:** When creating a template, use `{{Today}}` or `{{Now}}` in date properties to auto-fill the current date. Use `{{+7 days}}` for a deadline template that defaults to one week from creation. These dynamic defaults save significant data-entry time.
+
+**Guest Access for Clients:** Notion Plus/Team allows guest access. Go to **Share > Add people** > type the client's email > set permission to "Can view" (or "Can comment" if they need to give feedback). Guests only see pages you explicitly share -- not your full workspace. This is safer than sharing screenshots or emailing status reports.
+
+**Linked Database View with Rollup as a Status Indicator:** On your dashboard, create a linked view of the Tasks database. Add a Rollup that shows the completion percentage. Then above the database, add a brief text block that uses Notion's formula display: `Tasks: {{rollup}} complete`. This gives an at-a-glance health indicator for the entire project.
+
+---
+
+## Summary
+
+In this tutorial you built a complete project management system in Notion:
+- **Kanban board** -- visual task workflow with drag-and-drop status updates
+- **Timeline view** -- Gantt-style scheduling with duration bars
+- **Task assignment** -- Person property, notifications, filtered "My Tasks" views
+- **Progress formulas** -- overdue flags, days remaining, priority scores
+- **Team dashboard** -- linked views, milestones, shared workspace
+
+**Next steps:**
+- Learn formulas in depth with Notion's Formula reference documentation
+- Explore Notion Automation (triggers and actions for recurring tasks)
+- Integrate Notion with Slack, Jira, or GitHub for cross-platform workflows
+- Build a personal knowledge base: [Workspace Setup Guide](/en/office/notion/workspace-setup)

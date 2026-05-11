@@ -1,0 +1,237 @@
+---
+title: "Photoshop Layers & Masking Guide: Blend Modes and Masks Explained"
+description: Deep dive into blend modes and layer mask workflows
+field: design
+software: photoshop
+level: intermediate
+language: en
+slug: layers-masking
+date: 2026-05-11
+readTime: 16
+translationOf: /zh/design/photoshop/layers-masking
+affiliateLinks:
+  - name: Adobe Creative Cloud
+    url: https://www.adobe.com
+    description: Full suite of creative apps
+    vendor: Adobe
+---
+
+> **Version**: Photoshop 2024 (25.0+, backward compatible to CC 2019)
+> **Difficulty**: ★★★☆☆ (requires basic selection skills)
+> **Time**: 25-35 minutes
+
+## The Eraser Tool Is the Most Dangerous Tool in Photoshop
+
+You spend 20 minutes carefully erasing the background around a portrait. You save, close, and walk away. The next day you notice a white halo around the hair where you missed a spot—but the PSD has already been saved over. Those pixels are gone forever. Then the client asks, "Can we try a blue background instead?" and you have already deleted the original one.
+
+There is a common root cause: **destructive editing**. The Eraser tool, direct image adjustments, and direct transformations all permanently discard original data. Layer masks, adjustment layers, clipping masks, and Smart Objects were designed specifically to solve this problem. They let you do everything without touching the original pixels. This tutorial starts with blend modes and builds up to show how these tools work together.
+
+## Preparation
+
+**Software Requirements**
+- Adobe Photoshop 2024 (25.0+) or CC 2019 or newer
+- No third-party plugins needed
+
+**File Preparation**
+- Download two photos: one portrait or clearly-defined subject (A.jpg), and one texture or background photo (B.jpg)
+- Unsplash has free, high-resolution options if you do not have suitable images on hand
+
+**Color Space Setup**
+- `Edit > Color Settings`, set Working Space to `sRGB IEC61966-2.1`
+- Layer masks and blend modes are color-space agnostic, but keeping sRGB ensures accurate preview
+
+**Prerequisite Knowledge**
+- Create, delete, and reorder layers in the Layers panel
+- Basic selection tools (Rectangular Marquee, Lasso)
+- `Ctrl+J` to copy a selection to a new layer
+
+## Core Workflow
+
+### Step 1: Understand Blend Modes — Multiply, Screen, and Overlay
+
+Open A.jpg. Double-click the lock icon on the Background layer in the Layers panel to convert it to a regular layer (name it "Subject"). Place B.jpg (`File > Place Embedded`) and drag it below the subject layer. Select the subject layer and open the blend mode drop-down at the top of the Layers panel.
+
+**Three Core Blend Modes**
+
+| Mode | How It Works | Best For | Visual Rule |
+|------|-------------|----------|-------------|
+| Multiply | Multiplies each channel's color value (255x255=255, 0x255=0). Result is always darker than the original | Applying texture over highlights, removing white backgrounds | White becomes transparent, black stays, midtones get darker |
+| Screen | Inverts, multiplies, inverts again. Result is always lighter than the original | Adding glow effects, lens flares, stars | Black becomes transparent, white stays, midtones get lighter |
+| Overlay | Combines Multiply and Screen: areas below 50% gray get darker, areas above get brighter | Increasing contrast, applying texture across the full image | 50% gray is fully transparent; darker gets darker, lighter gets lighter |
+
+**Hands-on example—overlaying a texture on a portrait**:
+1. Make sure the subject layer is on top and the texture layer is below it
+2. Change the subject layer's blend mode to Multiply
+3. Keep opacity at 100% initially
+4. Observe: the white parts of the texture disappear, while the darker parts merge into the subject
+5. Reduce opacity to 40-60% for a natural result
+
+**Why only these three?** Photoshop ships 27 blend modes, but 90% of real-world work uses only Multiply, Screen, and Overlay. Multiply lets the dark texture pass through, Screen lets bright elements pass through, and Overlay boosts contrast on both ends. Master these three and you have covered nearly every compositing scenario.
+
+**Expected result**: The texture blends into the subject through the blend mode math rather than sitting on top as a semi-transparent layer.
+
+**Stop condition**: If the texture visibly distorts the subject's original colors, lower the opacity or try a different mode. The texture should be felt rather than seen.
+
+### Step 2: Non-Destructive Erasing with Layer Masks
+
+Building on Step 1, let us hide the texture effect on the subject's face while keeping it visible on the background.
+
+**Action**:
+1. Select the subject layer (blend mode set to Multiply)
+2. Click the "Add Layer Mask" button at the bottom of the Layers panel (the rectangle with a circle icon)
+3. Make sure the mask thumbnail (white square to the right of the layer thumbnail) is selected—a white border appears around it when active
+4. Press `B` to select the Brush tool
+5. Set the foreground color to black (press `D` to reset, then `X` to swap so black is on top)
+6. In the options bar, set brush opacity to 80% and flow to 50%
+7. Paint over the face area—the texture effect gradually disappears
+
+**The golden rule of masks**:
+- **White** = fully visible (show the layer content)
+- **Black** = fully hidden (hide the layer content)
+- **Gray** = partially transparent (the darker the gray, the more transparent)
+
+**Why a mask beats the Eraser tool.** Erased pixels are gone forever. A mask only hides pixels—paint over the black area with white, and the "erased" content comes back. You can revise the mask any number of times without losing a single pixel of original data.
+
+**Expected result**: The texture disappears from the face while remaining visible on the background and clothing. A single layer now has both "show" and "hide" regions.
+
+**Stop condition**: If the hair edges show a hard transition, the brush hardness is too high. Press `[` to shrink the brush, `]` to enlarge it, and `Shift+[` / `Shift+]` to adjust hardness (50-70% hardness is recommended for hair edges).
+
+### Step 3: Clipping Masks — Restrict Adjustments to One Layer
+
+Suppose you want to brighten the subject layer without affecting the background layer.
+
+**Wrong approach**: Add a Brightness/Contrast adjustment layer directly. It affects every layer below it, including the background.
+
+**Right approach—use a clipping mask**:
+1. Add a Brightness/Contrast adjustment layer (Layers panel bottom > adjustment icon > Brightness/Contrast)
+2. Right-click the adjustment layer and choose "Create Clipping Mask" (or press `Ctrl+Alt+G`)
+3. Notice the downward-pointing arrow that appears next to the adjustment layer—it means this layer only affects the layer directly below it
+
+**Parameters**:
+- Brightness: +20
+- Contrast: +15
+
+**How clipping masks work.** A clipping mask constrains the upper layer's content to the shape of the lower layer's opaque area. An adjustment layer normally affects all layers below it, but the clipping mask clips it to only the immediate next layer. This is critical for multi-layer composites where each element needs independent tuning.
+
+**Expected result**: Only the subject layer gets brighter. The background and texture remain unchanged.
+
+**Stop condition**: If the edges show a hard transition, check whether the base layer has transparent areas—the clipping mask uses the base layer's opaque pixels as its boundary shape.
+
+### Step 4: Global Non-Destructive Tuning with Adjustment Layers
+
+Building on Step 3, now you want the entire composite (subject + background) to share a unified color tone.
+
+**Action**:
+1. Add a Color Balance adjustment layer at the very top of the layer stack
+2. Following standard grading practice, add cyan/blue to shadows and red/yellow to highlights (see the parameters below)
+3. This adjustment layer automatically affects every layer underneath it
+
+**Why adjustment layers are essential**:
+- **Fully reversible**: double-click the thumbnail to change any parameter at any time
+- **Built-in mask**: every adjustment layer ships with a white mask—paint with black to exclude areas
+- **Stackable**: reordering adjustment layers changes the final composite, giving you unlimited creative flexibility
+
+**Reference parameters—warm overall tone**:
+- Color Balance > Shadows: Cyan-Red +5, Yellow-Blue +8
+- Color Balance > Highlights: Cyan-Red +10, Yellow-Blue +12
+- Curves: gentle S-curve (shadows -8, highlights +10)
+
+**Expected result**: The entire image takes on a warm, unified atmosphere while each layer's individual adjustments are preserved.
+
+**Stop condition**: If an area looks over-processed, paint over it with a black brush on the adjustment layer's mask to restore the original look underneath.
+
+### Step 5: Scale Without Quality Loss with Smart Objects
+
+Final scenario—the client asks you to shrink the image from 1920 px to 1200 px, then changes their mind and wants 1920 px again.
+
+**How Smart Objects work.** A Smart Object embeds the original pixel data into the layer. Every transform (scale, rotate, warp) is recorded as a parametric instruction rather than applied to the pixels directly.
+
+**Action**:
+1. In the Layers panel, hold `Ctrl` and click every layer to select them all
+2. Right-click any selected layer and choose "Convert to Smart Object"
+3. All layers merge into one Smart Object (notice the small document icon on the thumbnail)
+4. Press `Ctrl+T` for Free Transform, change the width from 1920 px to 1200 px (hold Shift to lock proportion)
+5. Press Enter to confirm
+
+**Verify the non-destructive property**:
+- Press `Ctrl+T` again and change the width back to 1920 px
+- The image quality is unchanged. Scaling a regular layer down then back up would leave it visibly blurry
+
+**Why not just scale a regular layer?** A Smart Object stores the instruction "display the original 1920 px at 1200 px" rather than "compress 1920 px of pixel data into 1200 px." Returning to the original size is instant and lossless. This is invaluable during the design exploration phase—try every size without worrying about ruining the source.
+
+**Expected result**: The image can be scaled down and then back up with zero quality loss.
+
+**Stop condition**: Smart Objects do not support certain filters (such as "Lighting Effects"). If you need to apply those, rasterize the Smart Object (right-click > Rasterize Layer), but understand that this discards the non-destructive property.
+
+## Shortcut & Mode Reference
+
+| Action | Shortcut |
+|--------|----------|
+| Add layer mask | Layers panel bottom > mask button |
+| Create clipping mask | Ctrl+Alt+G |
+| Convert to Smart Object | Right-click layer > Convert to Smart Object |
+| Free Transform | Ctrl+T |
+| Cycle blend modes | Shift++ / Shift+- |
+| Brush tool | B |
+| Swap foreground/background | X |
+| Reset foreground/background | D |
+| Brush hardness | Shift+[ (softer) / Shift+] (harder) |
+| Brush size | [ (smaller) / ] (larger) |
+
+## Core Blend Mode Reference
+
+| Mode | Simplified Math | Visual Effect | Typical Opacity |
+|------|----------------|---------------|-----------------|
+| Normal | Direct overlay | Default | 100% |
+| Multiply | Value × Value | Darkens, white disappears | 40-60% |
+| Screen | 1-(1-A)×(1-B) | Lightens, black disappears | 30-50% |
+| Overlay | Combines M & S | Boosts contrast | 40-70% |
+| Soft Light | Gentle Overlay | Subtle contrast | 30-60% |
+| Luminosity | Preserves hue & lum | Under layer's color + upper layer's brightness | 100% (grading) |
+
+## Troubleshooting
+
+### Painting on the Mask Does Nothing
+
+- **Symptom**: Painting black on the mask does not hide the layer content
+- **Root cause**: The mask thumbnail is not selected—you are painting on the layer thumbnail instead
+- **Fix**: Click the mask thumbnail (white square) in the Layers panel. Confirm the white border appears around the mask, not the layer icon. Then paint again
+
+### Clipping Mask Won't Work
+
+- **Symptom**: After creating a clipping mask, the upper layer still affects layers further down
+- **Root cause**: A clipping mask constrains only to the immediate next layer below. If there is a gap layer in between, the effect leaks through
+- **Fix**: Drag the adjustment layer directly above the target layer (no layers in between), then press `Ctrl+Alt+G` again
+
+### Smart Object Won't Edit Layer Styles
+
+- **Symptom**: After converting to a Smart Object, double-clicking the layer to access Layer Styles shows some effects grayed out
+- **Root cause**: The Smart Object contains multiple nested layers, and certain Layer Style features (such as Pattern Overlay) behave differently on Smart Objects
+- **Fix**: Double-click the Smart Object thumbnail—it opens in a new window where you can edit each internal layer individually. Save and the main document updates automatically
+
+### Blend Mode Produces Weird Colors
+
+- **Symptom**: Setting a layer to Multiply turns some areas fluorescent or pure black
+- **Root cause**: Multiply works best when the underlying layer is bright. If the corresponding area in the layer below is dark or black, Multiply drives it straight to black
+- **Fix**: Switch to Overlay or Soft Light, or reduce opacity to 20-30%. Alternatively, add a Levels adjustment to the texture layer and drag the black input slider right to 30-50 to lighten the darkest areas before applying the blend mode
+
+## Expert Tips
+
+- **Cycle blend modes with the keyboard.** Select a layer and press `Shift++` (plus) to move down the blend mode list or `Shift+-` (minus) to move up. This lets you audition all 27 modes in seconds without opening the drop-down menu
+- **Gradient masks beat brush strokes.** Instead of painting a mask with a brush, add a black-to-white gradient on the mask for smooth transitions that would take minutes of brushwork. For example, a gradient mask blends two photos seamlessly in 5 seconds versus 3+ minutes with a brush. Use the Gradient tool (G key) directly on the mask thumbnail
+- **Nest Smart Objects for efficiency.** Put one Smart Object inside another. For example, place a product photo Smart Object into both a "Scene 1" Smart Object and a "Scene 2" Smart Object. Switching scenes means hiding or showing the outer Smart Object—the product stays centered and identical in both
+- **Layer groups + blend modes.** Create a layer group (`Ctrl+G`), put adjustment layers inside it, and change the group's blend mode from "Pass Through" to any other mode. The adjustments now apply only within the group, giving you precise control in complex composites
+- **Layer Comps for multi-version PSDs.** If you need to keep multiple versions in one file (such as "Client A layout" and "Client B layout"), open `Window > Layer Comps`. It records visibility, position, and style for every layer and lets you switch between versions instantly without maintaining separate PSD files. A single PSD supports dozens of layer comps
+
+## What's Next
+
+You have mastered the layers and masking workflow:
+1. Blend modes (Multiply / Screen / Overlay) for color blending between layers
+2. Layer masks for non-destructive erasing and local control
+3. Clipping masks to restrict adjustments to a single layer
+4. Adjustment layers for global non-destructive grading
+5. Smart Objects for lossless scaling and editing
+
+Next in this series:
+- [Color Grading Guide](/en/design/photoshop/color-grading) — apply adjustment layers to a professional grading workflow
+- [Text Effects Guide](/en/design/photoshop/text-effects) — use blend modes and masks to create striking typography

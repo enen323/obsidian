@@ -1,0 +1,332 @@
+---
+title: Git Branch Strategy Best Practices
+description: Git Flow, trunk-based, GitHub Flow compared
+field: dev
+software: git
+level: intermediate
+language: en
+slug: branch-strategy
+date: 2026-05-11
+readTime: 20
+translationOf: /zh/dev/git/branch-strategy
+affiliateLinks: []
+---
+
+> **Version**: Git 2.30+ (CI/CD integration requires GitHub/GitLab)
+> **Difficulty**: ★★★☆☆ (branches, merges, and basic git concepts required)
+> **Time**: 25-35 min
+
+## Teams Without a Branch Strategy Merge at Their Own Risk
+
+"I fixed the login page on feature/login, but now the homepage is broken." "Which features should the release branch include?" "After the hotfix, do I merge to main, develop, or both?"
+
+Teams without a formal branch strategy eventually encounter one of these outcomes:
+
+1. **Everyone commits directly to main** — messy history, bugs shipped to production
+2. **Branches are created but never cleaned up** — six months later theres 47 zombie branches nobody remembers
+3. **Chaotic merging** — a single merge pulls in 30 unrelated commits
+
+This guide does not claim Git Flow is "the best." Instead, it analyzes several mainstream strategies so you can choose based on team size, release cadence, and CI/CD maturity.
+
+**Prerequisites**: Familiarity with `git branch`, `git merge`, and `git rebase`.
+
+## Prerequisites
+
+- **Git** 2.30+
+- A practice repository (create an empty one and clone it locally)
+- Understanding of CI/CD basics
+- Branch strategies matter most for teams of 3+. For 1-2 person projects, over-engineering the workflow slows you down.
+
+## Three Mainstream Branch Strategies
+
+### Strategy 1: Git Flow — For Version-Release Projects
+
+Git Flow is the classic model, proposed by Vincent Driessen in 2010. It suits projects with fixed release cycles (bi-weekly or monthly).
+
+#### Branch Types
+
+| Branch | Naming | Purpose | Lifespan |
+|--------|--------|---------|----------|
+| main | `main` / `master` | Production code | Permanent |
+| develop | `develop` | Integration branch for daily work | Permanent |
+| feature | `feature/*` | New feature development | Deleted after merge to develop |
+| release | `release/*` | Release prep (bug fixes, version bumps) | Deleted after merge to main & develop |
+| hotfix | `hotfix/*` | Emergency production fix | Deleted after merge to main & develop |
+
+#### Workflow
+
+```bash
+# 1. Create feature branch from develop
+git checkout develop
+git checkout -b feature/user-profile
+
+# 2. After completion, merge back to develop
+git checkout develop
+git merge --no-ff feature/user-profile
+git branch -d feature/user-profile
+
+# 3. Prepare release
+git checkout develop
+git checkout -b release/1.2.0
+# Bump version, fix minor bugs
+
+# 4. Release to main and develop
+git checkout main
+git merge --no-ff release/1.2.0
+git tag -a v1.2.0 -m "Version 1.2.0"
+git checkout develop
+git merge --no-ff release/1.2.0
+git branch -d release/1.2.0
+
+# 5. Production hotfix
+git checkout main
+git checkout -b hotfix/critical-login-bug
+# Fix the bug
+git checkout main
+git merge --no-ff hotfix/critical-login-bug
+git tag -a v1.2.1 -m "Critical login bugfix"
+git checkout develop
+git merge --no-ff hotfix/critical-login-bug
+```
+
+#### Why `--no-ff`?
+
+`--no-ff` forces a merge commit even when a fast-forward is possible. It preserves the information that "a feature was integrated here." Set globally with `git config merge.ff false`.
+
+#### When to Use
+
+- Projects with explicit version numbers (mobile apps, desktop software)
+- Multiple active versions (v1.x in production, v2.0 in development)
+- Larger teams (10+) that need strict branch control
+
+### Strategy 2: Trunk-based Development — For Continuous Delivery
+
+Trunk-based development emphasizes working directly on `main` (the trunk) with short-lived feature branches (max 2 days) and frequent integration. The main branch should always be releasable.
+
+#### Workflow
+
+```bash
+# 1. Create a short-lived feature branch from main
+git checkout main
+git pull --rebase
+git checkout -b feat-user-avatar
+
+# 2. Commit frequently, keep the branch short
+# (no more than 1-2 days of work)
+
+# 3. Rebase onto latest main before merging
+git checkout main
+git pull --rebase
+git checkout feat-user-avatar
+git rebase main
+
+# 4. Merge back to main
+git checkout main
+git merge --ff-only feat-user-avatar
+# Or squash merge
+git merge --squash feat-user-avatar
+git commit -m "feat: user avatar upload feature"
+```
+
+#### Key Practices
+
+- **Feature Flags**: Incomplete features are hidden behind configuration toggles. The code is merged to main but disabled by default, only accessible internally.
+- **Short-lived branches**: No branch lives longer than 2 working days. Branches older than 2 days must rebase from main and resolve conflicts.
+- **Frequent integration**: Merge to main at least once per day. Every merge must pass CI checks and automated tests.
+
+#### When to Use
+
+- SaaS products, web applications (deploy anytime)
+- Teams with high DevOps maturity (test coverage > 80%)
+- Small to medium teams (5-15 people)
+
+### Strategy 3: GitHub Flow — Simplified PR Workflow
+
+GitHub Flow simplifies trunk-based development by combining it with Pull Request code review.
+
+#### Workflow
+
+```bash
+# 1. Create branch
+git checkout -b feat-api-endpoint
+
+# 2. Develop and commit
+git add .
+git commit -m "feat: add user list API endpoint"
+
+# 3. Push to remote
+git push origin feat-api-endpoint
+
+# 4. Create a PR on GitHub
+# (add reviewers, labels, milestone)
+
+# 5. After PR review and CI pass, merge
+# On GitHub, click "Merge pull request"
+# Options: Create a merge commit / Squash and merge / Rebase and merge
+
+# 6. Delete the remote branch
+git push origin --delete feat-api-endpoint
+```
+
+#### Three Merge Methods
+
+| Method | Effect | When to Use |
+|--------|--------|-------------|
+| Create a merge commit | Preserves all intermediate commits | Branch has multiple independent changes |
+| Squash and merge | Compresses all commits into one | Many WIP commits, want clean history |
+| Rebase and merge | Linear history, no merge commit | Prefer a straight-line commit graph |
+
+## Strategy Comparison Table
+
+| Dimension | Git Flow | Trunk-based | GitHub Flow |
+|-----------|----------|-------------|-------------|
+| Branch count | High (5+ types) | Low (2 types) | Low (2 types) |
+| Learning curve | High | Low | Low |
+| Release cadence | Fixed schedule | Any frequency | Any frequency |
+| Version management | Strong (tags + releases) | CI/CD dependent | CI/CD dependent |
+| Multiple version support | Yes | Difficult | Difficult |
+| Team size | 10+ | 5-15 | 3-10 |
+| Conflict frequency | Medium (peak at release) | High (frequent rebase needed) | Medium |
+| CI/CD dependency | Low | High | High |
+
+## Branch Naming Conventions
+
+A consistent naming convention lets the team identify a branches purpose from its name alone:
+
+```
+<type>/<description>
+
+# Examples
+feature/user-login          # New feature
+bugfix/login-error          # Bug fix
+hotfix/security-patch       # Emergency fix
+release/v1.2.0              # Release preparation
+chore/update-deps           # Maintenance (dependency updates, config changes)
+docs/api-docs               # Documentation
+refactor/auth-module        # Refactoring
+test/add-e2e-tests          # Test additions
+```
+
+**Description guidelines**:
+- Use kebab-case (hyphen-separated)
+- Maximum 50 characters
+- English, lowercase
+- Optionally include issue/ticket numbers: `feature/PROJ-123-user-avatar`
+
+## Merge Conflict Resolution Strategies
+
+### Scenario: Both feature branches modify the same file
+
+```bash
+# On branch B, merge main
+git checkout feature-b
+git merge main
+
+# Conflict occurs
+# Auto-merging src/user.ts
+# CONFLICT (content): Merge conflict in src/user.ts
+
+# View the conflict
+git diff
+
+# Open the file, look for conflict markers
+# <<<<<<< HEAD (current branch Bs code)
+#   const name = user.name;
+# =======
+#   const name = `${user.firstName} ${user.lastName}`;
+# >>>>>>> main (mains code)
+
+# Manually edit to keep the correct version
+# Remove conflict markers
+git add src/user.ts
+git commit -m "merge: merge main and resolve user.ts conflict"
+```
+
+### Scenario: Repeated conflicts during rebase
+
+Enable `rerere` (Reuse Recorded Resolution):
+
+```bash
+git config --global rerere.enabled true
+```
+
+With rerere enabled, Git remembers how you resolved a conflict and automatically applies the same resolution the next time it encounters the same conflict pattern. This is especially useful for developers who rebase frequently.
+
+## Troubleshooting
+
+### Issue 1: Main and develop have diverged significantly
+
+**Symptom**: After a release merge, main is behind develop by many commits. Or a hotfix was applied to main but not synced to develop.
+
+**Root cause**: The merge-back step (main -> develop) was skipped after a release or hotfix.
+
+**Fix**: Immediately after any release or hotfix merge to main, run:
+
+```bash
+git checkout develop
+git merge main
+git push
+```
+
+Add a CI check: if main is ahead of develop, automatically create a reminder to sync.
+
+### Issue 2: Long-lived feature branch creates massive conflicts
+
+**Symptom**: A feature branch developed over 3 weeks hits 40+ conflicting files when merging to main.
+
+**Root cause**: The branch was never rebased from main, so other teams changes accumulated into massive divergence.
+
+**Fix**:
+
+- Enforce branch lifespans of no more than 2 days (trunk-based approach)
+- For long-running features, rebase from main daily:
+
+```bash
+git checkout feature-big
+git rebase main
+```
+
+- Decompose large features into smaller independent pieces merged one at a time
+
+### Issue 3: Multiple people edit the same module simultaneously
+
+**Symptom**: Two developers working on the auth module hit conflicts on every merge.
+
+**Root cause**: Lack of communication and unclear ownership boundaries.
+
+**Fix**:
+
+1. Document module ownership explicitly in project docs
+2. Split large features into separate interfaces/files to reduce concurrent modification
+3. Use "serial development" — one person completes their changes before the next starts
+4. Communicate before starting work on shared modules
+
+### Issue 4: Hotfix merged to main but not synced to develop
+
+**Symptom**: A production bug was fixed via hotfix, but the same bug reappears in the next release from develop.
+
+**Root cause**: The hotfix was never merged back to develop (because hotfix merges to main are remembered, but the develop merge is forgotten).
+
+**Fix**: Add a post-merge hook or CI check:
+
+```bash
+#!/bin/bash
+# Post-merge hook: detect if main has commits not in develop
+if [ $(git rev-list --count main ^develop) -gt 0 ]; then
+  echo "WARNING: main is ahead of develop. Please merge main into develop."
+fi
+```
+
+## Expert Tips
+
+- **Small teams should default to GitHub Flow**: For 3-8 person teams, GitHub Flow is the best starting point. It is simple, PR reviews ensure quality, and squash merge keeps history clean. Do not adopt Git Flow's complexity just to "look professional."
+- **Large teams need Git Flow with automation**: Teams of 10+ using Git Flow need tooling (Jira for issue tracking, automated scripts for release/hotfix cross-branch merging) — otherwise manual branch management becomes a bottleneck.
+- **Feature Flags matter more than branch management**: The core of trunk-based development is not "short-lived branches" but "incomplete features can be safely merged to main." Without feature flags, trunk-based development just turns main into a new develop.
+- **Convention over tools**: Whichever strategy you choose, the team must agree and enforce it consistently. Use git hooks for automated checks: a `pre-push` hook for branch naming and a `commit-msg` hook for commit message format (Conventional Commits recommended).
+- **Adapt, do not rigidly follow**: Git Flow was designed in 2010 for Linux-kernel-style projects. If your context has changed (e.g., from fixed releases to continuous delivery), switch strategies rather than forcing the old one to fit.
+
+## Summary
+
+This guide compared three mainstream branch strategies: Git Flow (multi-branch, version-release oriented), Trunk-based (short-lived branches, continuous delivery), and GitHub Flow (PR-driven, suitable for small-medium teams). Each strategy included use-case analysis, workflow diagrams, and key practices. Branch naming conventions and practical conflict resolution methods were also covered.
+
+Related: [Advanced Git Rebase Techniques](/en/dev/git/advanced-rebase) — combine rebase with your branch strategy for cleaner collaboration.

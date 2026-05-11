@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls -la ~/.claude/skills/ 2>/dev/null || echo \"no skills dir\")",
+      "Read(//c/Users/ASUS/.claude/**)"
+    ]
+  }
+}

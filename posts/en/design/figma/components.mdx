@@ -1,0 +1,186 @@
+---
+title: Figma Components & Styles Intro
+description: Master components, variants, and design systems in Figma
+field: design
+software: figma
+level: beginner
+language: en
+slug: components
+date: 2026-05-11
+readTime: 16
+translationOf: /zh/design/figma/components
+affiliateLinks:
+  - name: Figma Professional
+    url: https://www.figma.com/pricing/
+    description: Professional design team collaboration
+    vendor: Figma
+  - name: Setapp
+    url: https://setapp.com
+    description: 200+ Mac apps subscription with Figma alternatives
+    vendor: Setapp
+---
+
+> **Version**: Figma (Browser/Desktop app, 2024+)
+> **Difficulty**: ★★☆☆☆ (basic design tool familiarity)
+> **Time**: 15-20 min
+
+## Still Copy-Pasting Across Every Screen?
+
+You designed 30 pages over a week. Then the client says: "Change the button color to brand blue." You start editing page by page. By page 12 you miss one. By page 20, shadow values drift. According to Figma's 2023 design tools survey, **67% of designers** cite "cross-page consistency maintenance" as their biggest team collaboration pain point.
+
+**Component systems** solve this. You create one master button, and every copy follows automatically. This tutorial walks you through building a complete component library from scratch — basic components, variants, style management, and team library publishing.
+
+## Preparation
+
+- **Software**: Figma (browser version is free; desktop client recommended for better font rendering)
+- **Account**: Free tier works for all steps. Team Libraries require Figma Professional or above
+- **Files**: None needed — we start from scratch
+- **Prerequisites**: Familiarity with Figma's basic interface (Layers panel, Properties panel) and shape tools
+
+## Core Workflow
+
+### Step 1: Create a Base Button Component
+
+Open Figma, create a new file (`Ctrl+N` / `Cmd+N`).
+
+1. Draw a 120x40 rectangle with the Rectangle tool (`R`), roundness set to 6px
+2. Fill it with `#3B82F6` (blue), remove the stroke
+3. Add text with the Type tool (`T`): type "Submit", set size 14px, weight Medium, color white
+4. Select both the rectangle and text, then click **Create Component** in the top toolbar (or `Ctrl+Alt+K` / `Cmd+Option+K`)
+
+**Why?** When you componentize, every copy shares the same master. Edit the master, and all instances update automatically. No more hunting down every single button across 30 pages.
+
+**Stop condition**: The layer panel shows a purple border around the component, and a diamond symbol (◆) appears before its name.
+
+### Step 2: Expose Component Properties
+
+Right now the text is fixed. To make it reusable:
+
+1. Select your component. In the right-hand Properties panel, find the **Properties** section
+2. Click the **+** icon next to the text layer's "Text" property to expose it
+3. Rename the property to `label`, default value "Submit"
+4. Similarly, expose the rectangle's fill color as a property named `bgColor`
+
+**Why?** Properties let consumers customize specific parameters while keeping the master intact. Safer than "just edit the copy" — no accidental structural damage.
+
+**Stop condition**: The Properties panel shows two editable fields: `label` (text input) and `bgColor` (color picker).
+
+### Step 3: Combine Variants — One Component, Many States
+
+A button needs more than one state. Build Default, Hover, Pressed, and Disabled:
+
+1. Select the master component, hold `Alt`, and drag right to duplicate
+2. On the new copy, change the rectangle fill to `#2563EB` (darker blue) — this is Hover
+3. Duplicate twice more: Pressed = `#1D4ED8`, Disabled = `#9CA3AF` (gray)
+4. Select all four, then click **Combine as variants** in the Properties panel
+
+**Why?** Variants package multiple visual states under one component name, switched via a dropdown. Developers get one component with four states, not four separate components. This cuts handoff confusion significantly.
+
+**Stop condition**: The four components merge into one group. The Properties panel now shows a dropdown toggling between four states.
+
+### Step 4: Name Variant Properties
+
+1. Select the variant group. In the Properties panel, rename the default `Property 1` to `state`
+2. Set the four values: `default`, `hover`, `pressed`, `disabled`
+3. Click the edit icon next to `disabled` and uncheck "Interactive" — disabled buttons should not trigger clicks
+
+**Why?** Clear variant names make your design system self-documenting. A developer sees `state=disabled` and knows exactly what it means without opening the component.
+
+**Stop condition**: Duplicate an instance on the canvas. The Properties panel now has a dropdown cycling through all four states.
+
+### Step 5: Create Styles — Color and Text Standards
+
+Components need a unified style reference:
+
+1. Select the blue rectangle, click the **Style** icon (four-dot diamond) next to the fill
+2. Click **Create style** → **Color style**
+3. Name it `Brand/Blue/500`, scope set to "Current file"
+4. Save the other blues as `Brand/Blue/600`, `Brand/Blue/700`, and save the gray as `Neutral/Gray/300`
+5. Select your text, create a text style named `Body/14/Medium`
+
+**Why?** Hierarchical naming (`Brand/Blue/500`) keeps consistency across projects. Change `Brand/Blue/500`'s definition, and every component using that style updates automatically.
+
+**Stop condition**: Right-click any fill or text in the component — your saved styles appear in the shortcut menu.
+
+### Step 6: Add Auto Layout for Responsive Buttons
+
+Our button is fixed at 120px. What happens when the text becomes "Submit Now"?
+
+1. Select all layers inside the component (rectangle + text)
+2. Press `Shift+A` to add **Auto Layout**
+3. In the Properties panel set:
+   - Direction: Horizontal
+   - Gap: 8px (for icon spacing later)
+   - Padding: 10px top/bottom, 16px left/right
+   - Alignment: Center
+4. Select the rectangle, set its width to **Fill** and height to **Fill**
+
+**Why?** Auto Layout works like CSS Flexbox. Longer text stretches the button automatically. Adding an icon keeps the 8px gap without manual repositioning.
+
+**Stop condition**: Change the instance text to "Submit Now" — the button width grows while keeping the text centered.
+
+### Step 7: Publish a Team Library
+
+Working in a team? Share your components:
+
+1. Click the **Assets** tab above the Layers panel
+2. Click **Publish library**
+3. Select the styles and components to publish
+4. Enter a version note, e.g., "v1.0 — Base button components + brand palette"
+5. Click **Publish**
+6. Team members enable the library from their Assets panel
+
+**Why?** Team libraries ensure everyone uses the same components. New joiners don't need to ask "where's our button" — it pushes to their Figma automatically.
+
+**Stop condition**: Open a different file, go to Assets → Team Libraries, toggle on your published library. The components appear in the left panel.
+
+## Reference Table
+
+| Action | Shortcut / Path | Notes |
+|--------|-----------------|-------|
+| Create Component | `Ctrl+Alt+K` / `Cmd+Option+K` | Turns selected layers into a component |
+| Create Component (alt) | Right-click → Create Component | Same as above |
+| Auto Layout | `Shift+A` | Add or remove auto layout |
+| Edit Master Component | Double-click any instance | Enter master edit mode |
+| Go Back One Level | `Escape` | Exit current edit level |
+| Combine as Variants | Select components → Properties panel → Combine as variants | Merge into variants |
+| Create Color Style | Select layer → Style icon next to fill → Create style | Save color for reuse |
+| Create Text Style | Select text → Style icon next to text props → Create style | Save text format |
+| Assets Panel | Press `1` or click Tab icon in top-left | Browse library components |
+| Swap Instance | Select instance → Replace component dropdown in Properties | Quickly swap for another component |
+
+## Troubleshooting
+
+### Edited the master but instances did not update
+
+**Root cause**: You likely overrode a property directly on an instance. Local overrides block master updates for that specific property.
+**Fix**: Right-click the instance → **Reset overrides**. To reset only a single property, click its undo icon in the Properties panel.
+
+### Variant states not appearing in the dropdown
+
+**Root cause**: The new component was created outside the variant group and not merged in.
+**Fix**: Select the new component and the existing variant group (they must share the same Frame or Auto Layout), then click "Combine as variants" in the Properties panel.
+
+### Team library not showing up for members
+
+**Root cause**: Members haven't enabled the library, or you published to the wrong team.
+**Fix**: Members should open any file, go to Assets → Team Libraries, and toggle the library on. If it's still missing, check the target team name in the publish dialog.
+
+### Inconsistent spacing inside auto-layout components
+
+**Root cause**: Different instances have varying text lengths with no width constraints.
+**Fix**: In the master component, select the auto-layout container and set a Min Width of 68px (so short text buttons don't shrink too much) and a Max Width of 320px (to prevent extremely long text from breaking the layout).
+
+## Expert Tips
+
+- **Bulk swap instances**: Select all instances you want to replace → click the component name in the Properties panel → choose the target from the dropdown. Figma preserves your text and color overrides. With practice, swapping 50+ instances takes about 10 seconds.
+- **Nested component strategy**: An icon button nested inside a card component is a typical pattern. Keep nesting depth to 3 levels max — beyond that, maintenance cost rises quickly.
+- **Reorder variant properties**: Drag the six-dot handle next to property names in the Properties panel. Put the most-used property on top to reduce scrolling.
+- **Naming convention**: Use `Category/Name/State` format, e.g., `Button/Primary/Default`. Figma's Assets panel auto-groups by `/` slash, which beats flat naming.
+- **Performance**: When a single file exceeds 500 components, file performance may degrade. Split into multiple files connected via Team Libraries.
+
+## Summary
+
+You now know the full component workflow in Figma: creating base components, exposing properties, combining variants, establishing style standards, and publishing team libraries. The core principle: build once, reuse everywhere.
+
+Next, explore [Figma Prototyping & Interactions](/en/design/figma/prototyping) to connect your components into interactive prototypes, or dive deeper into nested auto-layout techniques for complex responsive components.

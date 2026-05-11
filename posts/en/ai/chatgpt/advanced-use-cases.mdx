@@ -1,0 +1,208 @@
+---
+title: ChatGPT Advanced Use Cases
+description: Advanced uses in coding, writing, and analysis
+field: ai
+software: chatgpt
+level: intermediate
+language: en
+slug: advanced-use-cases
+date: 2026-05-11
+readTime: 13
+translationOf: /zh/ai/chatgpt/advanced-use-cases
+affiliateLinks:
+  - name: ChatGPT Plus
+    url: https://chatgpt.com
+    description: AI chat subscription
+    vendor: OpenAI
+---
+
+> **Version**: ChatGPT-4o / 2026-05 | **Difficulty**: ★★★☆☆ | **Read time**: 13 min
+
+## Still Using ChatGPT Like a Search Engine?
+
+"How do I use Python's requests library?" — ChatGPT gives you a tutorial. You copy it to your IDE, run it, get an error, paste it back, fix it, run again, another error. Five rounds later you have working code.
+
+You just wasted 80% of your time in a "chat-copy-paste-error" loop.
+
+ChatGPT's real value isn't Q&A — it's **working alongside you**: writing code, fixing bugs, analyzing data, writing docs, translating content. This article covers four real-world advanced scenarios, each with complete prompt templates and expected results.
+
+## Preparation
+
+- [ChatGPT Plus subscription](https://chatgpt.com) for GPT-4 access (free tier GPT-3.5 falls short on complex tasks)
+- Code Interpreter is built into Plus — no extra setup
+- Input files as needed for each scenario
+
+## Core Workflow: Four Advanced Scenarios
+
+### Scenario 1: Code Generation and Debugging
+
+Generate complete functions in one shot. **Key technique**: one function per prompt, test it, then move to the next.
+
+**Prompt template**:
+
+```
+Write a Python function with no external dependencies.
+
+Signature: def analyze_logs(log_file_path: str) -> dict
+Requirements:
+1. Read a log file where each line is "[2026-05-11 10:30:00] [ERROR] Login failed - user_id=12345"
+2. Count lines by severity level (INFO, WARN, ERROR, DEBUG)
+3. Find hour windows where error rate exceeds 5%
+4. Return: {"total_lines": int, "by_level": dict, "peak_error_hours": list}
+
+Constraints:
+- Use regex to parse lines
+- Read line by line (file may be large)
+- Handle missing files gracefully
+- Include type annotations
+- Add a if __name__ == "__main__" block with usage example
+```
+
+**Why it works**: The prompt specifies signature, requirements, constraints, and output format. The generated code can be saved directly as a `.py` file.
+
+**Debugging tip**: When code errors, paste the full traceback and say:
+
+```
+Here is the error traceback. Analyze the root cause, fix the code, and explain why the original approach was wrong.
+```
+
+This triggers ChatGPT's reasoning chain — much more effective than "fix this error."
+
+**Stop condition**: Function passes all test cases with no TypeErrors or logic bugs.
+
+### Scenario 2: Data Analysis and Visualization (Code Interpreter)
+
+Code Interpreter lets ChatGPT run Python and display charts inline. Upload a CSV and get from raw data to insights in one prompt.
+
+**Prompt template** (after uploading a CSV):
+
+```
+I uploaded an e-commerce sales CSV. Please:
+
+1. Data cleaning: check for missing values, duplicates, outliers — explain your handling
+2. Descriptive stats: total revenue, order count, average order value, monthly trend
+3. Group analysis: revenue share and margin by product category
+4. Visualizations:
+   - Monthly revenue line chart (annotate highest/lowest months)
+   - Revenue share pie chart by category
+   - AOV distribution histogram
+5. Conclusions: 3-5 sentences of key insights
+
+Chart settings: use matplotlib, 1200x800 resolution.
+```
+
+**Why it works**: Breaking analysis into numbered steps makes ChatGPT execute each one methodically, showing intermediate results.
+
+**Expected result**: Full analysis pipeline in under 5 minutes — equivalent to half a day's work for a junior data analyst.
+
+### Scenario 3: Technical Documentation
+
+ChatGPT excels at generating docs from code and vice versa. Provide a **format template** for best results.
+
+**Prompt template** (after pasting your code):
+
+```
+Write a README for the Python module above. Follow this template exactly:
+
+# [Project Name]
+
+## Introduction
+(2-3 sentences describing the project)
+
+## Installation
+```bash
+pip install [package_name]
+```
+
+## Quick Start
+(A complete minimal working example)
+
+## API Reference
+(List every public function with: parameter descriptions, return values, examples)
+
+## FAQ
+
+Requirements:
+- Use emoji section headers (📦 🔧 💡 etc.)
+- Every code example must be independently runnable
+- Automatically extract docstrings for the API Reference
+```
+
+**Why it works**: The few-shot template is far more precise than abstract descriptions. ChatGPT fills it in like a form.
+
+### Scenario 4: Context-Aware Document Translation
+
+Machine translators work sentence-by-sentence, losing context. ChatGPT translates by understanding the full document first.
+
+**Prompt template**:
+
+```
+Translate the following technical document from English to Chinese.
+
+Rules:
+1. Preserve all Markdown formatting (headings, code blocks, links)
+2. Do not translate content inside code blocks
+3. Attach the English original in parentheses on first occurrence of technical terms
+4. Split long English sentences into 2-3 shorter Chinese sentences
+5. Maintain technical accuracy — no liberal paraphrasing
+6. Use passive voice or subject-less sentences instead of "we"
+
+Source document:
+
+[paste document]
+```
+
+**Why it works**: The rules address the three most common translation quality issues: format preservation, terminology handling, and sentence structure.
+
+## Reference Table: Advanced Scenario Prompt Templates
+
+| Scenario | Keywords | Prompt Essentials |
+|----------|----------|------------------|
+| **Code generation** | Signature, requirements, constraints | Specify I/O types, edge cases, test examples |
+| **Debugging** | Error traceback, root cause, fix | Paste full traceback, specify fix target |
+| **Data analysis** | Upload CSV, analysis steps, charts | List steps in order, specify chart type and format |
+| **Documentation** | Code input, template, style | Provide a format template for GPT to fill |
+| **Translation** | Format preserving, terminology, sentence structure | Define term strategy, sentence style, tone |
+| **Summarization** | Length target, key points, output format | Specify compression ratio, required info types |
+| **Table extraction** | Raw text, output columns, format | Define column names, row splitting rules |
+
+## Troubleshooting
+
+### Q1: Chinese characters show as boxes in Code Interpreter charts
+
+**Root cause**: matplotlib's default font lacks Chinese glyphs.
+**Fix**: Add this to your prompt: "Add plt.rcParams['font.sans-serif'] = ['SimHei'] and plt.rcParams['axes.unicode_minus'] = False to the code."
+
+### Q2: Generated code references nonexistent libraries or APIs
+
+**Root cause**: Knowledge cutoff — some libraries changed their APIs after GPT-4's training date.
+**Fix**: Add "Use only Python standard library" or specify exact versions: "Use Pandas 2.0+ API."
+
+### Q3: Translation is too literal, sounds like machine output
+
+**Root cause**: No sentence-style preference specified; GPT defaults to sentence-by-sentence translation.
+**Fix**: Add "Split long English sentences into 2-3 shorter ones" and "Avoid passive voice." Provide 2-3 example translations for domain-specific work.
+
+### Q4: Analysis results don't match the data
+
+**Root cause**: ChatGPT may sample or truncate large files.
+**Fix**: Explicitly request "Output the count at each step (rows, columns, totals)" for verification. For critical numbers, ask "Show your calculation process."
+
+## Expert Tips
+
+- **Prompt bank**: Save every high-quality prompt as a file. Next time you face a similar task, pull it up and tweak — don't start from scratch.
+- **Chain conversations for complex projects**: For a "analyze data → write report → generate charts → translate" pipeline, use 4 separate conversations (fresh start each time). Quality improves ~50% vs. one long conversation.
+- **JSON for machine-readable output**: When the output needs to feed into another tool, ask for JSON format. Makes programmatic consumption trivial.
+- **Cost optimization**: Use GPT-3.5 Turbo for simple tasks (single-sentence translation, format conversion) and reserve GPT-4 for complex reasoning. Mixed usage saves up to 80% on API costs.
+- **System Prompt reuse**: Write your most common constraints (format, tone, rules) as a single System Prompt and save it in Playground. Apply it on every API call automatically.
+
+## Summary
+
+You now have four advanced workflows:
+
+- **Code generation and debugging**: Generate complete functions, save and run directly
+- **Data analysis with Code Interpreter**: From raw CSV to insights and charts in minutes
+- **Technical documentation**: Template-driven doc generation from code
+- **Context-aware translation**: Preserve format, handle terminology, maintain accuracy
+
+Next: Check out the [Claude AI Getting Started Guide](../../claude/getting-started) or [Midjourney AI Art Basics](../../midjourney/prompt-basics) for other AI tools.

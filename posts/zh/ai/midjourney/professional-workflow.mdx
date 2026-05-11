@@ -1,0 +1,206 @@
+---
+title: Midjourney 专业工作流
+description: Midjourney 商业级图像生成与后期
+field: ai
+software: midjourney
+level: intermediate
+language: zh
+slug: professional-workflow
+date: 2026-05-11
+readTime: 14
+affiliateLinks:
+  - name: Midjourney 标准计划
+    url: https://midjourney.com
+    description: AI 图像生成订阅
+    vendor: Midjourney
+---
+
+> **版本**: Midjourney V6 / 2026-05 | **难度**: ★★★★☆ | **阅读时间**: 14 分钟
+
+## 一张张生成太慢了？
+
+你在 Midjourney 里生成了一张不错的图。然后你想要不同版本——换了三次提示词，等了六次生成，才凑齐一组图。接着你发现角色风格不一致，需要全部重来。折腾了一上午，产出还不够一次提案用。
+
+这是单人、单次、单张的工作模式。商业项目需要可复现、可批量、可控制的流水线——**批量生成 → 挑选 → 放大 → 后期 → 成组输出**。
+
+本文讲解专业级 Midjourney 工作流：批量生成策略、图生图（Image-to-Image）、角色一致性控制、后期工作流和商业应用注意事项。
+
+## 准备工作
+
+- [Midjourney 标准或 Pro 订阅](https://midjourney.com)（$30/月+，批量生成需要足够配额）
+- Photoshop 或免费替代品（GIMP / Photopea）用于后期
+- 可选：Topaz Gigapixel AI 或类似工具用于放大
+- 可选：一个参考角色/物体的多角度照片
+
+## 核心工作流：从单张到多图批量
+
+### 第 1 步：批量生成策略（提高选片效率）
+
+批量生成不是在提示词上随机修改。专业做法是**控制变量法**。
+
+**策略 A：种子变体法**
+
+固定提示词，变化 seed 值来获得不同构图：
+
+```
+/imagine product shot of a perfume bottle, dramatic lighting, dark background, glass reflections --ar 4:3 --v 6 --seed 1001
+/imagine product shot of a perfume bottle, dramatic lighting, dark background, glass reflections --ar 4:3 --v 6 --seed 2002
+/imagine product shot of a perfume bottle, dramatic lighting, dark background, glass reflections --ar 4:3 --v 6 --seed 3003
+```
+
+一次生成 3-4 组（12-16 张），从里面挑选构图最好的。
+
+**策略 B：关键词替换法**
+
+固定一个好 seed，变化风格关键词：
+
+```
+// 固定 seed，变化材质/风格
+/imagine product shot of a perfume bottle, frosted glass texture --ar 4:3 --v 6 --seed 5005
+/imagine product shot of a perfume bottle, crystal clear glass, rainbow refraction --ar 4:3 --v 6 --seed 5005
+/imagine product shot of a perfume bottle, matte black ceramic finish --ar 4:3 --v 6 --seed 5005
+```
+
+seed 固定后，风格变化但构图和物体位置保持稳定。适合快速迭代视觉方向。
+
+**为什么有效**：控制变量法让你知道每个变化带来的具体影响，而不是随机瞎试。
+
+### 第 2 步：图生图（Image-to-Image）工作流
+
+使用已有图像作为起点生成新图。比纯文本提示词可控性高得多。
+
+**基础用法**：上传图片 URL 后加上描述：
+
+```
+/imagine [参考图URL] similar composition, but change the style to watercolor painting, loose brush strokes, paper texture --v 6 --iw 1.2
+```
+
+**专业技巧 — 分层迭代法**：
+
+```
+阶段 1：垫图定构图
+/imagine [草稿图URL] a modern living room, similar layout and perspective --v 6 --iw 2
+
+阶段 2：优化风格
+（用阶段 1 的结果图）
+/imagine [阶段1结果URL] mid-century modern furniture, warm lighting, wooden floors --v 6 --iw 0.8
+
+阶段 3：添加细节
+（用阶段 2 的结果图）
+/imagine [阶段2结果URL] adding: indoor plants, decorative cushions, abstract wall art --v 6 --iw 0.5
+```
+
+每阶段降低 `--iw`，让 AI 有更多创作自由度。阶段 1 严格遵循参考图，阶段 3 给出最大发挥空间。
+
+**预期效果**：从一张粗略草稿或现场照片出发，经过 3 轮迭代，得到完全改变风格但保留原始构图的专业级图像。
+
+### 第 3 步：角色一致性（Character Consistency）
+
+这是 Midjourney 商业使用中最大的挑战。以下方法经实测效果较好：
+
+**方法 A — Seed + 描述锁定法**
+
+为角色生成第一张图后获取 seed，后续所有该角色的图使用相同 seed 和角色描述：
+
+```
+// 首张角色图
+/imagine a young female character with freckles, short auburn hair, green eyes, wearing a leather jacket, cinematic portrait --ar 2:3 --v 6 --seed 7777
+
+// 同一角色，不同场景
+/imagine a young female character with freckles, short auburn hair, green eyes, wearing a leather jacket, walking in a rainy city street at night --ar 16:9 --v 6 --seed 7777
+```
+
+**局限性**：相同 seed + 相同提示词描述在不同场景下的角色一致性约为 60-70%。完全一致的跨场景角色目前仍需手动后期或使用专用 AI 工具（如 Stable Diffusion + ControlNet）。
+
+**方法 B — 多图垫图法**
+
+上传同一角色的 2-3 张参考图，使用 `--iw` 强制风格一致：
+
+```
+/imagine [图1URL] [图2URL] [图3URL] the same character as in the reference images, sitting in a coffee shop, reading a book --ar 16:9 --v 6 --iw 1.5
+```
+
+### 第 4 步：后期工作流（Midjourney + 编辑器）
+
+Midjourney 的输出很少直接可用。专业工作流如下：
+
+1. **选图**：从批量生成中挑选 3-5 张候选
+2. **放大**：点击 Upscale to Max（或 /settings 中开启 Remix 模式）
+3. **后期修正**（在 Photoshop 等编辑器中）：
+   - 修复手指/畸形部分（使用 Generative Fill 或克隆工具）
+   - 调整色彩平衡和对比度
+   - 去除不需要的元素（水印、多余物体）
+   - 合成：将多张 Midjourney 输出的最佳部分合成一张
+4. **最终放大**：使用 Topaz Gigapixel 或类似 AI 放大工具将分辨率提升到商业印刷级别（300 DPI）
+5. **Sharpening**：应用智能锐化补偿 AI 生成图像常见的轻微模糊
+
+**为什么需要后期**：Midjourney 的图像存在三个常见问题：细节错误（手指、文字）、分辨率不足（初始只有 1024x1024）、以及不需要的元素。后期是商业级质量的必要环节。
+
+### 第 5 步：参数微调——Remix 模式
+
+开启 **Remix Mode**（在 `/settings` 中选择 Remix）后，当你对一张图点击 Vary（Variation）时，可以修改提示词。这在迭代微调时非常强大。
+
+```
+原始提示词：a cozy cabin in snowy forest --ar 16:9 --v 6
+→ 点击 Vary，激活 Remix 模式，修改为：
+a cozy cabin in snowy forest, chimney smoke, warm window light glowing --ar 16:9 --v 6
+```
+
+结果：基于同一构图的优化版本，而不是全新生成。
+
+**停手条件**：当你批量生成的 3-5 张最终图像在构图、风格、分辨率和细节上都达到商业可用标准（可以放入提案/设计稿中），工作流即完成。
+
+## 参考表：专业工作流技术速查
+
+| 技术 | 适用场景 | 关键参数 | 注意事项 |
+|------|---------|----------|---------|
+| **种子变体法** | 批量获取不同构图 | 变化 `--seed` 每个间隔 1000+ | 部分 seed 会出废图，属于正常 |
+| **关键词替换法** | 快速迭代视觉方向 | 固定 `--seed` + 变化风格词 | 效果因提示词长度而异 |
+| **分层迭代法** | 从草图到成品 | 每轮降低 `--iw` | 每轮选最好的继续迭代 |
+| **角色锁定法** | 保持角色一致 | `--seed` + 精确角色描述 | 一致性约 60-70%，不完美 |
+| **Remix 模式** | 对已有构图微调 | `/settings` 开启 | 只有 Vary 操作触发 Remix |
+| **后期合成** | 商业级最终输出 | Photoshop + Topaz Gigapixel | 必要环节，不可跳过 |
+
+## 常见问题排查
+
+### Q1: 用相同 seed 和角色描述，但生成的服装/角色不一致
+
+**原因**：seed 只能控制随机噪声的起点，不能保证语义级的一致性。Midjourney 没有"角色记忆"功能。
+**解决**：接受 60-70% 的一致性。如需精确一致（如品牌 IP 角色），使用 Stable Diffusion + DreamBooth 或 Lora 训练专用模型。或手动在 Photoshop 中进行换脸/合成。
+
+### Q2: 批量的配图风格杂乱无章
+
+**原因**：没有使用风格统一的约束。即使每个单张质量不错，放在一起也不协调。
+**解决**：创建一个"风格模板提示词"，所有批量生成共享后半部分：`--ar 16:9 --v 6 --s 200 --style raw`。再在前半部分替换不同的场景/物体描述。或者使用同一组参考图垫图。
+
+### Q3: Upscale to Max 后图像仍然不够清晰
+
+**原因**：Midjourney 内置放大器的能力有限。初始分辨率太低时，放大后细节模糊。
+**解决**：使用第三方 AI 放大工具：Topaz Gigapixel AI（首选）、或免费的 Upscayl。Midjourney 最新的 Enhance 功能（V6 后期加入）也可以尝试。
+
+### Q4: 商业使用时担心版权问题
+
+**原因**：Midjourney 的商业使用权政策随订阅计划不同。
+**解决**：Midjourney 付费用户拥有生成的图像的商业使用权（包括用于销售和出版）。免费试用版生成的图像不可商用。如果你为第三方客户生成图像，确保你持有的订阅计划覆盖商业使用。
+
+## 专家技巧
+
+- **批次命名系统**：为每个批量生成任务创建一个编号系统（如 `20260511_香水A组_seed1001-1010`），记录提示词和 seed 值。一周后回头看，你绝对记不住"那张好看的香水图"是用什么 seed 生成的。
+- **4 张不够？用 --c 参数**：`--c 60` 会让同一个提示词生成的 4 张图差异更大，相当于视觉上获得了"4 倍覆盖"。如果你需要更多选择，提高 chaos 值。
+- **Pan（平移）功能**：V6 支持在生成画布上向四个方向平移扩展。适合创建超宽全景图或扩展已有构图。
+- **配合素材库使用**：Midjourney 生成的图作为素材层，在 Photoshop 中与其他素材（真实照片、3D 渲染）合成，而不是单独使用。这比用纯 AI 图更加可控。
+- **内部测试 vs 客户交付**：内部测试时把 `--s` 调高（600+）探索创意边界。客户交付前把 `--s` 调低（50-200）获得更可控、更干净的结果。
+
+## 总结
+
+你现在掌握了专业级 Midjourney 工作流：
+
+- **批量生成策略**：控制变量法，种子变体和关键词替换
+- **图生图**：分层迭代法，从草图到成品
+- **角色一致性**：seed 锁定和多图垫图
+- **后期工作流**：选图 → 放大 → Photoshop 修正 → 最终放大 → 锐化
+- **Remix 模式**：基于已有构图微调
+
+注意：Midjourney 是创作流程的一部分，不是终点。商业级产出 = 20% 生成 + 80% 选择、后期和合成。
+
+下一步：如果你对 AI 图像生成的原理感兴趣，可以对比学习 [ChatGPT 的提示词工程](../../chatgpt/prompt-engineering) — 很多提示词技巧（角色设定、Few-shot、迭代优化）在图像生成中有对应的应用方式。

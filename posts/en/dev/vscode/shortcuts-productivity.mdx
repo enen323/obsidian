@@ -1,0 +1,261 @@
+---
+title: VSCode Shortcuts & Productivity
+description: Master 20+ shortcuts to code 3x faster
+field: dev
+software: vscode
+level: beginner
+language: en
+slug: shortcuts-productivity
+date: 2026-05-11
+readTime: 16
+translationOf: /zh/dev/vscode/shortcuts-productivity
+affiliateLinks:
+  - name: GitHub Copilot
+    url: https://github.com/features/copilot
+    description: AI code assistant
+    vendor: GitHub
+---
+
+> **Version**: VSCode 1.90+ (May 2024 update)
+> **Difficulty**: ★☆☆☆☆ (no prerequisites)
+> **Time**: 20-30 min
+
+## How Many Times Does Your Hand Leave the Keyboard?
+
+A typical coding loop: type code -> grab mouse -> select text -> right-click menu -> click copy -> back to keyboard to paste -> grab mouse to scroll -> click file tree -> back to keyboard. Each hand-to-mouse transition takes about 0.5 seconds. With 200 such operations per day, thats 100 seconds wasted on context switching alone. Over a month, thats nearly an hour.
+
+According to JetBrains 2023 developer survey, developers who use keyboard shortcuts efficiently produce roughly 40% more output in the same time. Its not talent — its how you use your tools.
+
+This guide skips the "200 shortcuts encyclopedia" (nobody remembers that). Instead, it focuses on the **5 most impactful scenarios** with concrete exercises for each.
+
+## Prerequisites
+
+- **VSCode** 1.90+ (any OS)
+- A project with multiple files (clone an open-source project or use your own)
+- Optional: disable all extensions temporarily to avoid keybinding conflicts
+- Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) — the central hub for all operations
+
+## Five Scenario Workouts
+
+### 1. Multi-Cursor Editing — Batch Changes Without Repetition
+
+**Scenario**: A JSON file has 20 objects where the `name` field needs to be renamed to `title`.
+
+**Drag-select approach** (slow): Find each `name`, drag to select, delete, type `title`. Repeat 20 times.
+
+**Multi-cursor approach** (fast):
+
+1. Select the first `name`
+2. Press `Ctrl+D` (Windows/Linux) or `Cmd+D` (Mac) — selects the next matching `name`
+3. Keep pressing `Ctrl+D` until all 20 instances are selected
+4. Type `title` — all cursors edit simultaneously
+
+**Other multi-cursor techniques**:
+- `Alt+Click`: Add a cursor at any position
+- `Ctrl+Alt+↑/↓`: Add a cursor on the line above/below
+- `Ctrl+Shift+L`: Select all occurrences at once
+
+**Why its fast**: VSCode finds all matches automatically. No visual scanning, no mouse precision positioning.
+
+**Verify**: Copy 5 identical lines (`const name = "foo";`) into a file. Use `Ctrl+D` to select all `name` instances and change them to `title`. Confirm all 5 lines update simultaneously.
+
+### 2. Code Navigation — Teleport Through Your Codebase
+
+**Scenario**: A project with 100 files. You remember a function called `calculateTotal` but not which file its in.
+
+**File-tree browsing** (slow): Expand src -> utils -> helpers -> finance folders, open each file, search for `calculateTotal`.
+
+**Navigation shortcuts** (fast):
+
+- `Ctrl+P`: File search. Type `calcul` to find the file, press Enter to open
+- `Ctrl+Shift+O`: Search symbols within the current file (function names, class names, variables)
+- `Ctrl+T`: Global symbol search across all files
+- `F12`: Go to definition (cursor on a function name, press `F12` to jump to its definition)
+- `Shift+F12`: Find all references (shows every location where the function is called)
+- `Alt+←`: Navigate back (return to where you were before the jump)
+
+**Workflow**:
+
+```
+Cursor on calculateTotal(amount) -> F12 to definition
+-> Read the implementation -> Alt+← back to call site
+-> Shift+F12 to find all callers
+-> Click one from the list -> jump to that location
+-> Alt+← back -> Ctrl+P to search another file
+```
+
+No mouse needed.
+
+**Verify**: Open a file with multiple functions. Place the cursor on a function name and press `F12` — it should jump to the definition. Press `Alt+←` to return.
+
+### 3. Refactoring Shortcuts — Rename Without Errors
+
+**Scenario**: A backend API change requires renaming `getUserById` to `loadUser`. This function is called 47 times across 15 files.
+
+**Global search-and-replace** (dangerous): Replace all `getUserById` -> might also change it in comments, strings, and unrelated variable names.
+
+**Safe refactoring**:
+
+1. Place the cursor on `getUserById`
+2. Press `F2` (Rename Symbol)
+3. Type the new name `loadUser`
+4. Press Enter
+
+VSCode respects language scope — only the actual function references are changed. Comments and strings stay untouched.
+
+**Other refactoring operations**:
+- `Ctrl+Shift+R` / `Ctrl+.`: Show refactoring menu (extract function, extract variable, inline variable, etc.)
+- Select a block of code -> press `Ctrl+Shift+R` -> select **Extract Function** -> enter a name -> VSCode generates the function and replaces the block with a call
+
+**Verify**: Create a function `function greet(name) { console.log("Hello, " + name); }` and call it elsewhere. Press `F2` to rename it to `greetUser`. Check that the call site updates. Verify that "greet" in comments or strings is NOT modified.
+
+### 4. Terminal Integration — Run Commands Without Leaving the Editor
+
+**Scenario**: While editing code, you need to run tests, commit to git, or install dependencies.
+
+**Alt+Tab approach**: Switch to terminal -> resize window -> run command -> switch back -> window layout is now wrong.
+
+**Built-in terminal approach**:
+
+- `` Ctrl+` `` (backtick): Toggle the integrated terminal
+- `` Ctrl+Shift+` ``: Create a new terminal
+- Text selected in the terminal is automatically copied (no `Ctrl+C` needed)
+- Right-click to paste
+- Drag a file path into the terminal for auto-completion
+
+**Advanced** — split terminals:
+
+1. Open the terminal
+2. Click the **Split Terminal** button (or `Ctrl+\`)
+3. Left panel: `npm run dev` (development server)
+4. Right panel: `git log --oneline` (commit history)
+5. Editor above: modify code simultaneously
+
+Editor, terminal, and file browser — all visible at once. No window switching.
+
+**Verify**: Open the terminal with `` Ctrl+` ``, run `node -e "console.log('hello')"`, confirm the output appears.
+
+### 5. Custom Keybindings — Map Frequent Actions to Comfortable Keys
+
+**Scenario**: You find the default "Delete Line" shortcut (`Ctrl+Shift+K`) uncomfortable — it forces your left hand into an awkward stretch.
+
+**View and modify shortcuts**:
+
+1. Press `Ctrl+K Ctrl+S` to open Keyboard Shortcuts
+2. Search for `delete line`
+3. Double-click the binding entry for **Delete Line**
+4. Press your new shortcut `Ctrl+Y` (Windows) or `Cmd+Shift+K` (Mac)
+5. Press Enter to confirm
+
+**Recommended customizations**:
+
+| Action | Default | Suggested | Reason |
+|--------|---------|-----------|--------|
+| Delete Line | `Ctrl+Shift+K` | `Ctrl+Y` | Left hand stays on home row |
+| Move Line | `Alt+↑/↓` | Already good | — |
+| Copy Line | `Shift+Alt+↑/↓` | Already good | — |
+| Toggle Terminal | `` Ctrl+` `` | `Ctrl+Shift+T` (if no conflict) | Easier to remember |
+
+**Advanced** — chord bindings in `keybindings.json`:
+
+```json
+[
+  {
+    "key": "ctrl+shift+t",
+    "command": "workbench.action.terminal.toggleTerminal"
+  },
+  {
+    "key": "ctrl+k ctrl+d",
+    "command": "editor.action.addSelectionToNextFindMatch"
+  }
+]
+```
+
+**Verify**: After changing, select a line in the editor and press your new shortcut. Confirm the line is deleted. If nothing happens, check for keybinding conflicts by typing your shortcut in the Keyboard Shortcuts search panel.
+
+## Shortcut Reference Table
+
+| Scenario | Shortcut (Win/Linux) | Shortcut (Mac) | Action |
+|----------|---------------------|----------------|--------|
+| Multi-cursor | `Ctrl+D` | `Cmd+D` | Select next matching word |
+| Multi-cursor | `Ctrl+Shift+L` | `Cmd+Shift+L` | Select all matching words |
+| Multi-cursor | `Alt+Click` | `Option+Click` | Add cursor at click position |
+| Multi-cursor | `Ctrl+Alt+↑/↓` | `Option+Cmd+↑/↓` | Add cursor above/below |
+| Navigation | `Ctrl+P` | `Cmd+P` | Search by file name |
+| Navigation | `Ctrl+Shift+O` | `Cmd+Shift+O` | Search symbols in file |
+| Navigation | `F12` | `F12` | Go to definition |
+| Navigation | `Shift+F12` | `Shift+F12` | Find all references |
+| Navigation | `Alt+←` | `Ctrl+-` | Navigate back |
+| Refactoring | `F2` | `F2` | Rename symbol |
+| Refactoring | `Ctrl+Shift+R` | `Cmd+Shift+R` | Refactoring menu |
+| Refactoring | `Ctrl+.` | `Ctrl+.` | Quick fix / refactoring |
+| Terminal | `` Ctrl+` `` | `` Ctrl+` `` | Toggle terminal |
+| Terminal | `` Ctrl+Shift+` `` | `` Cmd+Shift+` `` | New terminal |
+| Terminal | `Ctrl+\` | `Cmd+\` | Split terminal |
+| General | `Ctrl+Shift+P` | `Cmd+Shift+P` | Command Palette |
+| General | `Ctrl+K Ctrl+S` | `Cmd+K Cmd+S` | Keyboard Shortcuts |
+| General | `Ctrl+B` | `Cmd+B` | Toggle sidebar |
+
+## Troubleshooting
+
+### Issue 1: A shortcut stopped working after installing an extension
+
+**Symptom**: `Ctrl+D` worked before, but after installing an extension, it no longer does anything.
+
+**Root cause**: Some extensions register the same keybinding with a higher priority. Extensions can also use `when` clauses that hijack the shortcut in specific file types.
+
+**Fix**:
+
+1. Open Keyboard Shortcuts (`Ctrl+K Ctrl+S`)
+2. Search for `Ctrl+D`
+3. Check if multiple commands are bound to this key
+4. Right-click the extension command binding and select **Remove Keybinding**, or add a `when` clause to limit its scope
+
+### Issue 2: Ctrl+ shortcuts dont work on Mac as expected
+
+**Symptom**: The `Ctrl+` shortcuts from the tutorial behave differently on macOS.
+
+**Root cause**: Mac VSCode uses `Cmd` as the primary modifier key instead of `Ctrl`. System-level shortcuts (like `Cmd+H` to hide the window) can also intercept key combinations.
+
+**Fix**:
+
+1. Use `Cmd` instead of `Ctrl` on Mac (e.g., `Cmd+Shift+P` for Command Palette)
+2. In System Preferences > Keyboard > Shortcuts, check for system-level conflicts
+3. In VSCode, reconfigure the terminal toggle to `Cmd+J` (which is unbound by default and closer to `Ctrl+`)
+
+### Issue 3: Alt+Click fails to add cursors
+
+**Symptom**: Holding `Alt` and clicking inserts a character or opens a menu instead of adding a cursor.
+
+**Root cause**: Some operating systems or terminal emulators intercept `Alt+Click`. WSL on Windows and certain SSH clients are common culprits.
+
+**Fix**:
+
+1. In VSCode settings, search for `editor.multiCursorModifier` and change it to `ctrlCmd`
+2. Now use `Ctrl+Click` instead of `Alt+Click` to add cursors
+3. Confirm in `settings.json`:
+
+```json
+{
+  "editor.multiCursorModifier": "ctrlCmd"
+}
+```
+
+## Expert Tips
+
+- **Learn progressively**: Dont try to memorize all shortcuts at once. Focus on 3-5 per week. Week 1: `Ctrl+D` and `Ctrl+P`. Week 2: `F12` and `Alt+←`. Week 3: `F2`. After a month, these become muscle memory.
+- **Use the shortcut cheat sheet**: Press `Ctrl+K Ctrl+S` to open Keyboard Shortcuts. Click the **keyboard icon** in the top-right corner to open a printable PDF reference.
+- **The finger principle**: Keep your right hand near the arrow keys and home cluster. Left hand handles modifier keys (`Ctrl`/`Alt`). If a shortcut requires an awkward finger stretch (like `Ctrl+Shift+K` for delete line), rebind it to something more comfortable.
+- **New extension? Check for conflicts**: After installing any new extension, test your most-used shortcuts. If something broke, open Keyboard Shortcuts and search for the key to find the conflict.
+- **Dont over-customize**: Stick with defaults where possible. Heavy customization hurts when switching machines or using VSCode online (vscode.dev). Only rebind when a default is genuinely uncomfortable.
+
+## Summary
+
+This guide covered five productivity scenarios with keyboard shortcuts: multi-cursor editing (`Ctrl+D`/`Ctrl+Shift+L`), code navigation (`Ctrl+P`/`F12`/`Alt+←`), safe refactoring (`F2`/`Ctrl+Shift+R`), terminal integration (`` Ctrl+` ``), and custom keybindings. Each scenario included concrete exercises and verification steps.
+
+Next, explore the [Essential VSCode Extensions Guide](/en/dev/vscode/extensions-guide) to pair your new shortcut skills with the right tools.
+
+### Related Articles
+
+- [Essential VSCode Extensions Guide](/en/dev/vscode/extensions-guide)
+- [VSCode Debugging Configuration](/en/dev/vscode/debugging)

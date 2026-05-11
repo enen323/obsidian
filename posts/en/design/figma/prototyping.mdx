@@ -1,0 +1,201 @@
+---
+title: Figma Prototyping & Interactions
+description: Build high-fidelity interactive prototypes with animations
+field: design
+software: figma
+level: intermediate
+language: en
+slug: prototyping
+date: 2026-05-11
+readTime: 18
+translationOf: /zh/design/figma/prototyping
+affiliateLinks:
+  - name: Figma Professional
+    url: https://www.figma.com/pricing/
+    description: Prototyping and developer collaboration plans
+    vendor: Figma
+  - name: Setapp
+    url: https://setapp.com
+    description: 200+ Mac apps subscription with Figma alternatives
+    vendor: Setapp
+---
+
+> **Version**: Figma (Browser/Desktop app, 2024+)
+> **Difficulty**: ★★★☆☆ (comfortable with components and page management)
+> **Time**: 20-25 min
+
+## Static Screens Tell Half the Story
+
+You have a polished UI design. But during client presentations, you keep explaining: "Click here and a menu slides up" "This page transitions with a swipe" — the client nods, but uncertainty lingers in their eyes. According to Nielsen Norman Group research, **high-fidelity interactive prototypes uncover 85% of usability issues** before development, while static mockups catch only 30%.
+
+Figma's prototyping features let you turn static designs into clickable, scrollable, animated experiences — no code required. This tutorial covers the full spectrum: from basic page connections to advanced conditional logic.
+
+## Preparation
+
+- **Software**: Figma (free tier supports basic prototyping; conditional logic requires Figma Professional or above)
+- **Account**: Free tier covers most steps; Professional unlocks advanced features (conditional logic, branching)
+- **Files**: A design file with 3+ pages recommended (e.g., login, home, profile)
+- **Prerequisites**: Familiarity with Figma page management, component basics, and Auto Layout
+
+## Core Workflow
+
+### Step 1: Plan Your User Flow
+
+Before wiring interactions, map the journey:
+
+1. Open a multi-page design file (e.g., Login Page → Home → Profile)
+2. Ensure key interactive elements have clear layer names (e.g., `btn_login`, `card_product`)
+3. Switch to the **Prototype** tab in the top-right corner
+
+**Why?** Clear layer naming directly impacts wiring efficiency — in connect mode, you locate targets by hovering over layer names. Messy naming wastes significant time.
+
+**Stop condition**: The canvas switches from "Design" to "Prototype" mode, and the Properties panel shows interaction settings.
+
+### Step 2: Create Basic Page Navigation (On Click)
+
+The most fundamental interaction — clicking a button navigates to another page:
+
+1. Select the login button (`btn_login`) on your login page
+2. Click the **+** in the right-hand prototype panel (or drag the circle handle to the target page)
+3. In the interaction settings:
+   - **Trigger**: On Click
+   - **Action**: Navigate To
+   - **Destination**: Select "Home" page
+   - **Transition**: Smart Animate
+   - **Duration**: 300ms
+   - **Easing**: Ease Out
+
+**Why?** Smart Animate automatically detects layers with identical names across pages and generates smooth position/scale/opacity transitions. 300ms is the Material Design recommended duration — shorter feels abrupt, longer tests the user's patience.
+
+**Stop condition**: Click the play ▶ button in the top-right to enter presentation mode. Click the login button — the page transitions smoothly to Home.
+
+### Step 3: Overlays — Modals and Menus
+
+Page navigation isn't right for every scenario. Modals, bottom sheets, and tooltips should use overlays:
+
+1. On the Home page, draw a 320×auto bottom sheet panel
+2. Select the trigger element (e.g., a "Share" icon)
+3. Create a new interaction:
+   - **Trigger**: On Click
+   - **Action**: Open Overlay
+   - **Destination**: Select the bottom sheet
+   - **Overlay position**: Bottom Center
+   - **Background**: Enable "Background Blur", set intensity to 15px
+
+**Why?** Overlays don't change page context — users return to the same spot after dismissing. Background blur signals "there's content underneath" while focusing attention on the overlay. Bottom center positioning matches mobile device interaction patterns.
+
+**Stop condition**: Play the prototype. Click the share icon — the bottom sheet slides up from below with a blurred background.
+
+### Step 4: Scrolling Content and Fixed Elements
+
+Long list pages need proper scroll behavior:
+
+1. On your Home page, create a long content area exceeding canvas height (e.g., 800px)
+2. Select the content area. In the Prototype panel find **Scroll** settings
+3. Configure:
+   - **Scroll direction**: Vertical
+   - **Fit**: Fit to content height
+4. Select the top navigation bar and set it to **Stick to top**
+
+**Why?** Without scroll settings, the entire page would scroll together — including the navigation bar. A fixed nav simulates real app behavior, keeping users oriented as they browse long content.
+
+**Stop condition**: Play the prototype. The page content scrolls vertically while the navigation bar stays fixed at the top.
+
+### Step 5: Easing Curves and Smart Animate Advanced
+
+Default Ease Out isn't enough. Different UI elements need different motion languages:
+
+1. Create an interaction switching between two card-style pages
+2. Try different easing curves in the interaction settings:
+   - **Ease Out**: Fast start, slow end (page transitions, 300ms)
+   - **Ease In Out**: Slow on both ends (modals, 400ms)
+   - **Spring**: Elastic bounce — set tension 400, friction 30 (card flips, 500ms)
+3. Compare the three curves on the same transition
+
+**Why?** Ease Out feels responsive because it covers most of the distance in the first 100ms. Spring creates "physical" feel for emphasis. Google Material Motion recommends different timing scales for different element types.
+
+**Stop condition**: After trying all three curves on the same interaction, the Spring version shows a visible bounce-back effect.
+
+### Step 6: Conditional Logic — Branching by State
+
+This is a Figma Professional feature that makes your prototype truly "smart":
+
+1. Create two user states: logged-in and logged-out
+2. On the Home page, select the "Profile" entry icon:
+   - **Trigger**: On Click
+   - **Action**: Conditional
+3. Set conditions:
+   - If `userLoggedIn` = true → Navigate to Profile
+   - If `userLoggedIn` = false → Open login overlay
+4. Create a **Variable**: Click the Variables tab in the right panel, create a boolean `userLoggedIn`, initial value false
+
+**Why?** Conditional logic lets your prototype simulate real business rules without building separate prototypes for each state. During user testing, this realism yields far more reliable feedback than manually switching between pages.
+
+**Stop condition**: In presentation mode, clicking Profile first goes to Login. Change `userLoggedIn` to true in the Variables panel — now clicking Profile goes directly to the Profile page.
+
+### Step 7: Record and Share Your Prototype
+
+Once complete, share the interactive prototype:
+
+1. Click **Share prototype** in the top-right
+2. Configure sharing settings:
+   - **Permission**: "Anyone with the link can view"
+   - **Password protection**: Optional
+   - **Expiration**: Optional
+3. Check **Record prototype** — Figma records your interaction path
+4. Share the link with stakeholders; they click and explore in their browser
+
+**Why?** An interactive link beats an exported MP4 because recipients can explore at their own pace. Figma's recording feature also auto-generates a walkthrough guide.
+
+**Stop condition**: Open the shared link in an incognito window. The page loads and responds to clicks like a real app.
+
+## Reference Table
+
+| Action | Shortcut / Path | Notes |
+|--------|-----------------|-------|
+| Switch to Prototype | Prototype tab (top-right) | Switch from Design to interaction mode |
+| Play prototype | ▶ button (top-right) | Enter fullscreen presentation mode |
+| Create connection | Select layer → drag circle handle to target | Basic wiring method |
+| Smart Animate | Transition → Smart Animate | Auto-generates tween animation for identically-named layers |
+| Overlay | Action → Open Overlay | Modals, menus, tooltips |
+| Fixed element | Select layer → Prototype → Stick to top | Keep nav bar visible while scrolling |
+| Conditional | Action → Conditional | Professional feature |
+| Create variable | Variables tab in right panel | Manage prototype state variables |
+| Share prototype | Share → Share prototype | Generate interactive link |
+| Record walkthrough | Check "Record" in share dialog | Capture interaction path |
+
+## Troubleshooting
+
+### Smart Animate produces a jump, not a smooth transition
+
+**Root cause**: Smart Animate requires **exact layer name matches** across both pages. If the button on page A is `btn_next` and on page B is `btn_submit`, no match occurs.
+**Fix**: Open both pages and ensure participating layers share identical names (case-sensitive). Figma matches by name only, ignoring layer hierarchy position. Adopt a consistent naming convention for layers that animate.
+
+### Overlay disappears and takes page content with it
+
+**Root cause**: Background blur settings can cause the main page to be treated as a "background layer," triggering page unloading when the overlay closes.
+**Fix**: Avoid using overlays as fullscreen content containers on the main page. For fullscreen masks, use page navigation with a Back action instead. Alternatively, uncheck "Close overlay" default behavior and implement manual close logic.
+
+### Page won't scroll after applying scroll settings
+
+**Root cause**: Scroll must be applied to a Frame, not a Page. Figma's prototype scrolling only works on Frame containers, not on the Page itself.
+**Fix**: Wrap your long content in a Frame (don't place it directly on the Page). Select the Frame → Prototype → set Scroll behavior to Vertical. Set the Frame height to Fit to content.
+
+### Conditional variables not triggering as expected
+
+**Root cause**: Variable scope mismatch — the variable was defined in one flow but the interaction targets a different flow.
+**Fix**: Open the Variables tab and check the variable's scope setting. If interactions cross different Flows, set the variable to Global. Use camelCase naming (e.g., `isLoggedIn`) for consistency — variable names are case-insensitive in Figma.
+
+## Expert Tips
+
+- **Hotkey to find missed connections**: In presentation mode, press `Ctrl+\` / `Cmd+\` to show blue overlay covers on all interactive areas — instantly spot elements that haven't been wired up.
+- **Multi-start prototypes**: A single file can have multiple Flow starting points. Combined with component variants, one file can demo the login flow, registration flow, and settings flow simultaneously.
+- **Spring parameter tuning**: Tension controls stiffness (higher = faster rebound), Friction controls damping (higher = stops sooner). Good pairs: modal entrance at tension 300/friction 25, card flip at tension 400/friction 30.
+- **Presentation mode shortcuts**: Press `1-9` to zoom, `R` to restart, `F` for fullscreen. These are invaluable during live user testing sessions.
+- **Prototype performance**: When a single prototype exceeds 200 connections, presentation mode may lag. **Use components and variants** instead of drawing elements per-page to cut connection count significantly.
+
+## Summary
+
+You've mastered Figma's prototyping workflow: page navigation, overlays, scrolling, Smart Animate transitions, conditional logic, and variables. The core lesson is shifting from "telling people how it works" to "letting people experience how it works."
+
+Next, revisit [Figma Components & Styles](/en/design/figma/components) to strengthen your component foundation, or start building a full app prototype — a complete user journey from login to core feature pages.

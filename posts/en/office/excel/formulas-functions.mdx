@@ -1,0 +1,306 @@
+---
+title: "Excel Formulas & Functions: From Basics to Real-World Formulas"
+description: Master SUMIF, VLOOKUP, XLOOKUP and more
+field: office
+software: excel
+level: beginner
+language: en
+slug: formulas-functions
+date: 2026-05-11
+readTime: 15
+translationOf: /zh/office/excel/formulas-functions
+affiliateLinks:
+  - name: Microsoft 365
+    url: https://www.microsoft.com/microsoft-365
+    description: Office suite subscription
+    vendor: Microsoft
+---
+
+> **Version:** Microsoft 365 (compatible with Excel 2024/2021/2019)  
+> **Difficulty:** ★★★★☆ (4/5)  
+> **Time:** 45-60 minutes
+
+---
+
+You have a spreadsheet with thousands of sales records. Your manager asks: "What was the total revenue for Product A in Q3, excluding returns?" You stare at the data, knowing the answer is buried in rows you could spend hours filtering manually. Copy-pasting, sorting, and manual calculations consume your afternoon -- and the numbers still don't add up.
+
+Most beginners tackle Excel formulas by memorizing a few functions and hoping for the best. The problem? Without understanding how Excel's formula engine works, you end up with fragile spreadsheets that break when data changes. One misplaced dollar sign or missing parenthesis can corrupt an entire report.
+
+This tutorial doesn't just list functions. It teaches you the **formula construction mindset**: how to read data with lookup functions, summarize with conditional aggregates, manipulate text and dates, and build decision logic with nested IFs. By the end, you will write formulas that survive data updates and scale to real workloads.
+
+---
+
+## Preparation
+
+Before you begin, ensure you have the following:
+
+- **Software:** Microsoft 365 (desktop) or Excel 2024/2021. Excel Online works, but some advanced features require the desktop app.
+- **OS:** Windows 10/11 or macOS 12+.
+- **Sample Data:** Download the practice workbook from [Microsoft's sample data page](https://learn.microsoft.com/en-us/power-bi/create-reports/sample-dataset) or create your own with columns: `Date`, `Product`, `Category`, `Quantity`, `Unit Price`, `Total`, `Region`.
+- **Prerequisites:** Familiarity with basic Excel navigation (selecting cells, copying, pasting). No prior formula experience needed.
+- **Settings:** Ensure your Excel uses **Formula AutoComplete** (File > Options > Formulas > Formula AutoComplete, checked by default). Set **Calculation Options** to Automatic (Formulas tab > Calculation Options > Automatic).
+
+---
+
+## Core Workflow
+
+### Step 1: Understand Cell References (Relative vs. Absolute)
+
+**Why:** Every formula you write depends on how references behave when copied. Getting this wrong is the #1 cause of formula bugs.
+
+- **Relative reference (`A1`):** Adjusts when copied. If `=A1+1` in cell B1 is copied to B2, it becomes `=A2+1`.
+- **Absolute reference (`$A$1`):** Stays fixed. Copy `=$A$1+1` anywhere and it always points to cell A1.
+- **Mixed reference (`$A1` or `A$1`):** Locks only the column or only the row.
+
+**How to toggle:** Select a cell reference in the formula bar and press **F4** to cycle through modes.
+
+**Expected result:** A formula that works correctly when filled down or across.
+
+**Stop condition:** You can look at a formula in a new cell and predict exactly which cells it references.
+
+### Step 2: Build Lookup Formulas -- VLOOKUP and XLOOKUP
+
+**Why:** Lookups are the most-used function category in Excel. They find one value in a table based on a key.
+
+**VLOOKUP syntax:**
+```excel
+=VLOOKUP(lookup_value, table_array, col_index_num, [range_lookup])
+```
+
+**Example -- Find product price by ID:**
+```excel
+=VLOOKUP("P1001", A2:C100, 3, FALSE)
+```
+This searches for "P1001" in column A (first column of A2:C100) and returns the value from column 3 of the same range. `FALSE` forces an exact match.
+
+**XLOOKUP syntax (Excel 2021+/365):**
+```excel
+=XLOOKUP(lookup_value, lookup_array, return_array, [if_not_found], [match_mode], [search_mode])
+```
+
+**Example -- Find product price with graceful error handling:**
+```excel
+=XLOOKUP("P1001", A2:A100, C2:C100, "Not Found", 0, 1)
+```
+This returns "Not Found" instead of `#N/A` if the product doesn't exist.
+
+**Why XLOOKUP is better:** It searches left or right (VLOOKUP only searches right), handles missing values cleanly, and doesn't break when you insert columns.
+
+**Stop condition:** You can build a lookup that returns the correct value for any valid key and gracefully handles missing keys.
+
+### Step 3: Conditional Aggregation with SUMIF, COUNTIF, and AVERAGEIF
+
+**Why:** Raw data tells you nothing. Conditional aggregates summarize data that meets specific criteria.
+
+**SUMIF syntax:**
+```excel
+=SUMIF(range, criteria, [sum_range])
+```
+
+**Example -- Total revenue for Product A:**
+```excel
+=SUMIF(B2:B1000, "Product A", G2:G1000)
+```
+
+**COUNTIF syntax:**
+```excel
+=COUNTIF(range, criteria)
+```
+
+**Example -- Number of sales exceeding $500:**
+```excel
+=COUNTIF(G2:G1000, ">500")
+```
+
+**AVERAGEIF syntax:**
+```excel
+=AVERAGEIF(range, criteria, [average_range])
+```
+
+**Example -- Average order value for the East region:**
+```excel
+=AVERAGEIF(H2:H1000, "East", G2:G1000)
+```
+
+**Use cell references in criteria:**
+```excel
+=SUMIF(B2:B1000, D1, G2:G1000)
+```
+When D1 contains "Product A", this returns the same result as the hardcoded version, but now you can change D1 to any product.
+
+**Stop condition:** You can calculate totals, counts, and averages filtered by any single condition without manual filtering.
+
+### Step 4: Text Functions -- Clean and Extract Strings
+
+**Why:** Real-world data is messy. Names have extra spaces, product codes need splitting, and addresses need reformatting.
+
+**TRIM -- Remove extra spaces:**
+```excel
+=TRIM(A2)
+```
+Removes leading, trailing, and double spaces.
+
+**LEFT / RIGHT / MID -- Extract substrings:**
+```excel
+=LEFT(A2, 4)    ' First 4 characters
+=RIGHT(A2, 2)   ' Last 2 characters
+=MID(A2, 3, 5)  ' 5 characters starting at position 3
+```
+
+**CONCATENATE / TEXTJOIN -- Combine text:**
+```excel
+=TEXTJOIN(" ", TRUE, A2, B2, C2)
+```
+Joins values with a space, skipping empty cells.
+
+**Example -- Extract year from a product code "PRD-2024-001":**
+```excel
+=MID(A2, 5, 4)
+```
+
+**Stop condition:** You can clean a messy dataset (extra spaces, inconsistent casing, mixed formats) in under 2 minutes using formulas alone.
+
+### Step 5: Date Functions -- Calculate Durations and Deadlines
+
+**Why:** Date arithmetic is deceptively tricky. Months have different lengths, and simple subtraction doesn't account for business calendars.
+
+**TODAY and NOW -- Current date/time:**
+```excel
+=TODAY()    ' Returns today's date, recalculates daily
+=NOW()      ' Returns current date and time
+```
+
+**DATEDIF -- Difference between dates:**
+```excel
+=DATEDIF(A2, B2, "d")    ' Days between
+=DATEDIF(A2, B2, "m")    ' Complete months
+=DATEDIF(A2, B2, "y")    ' Complete years
+```
+
+**WORKDAY -- Calculate business days:**
+```excel
+=WORKDAY(A2, 10, $F$2:$F$10)   ' 10 business days from A2, excluding holidays in F2:F10
+```
+
+**Example -- Calculate age in years from a birthdate in A2:**
+```excel
+=DATEDIF(A2, TODAY(), "y")
+```
+
+**Example -- Days until a deadline (negative means overdue):**
+```excel
+=B2 - TODAY()
+```
+Format the result cell as **General** (not Date) to see the number.
+
+**Stop condition:** You can compute the number of working days between two dates, add N business days to a date, and identify overdue items.
+
+### Step 6: Decision Logic with Nested IFs and IFS
+
+**Why:** Business rules are rarely binary. You need to assign tiers, categories, or statuses based on multiple conditions.
+
+**Nested IF syntax (traditional):**
+```excel
+=IF(condition1, result1, IF(condition2, result2, IF(condition3, result3, default)))
+```
+
+**Example -- Assign a discount tier based on order total:**
+```excel
+=IF(G2>=1000, "Gold", IF(G2>=500, "Silver", IF(G2>=100, "Bronze", "Standard")))
+```
+
+**IFS function (Excel 2019+/365) -- cleaner alternative:**
+```excel
+=IFS(G2>=1000, "Gold", G2>=500, "Silver", G2>=100, "Bronze", TRUE, "Standard")
+```
+The `TRUE` at the end acts as the "else" clause.
+
+**Example -- Status logic with AND:**
+```excel
+=IF(AND(G2>=500, H2="East"), "Priority", "Normal")
+```
+
+**Stop condition:** You can encode a multi-tier business rule (e.g., performance rating, discount tier, priority level) in a single formula.
+
+---
+
+## Reference Table
+
+| Function | Syntax | Purpose | Example |
+|---|---|---|---|
+| `VLOOKUP` | `=VLOOKUP(lv, table, col, [range])` | Vertical lookup (exact/approximate) | `=VLOOKUP(101, A2:D50, 3, FALSE)` |
+| `XLOOKUP` | `=XLOOKUP(lv, la, ra, [nf], [mm])` | Modern lookup (Excel 2021+/365) | `=XLOOKUP(101, A2:A50, C2:C50, "N/A")` |
+| `SUMIF` | `=SUMIF(range, criteria, [sum_range])` | Conditional sum | `=SUMIF(B:B, "West", G:G)` |
+| `COUNTIF` | `=COUNTIF(range, criteria)` | Conditional count | `=COUNTIF(B:B, "East")` |
+| `AVERAGEIF` | `=AVERAGEIF(range, criteria, [avg_range])` | Conditional average | `=AVERAGEIF(B:B, "North", G:G)` |
+| `SUMIFS` | `=SUMIFS(sum_range, crit_range1, crit1, ...)` | Multi-condition sum | `=SUMIFS(G:G, B:B, "West", H:H, ">100")` |
+| `IF` | `=IF(logical_test, value_if_true, value_if_false)` | Conditional branching | `=IF(D2>100, "High", "Low")` |
+| `IFS` | `=IFS(logic1, val1, logic2, val2, ...)` | Multi-condition IF (2019+/365) | `=IFS(A1>90, "A", A1>80, "B", TRUE, "C")` |
+| `TRIM` | `=TRIM(text)` | Remove extra spaces | `=TRIM(A2)` |
+| `TEXTJOIN` | `=TEXTJOIN(delimiter, skip_empty, text1, ...)` | Join text with delimiter | `=TEXTJOIN("-", TRUE, A2, B2)` |
+| `DATEDIF` | `=DATEDIF(start, end, unit)` | Date difference (d/m/y) | `=DATEDIF(A2, B2, "d")` |
+| `WORKDAY` | `=WORKDAY(start, days, [holidays])` | Add business days | `=WORKDAY(A2, 10, F2:F10)` |
+| `TODAY` | `=TODAY()` | Current date | `=TODAY()` |
+
+---
+
+## Troubleshooting
+
+### 1. Formula shows as text, not result
+- **Symptom:** The cell displays `=A1+B1` literally instead of the calculated value.
+- **Root cause:** The cell is formatted as Text, or there is a leading apostrophe before the equals sign.
+- **Fix:** Select the cell, set format to General (Home > Number > General), press F2, then Enter. If there's an apostrophe, remove it.
+
+### 2. VLOOKUP returns #N/A
+- **Symptom:** Exact match VLOOKUP returns `#N/A` even though the value appears to exist.
+- **Root cause:** Leading/trailing spaces, number stored as text, or the lookup column isn't the leftmost column.
+- **Fix:** Use `=TRIM(A2)` on lookup values. Use `=VALUE(A2)` to convert text numbers. Verify the table_array starts with the lookup column.
+
+### 3. #VALUE! error in date calculations
+- **Symptom:** Subtracting dates gives `#VALUE!` instead of a number.
+- **Root cause:** One or both "dates" are actually text strings, not Excel date serial numbers.
+- **Fix:** Use `=DATEVALUE(A2)` to convert text dates. Use `=ISNUMBER(A2)` to verify the cell contains a number (dates are numbers in Excel).
+
+### 4. SUMIF returns 0 unexpectedly
+- **Symptom:** The conditional sum returns zero despite having matching values.
+- **Root cause:** Criteria range and sum range are misaligned (different sizes), or criteria uses wrong comparison operator.
+- **Fix:** Ensure both ranges have the same number of rows. For text criteria with operators, use: `=SUMIF(A:A, ">="&"Product", B:B)`.
+
+### 5. Circular reference warning
+- **Symptom:** Excel shows "There are one or more circular references."
+- **Root cause:** A formula refers back to its own cell, directly or indirectly.
+- **Fix:** Go to Formulas > Error Checking > Circular References to identify the cell. Remove the self-reference. If intentional (iterative calculation), enable File > Options > Formulas > Enable iterative calculation.
+
+---
+
+## Expert Tips
+
+**Time Savings:** A sales analyst at a Fortune 500 company reduced their weekly reporting from 4 hours to 25 minutes by replacing manual filtering with SUMIFS formulas. The one-time investment of learning these functions paid for itself in the first week.
+
+**Named Ranges for Cleaner Formulas:** Instead of `=SUMIF(B2:B1000, "Product A", G2:G1000)`, define a named range: select B2:B1000, go to Formulas > Define Name, enter "Products". Then write: `=SUMIF(Products, "Product A", Totals)`. Named ranges make formulas self-documenting and won't break when rows are added.
+
+**Excel Tables (Ctrl+T):** Convert your data range to a table (Ctrl+T). Formulas that reference table columns -- like `=SUMIF(Table1[Product], "A", Table1[Total])` -- automatically expand as you add rows. This is the single most impactful habit for building resilient spreadsheets.
+
+**F4 Flash Fill:** After typing `=VLOOKUP(...)` once, select the cell and double-click the fill handle (bottom-right corner) to copy it down to the last adjacent data row. Excel stops automatically.
+
+**Formula Auditing:** Use Formulas > Evaluate Formula to step through complex formulas one calculation at a time. Press **Ctrl+`** (grave accent) to show all formulas in the sheet at once.
+
+**IF with Wildcards:** `=COUNTIF(A:A, "*North*")` counts all cells containing "North" anywhere in the text. This works with SUMIF, COUNTIF, AVERAGEIF, but NOT with SUMIFS/COUNTIFS directly (use wildcards in criteria).
+
+---
+
+## Summary
+
+In this tutorial you learned the six essential formula patterns every Excel user needs:
+- **Cell references** (relative, absolute, mixed) -- the foundation of formula resilience
+- **Lookup functions** (VLOOKUP and XLOOKUP) -- find data by key
+- **Conditional aggregates** (SUMIF, COUNTIF, AVERAGEIF) -- summarize with conditions
+- **Text functions** (TRIM, LEFT, TEXTJOIN) -- clean messy data
+- **Date functions** (DATEDIF, WORKDAY, TODAY) -- calculate time intervals
+- **Decision logic** (IF, IFS, AND) -- encode business rules
+
+**Next steps:**
+- Practice with [Excel's sample datasets](https://learn.microsoft.com/en-us/power-bi/create-reports/sample-dataset)
+- Learn PivotTables to summarize without formulas: [Pivot Tables Guide](/en/office/excel/pivot-tables)
+- Automate your data cleaning pipeline: [Power Query Guide](/en/office/excel/power-query)
+- Master the modern replacement for VLOOKUP: explore `XLOOKUP` and `LET` functions

@@ -1,0 +1,220 @@
+---
+title: "Complete Color Grading Guide: Curves, Levels & HSL Pro Techniques"
+description: Master curves, levels, HSL and professional color tools
+field: design
+software: photoshop
+level: intermediate
+language: en
+slug: color-grading
+date: 2026-05-11
+readTime: 16
+translationOf: /zh/design/photoshop/color-grading
+affiliateLinks:
+  - name: Adobe Creative Cloud
+    url: https://www.adobe.com
+    description: Full suite of creative apps
+    vendor: Adobe
+---
+
+> **Version**: Photoshop 2024 (25.0+, backward compatible to CC 2019)
+> **Difficulty**: ★★★☆☆ (requires basic knowledge of layers and masks)
+> **Time**: 25-35 minutes
+
+## Your Photos Aren't Bad — They're Just Not Graded Yet
+
+A RAW landscape photo looks stunning on your camera screen. You import it to your computer and suddenly it is flat and lifeless, as if a gray film was laid over it. You try Auto Tone—now the sky is blown out, shadows are crushed, and the greens look fluorescent. Then you pull the Curves panel into a roller-coaster shape, spend 20 minutes fumbling, and end up with something worse than the original.
+
+This is not a taste problem. It is a missing workflow problem. Professional colorists grade a single image in 5-8 deliberate steps, each solving a specific problem. This tutorial teaches that workflow: recover black and white points with Levels, sculpt contrast with Curves, target specific colors with HSL, layer mood with Color Balance, and finish with a LUT for a cinematic look.
+
+## Preparation
+
+**Software Requirements**
+- Adobe Photoshop 2024 (25.0+) or CC 2019 or newer
+- Camera Raw filter built in (check version 15.0+ at Edit > Preferences > Camera Raw)
+
+**Color Space Setup**
+- Set working space to `Adobe RGB (1998)` at `Edit > Color Settings` (for the editing stage)
+- Convert to sRGB on export (covered in Step 5)
+- Why Adobe RGB: its gamut is about 35% larger than sRGB. Grading in Adobe RGB preserves more color information in the midtones, and compressing down to sRGB at export produces smoother transitions than grading directly in sRGB
+
+**File Preparation**
+- Download one RAW photo (.CR2, .NEF, .ARW, or similar), or a high-resolution JPEG (20+ megapixels)
+- Choose a photo containing sky, skin tones, and greenery—these three elements require completely different grading approaches
+- If working with JPEG only, make sure it is not a heavily compressed low-quality file
+
+**Prerequisite Knowledge**
+- Basic Layers panel operations (create, delete, reorder)
+- How to add adjustment layers (half-black half-white circle at the bottom of the Layers panel)
+- Eyedropper tool (I key) for reading color values
+
+## Core Workflow
+
+### Step 1: Recover Black and White Points with Levels
+
+Press `Ctrl+L` to open the Levels panel (or add a Levels adjustment layer). You will see the histogram with three sliders: black (left), gray (middle), white (right).
+
+**Action**
+- Drag the black slider (left) to the right until it reaches the point where histogram data begins. For example, if the histogram starts at level 20, drag the black slider to 20
+- Drag the white slider (right) to the left until it reaches the point where histogram data ends
+- Leave the gray slider alone for now
+
+**Why this works.** Most RAW files and JPEGs do not use the full 0-255 tonal range, which creates a "washed out" appearance. Adjusting the black and white sliders spreads the histogram across the full range—this single step solves roughly 60% of the flat-looking photo problem.
+
+**Expected result**: The darkest parts of the image become true black, the brightest parts become true white, and the overall haze disappears.
+
+**Stop condition**: Stop as soon as detail loss (pure black or pure white) begins. Hold `Alt` while dragging the black slider to see a real-time preview of clipped areas—back off 2-3 units the moment the first black pixels appear on screen.
+
+### Step 2: Sculpt Contrast with Curves
+
+Press `Ctrl+M` to open the Curves panel (or add a Curves adjustment layer).
+
+**Standard S-Curve**
+1. Click the lower half of the curve line (corresponding to shadows) to add a control point
+2. Drag it down about 2-3 mm (lowering the value by 10-15 units)
+3. Click the upper half (corresponding to highlights) to add a control point
+4. Drag it up about 2-3 mm (raising the value by 10-15 units)
+
+**Reference values** (Input/Output numbers in the Curves panel):
+- Shadow point: Input 64, Output 50 (lower shadows by about 14 units)
+- Highlight point: Input 192, Output 208 (raise highlights by about 16 units)
+
+**Why an S-curve?** It darkens shadows and brightens highlights independently while preserving midtone detail. This is more precise than the Contrast slider, which applies linearly across all tonal ranges. The S-curve only touches the extremes, leaving the midtones where most image information lives largely intact.
+
+**Expected result**: The image gains visible depth. Shadows deepen without going completely black; highlights lift without blowing out.
+
+**Stop condition**: Stop when shadow detail starts breaking into large solid-black patches or highlights begin to clip to pure white. A good S-curve makes the image look "punchy" but not "harsh."
+
+### Step 3: Target Specific Colors with HSL
+
+Add a Hue/Saturation adjustment layer. In the drop-down menu, select a specific color channel instead of "Master."
+
+**Common Reference Values**
+
+| Goal | Channel | Hue | Saturation | Lightness |
+|------|---------|-----|------------|-----------|
+| Deeper blue sky | Blues | -5° | +15 | -5 |
+| Greener foliage | Greens | +5° | +10 | 0 |
+| Natural skin tone | Reds/Yellows | 0° | -5 to -10 | +5 |
+| Warmer sunset | Reds/Oranges | +10° | +20 | 0 |
+
+**Real-world example—portrait grading**:
+- Red channel: Saturation -8, Lightness +5 (prevents overly ruddy skin)
+- Orange channel: Hue +5°, Saturation -8, Lightness +10 (brightens skin)
+- Yellow channel: Saturation -5 (reduces sallow undertones)
+- Blue channel: Hue -5°, Saturation +12 (cleans up sky and blue clothing)
+
+**Why HSL is more precise than Curves.** Curves adjust by brightness level (shadows, midtones, highlights). HSL locks onto specific color ranges. For example, making the sky deeper blue without affecting a person's blue shirt is impossible with Curves but straightforward with HSL.
+
+**Expected result**: Only the target color changes. Other colors in the image remain untouched.
+
+**Stop condition**: When adjusting the blue channel, watch the subject's blue jeans or shirt. If those shift too, the hue range is too wide. Click the hand icon in the panel then click the target area on the image—HSL auto-locks to that color range.
+
+### Step 4: Layer Mood with Color Balance
+
+Add a Color Balance adjustment layer. Adjust Shadows, Midtones, and Highlights separately.
+
+**Cinematic Teal & Orange Parameters**:
+
+| Range | Cyan-Red | Magenta-Green | Yellow-Blue |
+|-------|----------|---------------|-------------|
+| Shadows | -10 (add cyan) | +5 (add green) | -5 (add blue) |
+| Midtones | -5 | 0 | -5 |
+| Highlights | +8 (add red) | 0 | +15 (add yellow) |
+
+**Step-by-step**:
+1. In the Color Balance panel, select "Shadows" from the Tone drop-down
+2. Drag the Cyan-Red slider toward Cyan by -10
+3. Drag the Magenta-Green slider toward Green by +5
+4. Drag the Yellow-Blue slider toward Blue by -5
+5. Switch to "Highlights"
+6. Drag the Cyan-Red slider toward Red by +8
+7. Drag the Yellow-Blue slider toward Yellow by +15
+8. Fine-tune "Midtones": Cyan-Red -5, Yellow-Blue -5
+
+**Why cyan in shadows and orange in highlights?** Human skin sits in the orange-yellow range, while cool tones (cyan, blue) naturally appear in shadow areas. The teal-orange combination exploits color contrast principles—it is the most widely used cinematic grading scheme (films like *Transformers* and the *Bourne* series rely heavily on it) because it makes skin pop while keeping backgrounds clean.
+
+**Expected result**: Shadows lean cool (cyan/blue), highlights lean warm (orange/yellow), creating a natural temperature contrast.
+
+**Stop condition**: If skin looks cyan or gray, the cool tone has bled into the midtones. Pull the Midtones Cyan-Red slider back to 0 or +3.
+
+### Step 5: Finish with a Color Lookup LUT
+
+Add a Color Lookup adjustment layer. In the Properties panel, open the "Load 3D LUT" drop-down menu to see Photoshop's built-in LUT files.
+
+**Recommended LUTs to try**:
+- `Crisp_Warm.look`: overall warm tone, good for portraits and sunsets
+- `Fuji F125 Kodak 2393 (by Adobe).look`: cinematic look, teal shadows with warm highlights
+- `Candlelight.look`: simulated candlelight, works well for indoor warm scenes
+- `NightFromDay.CUBE`: day-for-night effect (experimental, not recommended for client work)
+
+**Action**:
+1. Add a Color Lookup adjustment layer
+2. In the Properties panel, click the "Load 3D LUT" drop-down and select a LUT
+3. Set the adjustment layer's opacity to 30-50% (never use 100%—the effect will be too aggressive)
+4. Use the layer mask to brush out the LUT's effect on skin—paint with a black brush over the face area on the mask
+
+**Why reduce LUT opacity?** A LUT applies a global color mapping. At 100% opacity, it forces the entire image into the target look, making skin, white objects, and neutral grays look unnatural. At 30-50%, the LUT acts as a color "tendency" that preserves the grading work from the previous four steps.
+
+**Expected result**: The image gains a cinematic color cast that complements, rather than overpowers, the earlier adjustments.
+
+**Stop condition**: If you have to drop opacity below 20% to tolerate the result, the LUT is a poor match for your photo. Try a different one.
+
+## Shortcut & Parameter Reference
+
+| Action | Shortcut | Location |
+|--------|----------|----------|
+| Levels | Ctrl+L | Image > Adjustments > Levels |
+| Curves | Ctrl+M | Image > Adjustments > Curves |
+| Color Balance | Ctrl+B | Image > Adjustments > Color Balance |
+| Hue/Saturation | Ctrl+U | Image > Adjustments > Hue/Saturation |
+| Eyedropper | I | Toolbar |
+| Info panel (RGB readout) | F8 | Window > Info |
+| Histogram panel | none default | Window > Histogram |
+| Add adjustment layer | none default | Layers panel bottom > adjustment icon |
+
+## Troubleshooting
+
+### S-Curve Makes Skin Too Dark
+
+- **Symptom**: After applying an S-curve, the face area becomes noticeably darker and skin looks muddy
+- **Root cause**: The shadow control point was pulled too low, and skin tones fall in the shadow-to-midtone transition zone
+- **Fix**: Add a locking control point at midtones (Input 128, Output unchanged) to anchor them. Raise the shadow point's output by 5-10 units. Alternatively, switch the curve type from "RGB" to "Luminosity" mode so it affects brightness only, not color
+
+### HSL Adjustments Create Color Banding
+
+- **Symptom**: After increasing blue saturation, the sky shows visible color bands or stripes
+- **Root cause**: Saturation was pushed too aggressively (over +40), and the 8-bit JPEG depth cannot display such rapid color transitions smoothly
+- **Fix**: Keep saturation adjustments within ±25. If aggressive changes are needed, confirm the image is in 16-bit mode (Image > Mode > 16 Bits/Channel). Heavy grading should always be done on RAW files
+
+### Color Balance Ruins White Objects
+
+- **Symptom**: After adding warmth to highlights, a white wall or white shirt turns distinctly orange
+- **Root cause**: Color Balance affects the entire tonal range. White objects sit in the highlight region and absorb the full highlight adjustment
+- **Fix**: Paint with a black brush over the white-object area on the Color Balance adjustment layer's mask. Better approach: use a Selective Color adjustment layer targeting the "White" channel instead of Color Balance
+
+### Color Lookup LUT Produces Strange Color Casts
+
+- **Symptom**: Loading a LUT gives purple skies or green skin
+- **Root cause**: The LUT was designed for a different color space or for Log footage, not ordinary photos
+- **Fix**: Drop the LUT opacity to 20% and observe. If the effect remains unacceptable, switch to a different LUT. For ordinary photos, prefer `.look` files over `.cube` files
+
+## Expert Tips
+
+- **Order matters.** The professional workflow follows a strict sequence: Levels > Curves > HSL > Color Balance > LUT. Reversing the order (for example adding a LUT before Curves) makes subsequent adjustments unpredictable. Plan 6-8 minutes for the first pass, then 2-3 minutes for fine-tuning
+- **Monitor skin with the Info panel.** Press `F8` to open the Info panel. Click the Eyedropper (I key) on a subject's face—neutral skin shows R, G, and B values that are roughly equal. If R is significantly higher than G and B, the skin is too red; if G is low, the skin is too yellow. Adjust in Curves or Color Balance until the three values converge. A professional retouch always includes at least one skin check point
+- **16-bit mode reduces banding.** When grading RAW files, switch to 16 Bits/Channel (Image > Mode > 16 Bits/Channel) before starting. This eliminates about 90% of color banding issues compared to 8-bit mode. If you are limited to JPEG, avoid pushing adjustments beyond moderate ranges
+- **Save your LUT for reuse.** After completing a grade you like, click the Curves panel menu button and choose "Save Preset." Or export as a .CUBE file: File > Export > Color Lookup Tables. Load it on the next batch of similar photos and skip the repetitive work
+- **Typical grading time.** A standard portrait with sky background, once you are practiced: Levels 30 seconds, Curves 1 minute, HSL 2-3 minutes, Color Balance 1 minute, LUT 30 seconds—about 5-7 minutes total
+
+## What's Next
+
+Today's grading workflow is your template for every photo from now on:
+1. Levels to recover black and white points (solves "washed out")
+2. S-curve for sculpted contrast
+3. HSL for selective color targeting
+4. Color Balance for shadow/midtone/highlight mood
+5. Color Lookup LUT for cinematic finish
+
+Next in this series:
+- [Layers & Masking Guide](/en/design/photoshop/layers-masking) — understand how blend modes interact with grading layers
+- [Text Effects Guide](/en/design/photoshop/text-effects) — apply color grading concepts to typography

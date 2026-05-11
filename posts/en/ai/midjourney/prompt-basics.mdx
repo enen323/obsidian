@@ -1,0 +1,180 @@
+---
+title: Midjourney AI Art Basics
+description: Learn Midjourney prompts and parameters
+field: ai
+software: midjourney
+level: beginner
+language: en
+slug: prompt-basics
+date: 2026-05-11
+readTime: 16
+translationOf: /zh/ai/midjourney/prompt-basics
+affiliateLinks:
+  - name: Midjourney Standard Plan
+    url: https://midjourney.com
+    description: AI image generation subscription
+    vendor: Midjourney
+---
+
+> **Version**: Midjourney V6 / 2026-05 | **Difficulty**: ★★☆☆☆ | **Read time**: 16 min
+
+## Why Your Results Never Look Right?
+
+You typed "a beautiful landscape" into Midjourney and got a decent scenic shot. But you wanted "a misty forest at sunset with god rays," and Midjourney gave you "a sunny meadow."
+
+Midjourney is not Photoshop — it doesn't "listen" to you. It matches your text against image patterns in its training data. "A red car" works because the model knows both concepts. But "cyberpunk convenience store, rainy night, neon reflections on wet pavement" only works if you use keywords the model recognizes, paired with the right parameters.
+
+The root problem: you are missing **Midjourney-specific vocabulary** and **correct parameter syntax**. This guide covers V6 model fundamentals: prompt structure, parameters, image prompts, and seed values.
+
+## Preparation
+
+- A [Midjourney subscription](https://midjourney.com) (Basic Plan $10/month, ~200 generations)
+- A Discord account (Midjourney runs as a Discord Bot) or [Midjourney Web Alpha](https://alpha.midjourney.com)
+- Type `/imagine` in any Discord channel (or the web app) to start
+
+## Core Workflow: Five Steps to Better Prompts
+
+### Step 1: Understand Prompt Structure
+
+Midjourney V6 prompts have three parts:
+
+```
+[subject description] + [environment/atmosphere] + [style/medium/parameters]
+```
+
+**Example**:
+
+```
+/imagine a serene Japanese garden in autumn, red maple leaves covering a stone path, koi pond with lily pads, soft morning sunlight filtering through trees, mist rising from the water --ar 16:9 --v 6
+```
+
+- **Subject**: Japanese garden, red maple leaves, stone path, koi pond
+- **Environment**: autumn, soft morning sunlight, mist rising
+- **Parameters**: `--ar 16:9` (widescreen), `--v 6` (V6 model)
+
+**Why V6 matters**: V6 understands natural language much better than V5. You can write longer, more descriptive sentences and the model follows composition instructions more reliably.
+
+### Step 2: Master Core Parameters
+
+Parameters go at the end of your prompt, prefixed with `--`. These are the first 5 to learn:
+
+| Parameter | Effect | Example | Suggested starting value |
+|-----------|--------|---------|--------------------------|
+| `--ar` | Aspect ratio | `--ar 16:9` | 16:9 (landscape), 1:1 (square), 9:16 (portrait) |
+| `--v` | Model version | `--v 6` | 6 (current latest) |
+| `--s` | Stylization 0-1000 | `--s 250` | 100 (photorealistic), 250 (default), 600 (highly stylized) |
+| `--c` | Chaos 0-100 | `--c 20` | 0 (conservative), 20-40 (varied), 70-100 (wild) |
+| `--no` | Negative prompting | `--no text, watermark, signature` | Exclude unwanted elements |
+
+**Parameter comparison**:
+
+```
+// Low stylization — more photorealistic
+/imagine portrait of an elderly fisherman, weathered face, detailed wrinkles --ar 3:2 --v 6 --s 50
+
+// High stylization — more artistic
+/imagine portrait of an elderly fisherman, weathered face, detailed wrinkles --ar 3:2 --v 6 --s 700
+```
+
+`--s 50` yields near-photographic results. `--s 700` adds artistic flair with more saturated colors and details that may deviate from reality.
+
+### Step 3: Use Weighted Prompting
+
+Control emphasis with `::` syntax:
+
+```
+/imagine a castle::2 on a mountain::1 misty morning --ar 16:9 --v 6
+```
+
+Here `castle` has weight 2 versus `mountain`'s weight 1. Midjourney prioritizes the higher-weighted element. Default weight is 1.
+
+### Step 4: Use Image Prompts
+
+Reference an image by placing its URL at the start of your prompt:
+
+```
+/imagine [image URL] a chair in the style of the reference image, modern minimalist --ar 3:2 --v 6 --iw 0.8
+```
+
+- `--iw` (Image Weight) controls how strongly the reference influences the result (0-2). `--iw 0.5` keeps composition but changes style; `--iw 1.5` follows the reference closely.
+
+**Why use image prompts**: When text alone can't capture the composition, color scheme, or style you want, an image prompt is the most effective tool.
+
+### Step 5: Seed Values for Consistency
+
+Every Midjourney generation has a random seed. Same seed + same prompt = similar results. Seeds are for **controlled variation**.
+
+Getting the seed: click the ✨ reaction on your generated image in Discord, then choose the envelope icon. Midjourney DMs you the seed.
+
+```
+// Same prompt + same seed = highly consistent results
+/imagine product photo of a minimalist watch on marble surface --ar 4:3 --v 6 --seed 123456
+```
+
+**Practical uses**:
+1. Got good composition but wrong colors? Keep the seed, tweak color keywords
+2. Found a good seed? Use it across different compositions for a consistent style
+3. Team collaboration: share seed + prompt = anyone can reproduce the same style
+
+**Stop condition**: When composition, style, and elements all meet expectations, and the same prompt with different seeds also produces acceptable results, your prompt formula is mature.
+
+## Reference Table: Midjourney V6 Parameters
+
+| Parameter | Range | Default | Purpose |
+|-----------|-------|---------|---------|
+| `--ar` | Any ratio | 1:1 | Aspect ratio |
+| `--v` | 5, 5.2, 6 | 6 | Model version |
+| `--s` | 0-1000 | 100 | Stylization (higher = more artistic) |
+| `--c` | 0-100 | 0 | Chaos (higher = more variety in the 4 outputs) |
+| `--no` | Text | - | Negative prompting — exclude elements |
+| `--iw` | 0.5-2 | 1 | Image prompt influence weight |
+| `--seed` | 0-4294967295 | Random | Controls randomness |
+| `--style raw` | - | - | Raw mode (more faithful to prompt) |
+| `--stylize` | Same as `--s` | - | Alias for `--s` |
+| `--tile` | - | - | Generate seamless tiling textures |
+
+## Troubleshooting
+
+### Q1: Generated image doesn't match the prompt at all
+
+**Root cause**: More common in V5 and earlier. V6 is much better but short prompts (< 5 words) can still drift.
+**Fix**: Write full descriptive sentences, not keyword lists. Aim for at least 10-20 words. If `--style raw` causes deviation, remove it and let the model interpret freely.
+
+### Q2: Extra objects, text, or distorted hands in images
+
+**Root cause**: Midjourney still struggles with text rendering and complex hand anatomy. This is a known V6 limitation.
+**Fix**: Add `--no text, letters` to reduce text artifacts. For hands, add "detailed hands" to the prompt or fix in Photoshop post-generation. Don't expect perfect fingers.
+
+### Q3: Same prompt gives different styles each time
+
+**Root cause**: No fixed seed. Midjourney generates a random seed every time.
+**Fix**: Get the seed of a result you like. Use the same seed + prompt to reproduce; fix the seed and tweak the prompt for variations.
+
+### Q4: Uploaded image prompt has no effect
+
+**Root cause**: `--iw` value too low (V6 default of 1 may be insufficient) or prompt text overpowers the reference.
+**Fix**: Increase `--iw` to 1.5 or 2. Add phrases like "in the style of the reference image" or "similar composition" to reinforce the reference.
+
+### Q5: Generated images are too low resolution
+
+**Root cause**: Midjourney generates at ~1024x1024 (square) or equivalent for other ratios.
+**Fix**: After generation, click U1-U4 to upscale a selected image, or click Upscale to Max for highest resolution (~2048x2048).
+
+## Expert Tips
+
+- **Prompt length sweet spot**: 15-30 words work best in V6. Under 10 words produces unreliable results. Over 60 words shows diminishing returns. Real tests show 25-word prompts achieve the best quality-to-reliability balance.
+- **Learn from the pros**: Browse [Midjourney Prompt Helper](https://prompt.noonshot.com/) or [Midlibrary](https://www.midlibrary.io/) to see keyword combinations professionals use.
+- **Artist style mixing**: Combine artist names in your prompt (by artist1 and artist2). Midjourney blends their styles. "by James Gurney and Hayao Miyazaki" produces fantasy watercolor + Ghibli fusion.
+- **Quality keywords**: octane render, volumetric lighting, subsurface scattering, ray tracing, 8K, detailed texture. Pick 2-3 — don't stack them all.
+- **Use /blend**: In Discord, use `/blend` to merge two images' composition and style without writing a prompt. Great for rapid prototyping.
+
+## Summary
+
+You now know the core of Midjourney V6:
+
+- **Prompt structure**: subject + environment + style/parameters
+- **Core parameters**: `--ar` ratio, `--s` stylization, `--c` chaos, `--no` negatives, `--iw` image weight
+- **Seed values**: fix and reproduce styles via seed
+- **Weighted syntax**: `::` for element emphasis
+
+Next: Master **Midjourney Professional Workflow** — batch generation, image-to-image, character consistency, and commercial applications.

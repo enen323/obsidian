@@ -1,0 +1,187 @@
+---
+title: Claude Projects & Knowledge Management
+description: Organize work and knowledge with Claude Projects
+field: ai
+software: claude
+level: intermediate
+language: en
+slug: projects
+date: 2026-05-11
+readTime: 13
+translationOf: /zh/ai/claude/projects
+affiliateLinks:
+  - name: Claude Pro
+    url: https://claude.ai
+    description: AI chat subscription
+    vendor: Anthropic
+---
+
+> **Version**: Claude Projects / 2026-05 | **Difficulty**: ★★★☆☆ | **Read time**: 13 min
+
+## Tired of Repeating Project Context Every Time?
+
+You start a new conversation to draft a project status report. You spend 5 minutes writing context — project background, team structure, sprint goals. Then you realize you wrote almost the same thing last week.
+
+Every new conversation is a blank slate. No memory, no context, no knowledge base. You either type the same information repeatedly, or settle for generic answers.
+
+**Claude Projects** fixes this. It is a dedicated workspace where you store project background documents, style guides, and custom instructions permanently. Every conversation within that project automatically inherits this context. This guide covers everything from creation to advanced usage.
+
+## Preparation
+
+- [Claude Pro subscription](https://claude.ai) ($20/month) — Projects is a Pro-only feature
+- 3-5 project-related documents (PDF, Markdown, TXT)
+- A draft of custom instructions (under 500 words)
+
+## Core Workflow: Setting Up and Using Projects
+
+### Step 1: Create a Project Space
+
+Click **Projects** in the Claude sidebar, then **Create Project**.
+
+| Field | Purpose | Example |
+|-------|---------|---------|
+| **Project Name** | Identify the project | "E-commerce Platform Rewrite - Backend" |
+| **Description** | Quick summary | 1-2 sentences on scope |
+| **Project Instructions** | Core custom instructions | Rules, preferences, constraints |
+| **Knowledge Base** | Reference documents | PRD, API docs, design specs |
+
+**Principle**: One project = one ongoing work area. Map projects to persistent workflows, not one-off tasks.
+
+### Step 2: Write Project Instructions
+
+Project Instructions act as a **permanent System Prompt** for every conversation in this space. Their quality determines the project's value.
+
+**Example — writing project**:
+
+```
+## Project Overview
+This is a CTO-targeted tech blog. Every article must balance technical depth with business perspective.
+
+## Writing Rules
+1. Every article needs a central thesis — not just "introducing a technology"
+2. First 3 paragraphs must be a compelling hook (problem, data, contradiction)
+3. Define technical terms on first use
+4. Insert a data point or case study every 400 words
+5. End with actionable advice
+
+## Tone
+- Formal but not academic
+- Avoid "in my opinion" subjective phrasing
+- Use short sentences. Average under 20 words
+- No emoji
+
+## Output Format
+- Heading levels: ## → ### → ####
+- Language-tagged code blocks
+- Ordered lists for priority sequences
+- **Bold** for emphasis, use sparingly
+
+## Knowledge Base
+2 past articles (best practices) and 1 editorial guide uploaded. Reference these for style examples.
+```
+
+**Writing principles**:
+1. **Keep it tight**: 500-800 words is ideal. Too short = weak constraint; too long = the model ignores parts
+2. **Use positive statements**: Write "Open each paragraph with a bold summary" instead of "Don't write paragraphs without bold openings"
+3. **Separate rules from reference**: Mandatory rules (format, prohibitions) go first; reference info (style suggestions, background) goes later
+
+### Step 3: Upload Knowledge Base Files
+
+Upload under **Knowledge Base**. Files are available to every conversation in the project.
+
+**What to upload**:
+
+| File type | Best for | Notes |
+|-----------|----------|-------|
+| **PRD / Requirements** | Project goals, feature scope | Keep version up to date |
+| **API Documentation** | Interface specs, data models | Essential for dev assistance |
+| **Design files / UI mockups** | Frontend implementation | Screenshots work |
+| **Style guides** | Writing rules, glossary | Must-have for editorial projects |
+| **Competitive analysis** | Market context | Adds industry awareness |
+| **Code snippets** | Architecture patterns | Use for code review |
+
+**Size recommendation**: 3-10 files, under 20MB total. More files = higher token consumption per conversation.
+
+### Step 4: Start Conversations in the Project
+
+Click **Start a new conversation** inside the project. Every message now runs within the context of your instructions and knowledge base.
+
+**Comparison** — same question, with and without project context:
+
+```
+Without project:
+"Write an article about microservices."
+→ Generic intro: what they are, pros/cons, when to use them.
+
+With project (tech blog + writing rules configured):
+"Write an article about microservices."
+→ CTO-targeted deep analysis: real-world adoption cases, ROI data, organizational adaptation strategies.
+```
+
+**Why the second answer is better**: Claude didn't get smarter. The project instructions told it "who the reader is" and "what depth is expected." The knowledge base provided reference cases and industry data.
+
+### Step 5: Manage Multiple Conversations
+
+A project can hold multiple independent conversations. All share the project instructions and knowledge base, but each has its own chat history.
+
+**Best practices**:
+- One conversation per subtask (e.g., "API design discussion," "database comparison," "weekly report")
+- Give each conversation a meaningful title for retrieval
+- Review and update project instructions when project phases change
+- Archive completed projects (they remain viewable but stop consuming quota)
+
+**Stop condition**: After the instructions stabilize, 3 consecutive new conversations meet quality expectations without requiring instruction changes.
+
+## Reference Table: Projects Configuration
+
+| Setting | Purpose | Best Practice |
+|---------|---------|---------------|
+| **Project name** | Identification | Include project name + domain |
+| **Description** | Quick identification | 1-2 sentences |
+| **Project instructions** | Permanent System Prompt | 500-800 words, positive statements |
+| **Knowledge files** | Long-term reference | 3-10 files, &lt;20MB |
+| **Conversation management** | Subtask isolation | One conversation per subtask |
+| **Archive** | Suspend project | Archive when done, don't delete |
+
+## Troubleshooting
+
+### Q1: Project instructions are ignored in some conversations
+
+**Root cause**: Instructions have a ~2000 character limit. Excess is silently truncated. Also, in very long conversations, instruction weight degrades.
+**Fix**: Keep instructions under 800 words. Put the most important rules in the first 300 words. If Claude seems off-track mid-conversation, say "Re-read the project instructions."
+
+### Q2: Too many knowledge files slow down responses
+
+**Root cause**: Each knowledge file is loaded into context at conversation start. More files = slower load + higher token usage.
+**Fix**: Keep only 3-5 core files. Upload infrequently used files as temporary attachments and remove them from the project space when done.
+
+### Q3: Inconsistent answers across conversations in the same project
+
+**Root cause**: Conversations are independent — no cross-conversation memory. Claude doesn't know what was discussed in another conversation.
+**Fix**: Document key decisions (e.g., "We chose PostgreSQL") in the project instructions or as a knowledge base file. Alternatively, paste key context manually at the start of new conversations.
+
+### Q4: Team members get inconsistent Project results
+
+**Root cause**: Claude Projects is currently single-user, with no real-time collaboration. Each team member sets up their own project space.
+**Fix**: Export the project instructions and knowledge base file list. Have each team member create their own copy. Sync instruction updates periodically.
+
+## Expert Tips
+
+- **Instruction templates**: Create templates for different project types (writing template, development template, analysis template). When creating a new project, start from a template and tweak — saves ~80% of setup time.
+- **Knowledge base versioning**: Include dates in filenames (e.g., "PRD-v2-20260501.md") so Claude can distinguish versions. Add to instructions: "The PRD in the knowledge base is the latest version."
+- **Feed instructions from conversations**: When you find yourself correcting the same issue across multiple conversations, distill the correction into a new instruction rule. Update the project instructions.
+- **Empty project value**: Even without any knowledge files, setting project instructions alone (role and constraints) dramatically improves quality. Create lightweight projects like "Code Review Assistant," "Meeting Notes Generator," "Translation Assistant."
+- **Bi-weekly optimization**: Review project instructions every two weeks. Remove outdated rules, add newly discovered constraints. Iterated instructions beat one-shot perfection every time.
+
+## Summary
+
+You can now use Claude Projects effectively:
+
+- **Create project spaces** that bundle instructions and knowledge
+- **Write project instructions** (500-800 words) defining role, rules, format, and constraints
+- **Manage knowledge bases** with 3-10 core files for context
+- **Organize conversations** per subtask while sharing project context
+
+This approach mirrors ChatGPT's Custom GPTs — "configure once, use everywhere." If you are familiar with the five-element prompt framework from Prompt Engineering, project instructions are essentially a long-term System Prompt.
+
+Next: Review the [Claude Getting Started Guide](../getting-started) for fundamentals, or check [ChatGPT Custom GPTs](../chatgpt/gpts-custom) for the equivalent feature.

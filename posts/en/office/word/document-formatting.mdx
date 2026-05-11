@@ -1,0 +1,277 @@
+---
+title: "Word Document Formatting: Professional Layout Mastery"
+description: Styles, headers, TOC for professional documents
+field: office
+software: word
+level: beginner
+language: en
+slug: document-formatting
+date: 2026-05-11
+readTime: 14
+translationOf: /zh/office/word/document-formatting
+affiliateLinks:
+  - name: Microsoft 365
+    url: https://www.microsoft.com/microsoft-365
+    description: Office suite subscription
+    vendor: Microsoft
+---
+
+> **Version:** Microsoft 365 (compatible with Word 2024/2021/2019)  
+> **Difficulty:** ★★★☆☆ (3/5)  
+> **Time:** 40-55 minutes
+
+---
+
+You write a 30-page report. You manually set font sizes for each heading. You adjust spacing paragraph by paragraph. You battle with page numbers that won't align. Then your manager says "Can you change all headings from blue to dark gray?" and you spend an hour clicking each heading one by one.
+
+Manual formatting is the single biggest time-waster in Word. People who format by selecting text and clicking toolbar buttons are working 10x harder than they need to. The problem is not Word -- it is the approach.
+
+This tutorial teaches you **formatting by design**, not by hand. You will learn to use Word's Style system -- the engine behind every professionally formatted document. You will set up headers and footers that change per section, build multi-level lists that number themselves, use section breaks to control page layout, and generate a table of contents that updates in two clicks.
+
+---
+
+## Preparation
+
+- **Software:** Microsoft 365 desktop (recommended) or Word 2024/2021. Word Online has limited Style management features.
+- **OS:** Windows 10/11 or macOS 12+.
+- **Sample Document:** A plain text document of at least 5-6 pages with multiple levels of headings (e.g., a report with chapters, sections, and subsections). You can use any existing .docx file or paste lorem ipsum text.
+- **Prerequisites:** Basic Word navigation -- typing, selecting text, saving files. No prior formatting experience needed.
+- **View Setting:** Switch to **Print Layout** view (View > Print Layout) -- this is the only reliable view for page formatting work.
+- **Show/Hide Paragraph Marks:** Click the **Show/Hide (¶)** button on the Home tab (or press Ctrl+Shift+8). This reveals spaces, tabs, and paragraph breaks -- essential for diagnosing layout issues.
+
+---
+
+## Core Workflow
+
+### Step 1: Understand and Apply Styles
+
+**Why:** A Style is a named collection of formatting attributes (font, size, color, spacing, borders). When you apply a Style, you format the entire paragraph in one click. More importantly, when you *modify* the Style, every paragraph with that Style updates instantly.
+
+**Built-in styles you will use:**
+- **Normal:** Body text base style
+- **Heading 1, Heading 2, Heading 3:** Hierarchical heading styles
+- **Title:** Document title
+- **Subtitle:** Document subtitle
+- **Quote:** Block quotations
+
+**Apply a Style:**
+1. Select the paragraph (click anywhere inside it).
+2. On the Home tab, in the Styles group, click the desired Style (e.g., Heading 1).
+3. Move your mouse over thumbnails to see Live Preview.
+
+**Modify a Style:**
+1. Right-click the Style thumbnail in the Styles gallery > **Modify**.
+2. Change any formatting (font, size, color, paragraph spacing).
+3. Check **Automatically update** (applies changes to all instances automatically).
+4. Click OK.
+
+**Example -- customize Heading 1:**
+- Font: Calibri Light, 18pt, Bold, Dark Blue
+- Paragraph: Space Before 18pt, Space After 6pt
+- Keep with next (Prevent orphan headings)
+
+**Expected result:** Every paragraph with the Heading 1 style changes when you modify the Style.
+
+**Stop condition:** You can change the font of all 30 headings in your document by modifying one Style -- no manual searching.
+
+### Step 2: Configure Headers and Footers with Section Linking
+
+**Why:** A single header for the entire document is easy. But real documents need different headers for different sections: the table of contents uses Roman numerals, the main body uses Arabic numbers starting from 1, the appendix restarts numbering.
+
+**Insert a header:**
+1. Double-click the top margin of any page (or Insert > Header > Edit Header).
+2. Type your header text (e.g., "Quarterly Report 2026").
+3. Use the **Header & Footer** tab to insert page numbers, date, document title (via Quick Parts > Field > DocProperty > Title).
+
+**Different first page:**
+1. In the Header & Footer tab, check **Different First Page**.
+2. The first page header is now independent -- leave it blank for a cover page.
+
+**Different odd/even pages (book-style):**
+1. Check **Different Odd & Even Pages**.
+2. Set even page header (e.g., chapter title) and odd page header (e.g., document title).
+
+**Section-specific headers (critical for page numbering):**
+1. Insert a **Section Break** (Next Page) at the end of your table of contents. (Layout > Breaks > Section Breaks > Next Page).
+2. Double-click the header in the new section.
+3. On the Header & Footer tab, click **Link to Previous** to turn it OFF (this breaks the connection).
+4. Now set a different header or page numbering for this section.
+
+**Page number example -- start at 1 in section 2:**
+1. In section 2 header/footer, click Page Number > Format Page Numbers.
+2. Set **Start at:** 1.
+3. Insert Page Number > Bottom of Page > Plain Number.
+
+**Expected result:** Different sections can have completely independent headers, footers, and page numbering.
+
+**Stop condition:** Your document has Roman numeral numbering (i, ii, iii) for the front matter and Arabic numbering (1, 2, 3) starting from the main body.
+
+### Step 3: Build Multi-Level Lists (Numbered Headings)
+
+**Why:** Automatic numbering saves you from renumbering when you insert or remove sections.
+
+**Apply a multi-level list to heading styles:**
+1. Place your cursor in a Heading 1 paragraph.
+2. Go to **Home > Multilevel List** (in the Paragraph group).
+3. Select the **List Library** option that shows "Chapter 1 Heading 1" or "1 Heading 1, 1.1 Heading 2, 1.1.1 Heading 3" (typically the second row, first option).
+4. Headings are now numbered automatically: Heading 1 becomes "1," Heading 2 becomes "1.1," etc.
+
+**Customize the list style:**
+1. Click Multilevel List > **Define New Multilevel List**.
+2. Click **More >>** to expand all options.
+3. Select level 1. Set "Enter formatting for number:" to include the word "Chapter " before the number.
+4. Select level 2. Ensure "Include level number from:" is set to "Level 1" so numbering shows "1.1."
+5. Link each level to the corresponding heading style.
+
+**Expected result:** Headings number themselves. Insert a new section and all subsequent headings renumber automatically.
+
+**Stop condition:** You can add a new Heading-1-level section anywhere in the document and all subsequent headings renumber automatically.
+
+### Step 4: Use Section Breaks for Page Layout Control
+
+**Why:** Section breaks are the only way to change page orientation, margins, columns, or headers within the same document.
+
+**Types of section breaks (Layout > Breaks > Section Breaks):**
+
+| Break type | Behavior |
+|---|---|
+| **Next Page** | Starts new section on the next page (most common) |
+| **Continuous** | Starts new section on the same page (column changes) |
+| **Even Page** | Starts new section on the next even-numbered page |
+| **Odd Page** | Starts new section on the next odd-numbered page (book chapters) |
+
+**Example -- landscape page in the middle of a portrait document:**
+1. Place cursor where you want the landscape page.
+2. Layout > Breaks > Section Break > Next Page.
+3. On the new section, Layout > Orientation > Landscape.
+4. Insert a Next Page section break after the landscape content.
+5. Set the following section back to Portrait.
+
+**Show section breaks:** They are visible when Show/Hide (¶) is on. Section breaks appear as double-dotted lines with "Section Break (Next Page)" text.
+
+**Delete a section break:** Select the section break line and press Delete. Be careful -- this merges the sections and the second section's formatting is applied to the merged result.
+
+**Expected result:** You can change page orientation, margins, and column layout in the middle of a document.
+
+**Stop condition:** You have created a document with at least two different section layouts (e.g., portrait and landscape pages within the same file).
+
+### Step 5: Generate and Customize a Table of Contents
+
+**Why:** A TOC built from heading styles updates automatically when content changes. A manually typed TOC is obsolete the moment you edit a heading.
+
+**Insert a TOC:**
+1. Place your cursor where you want the TOC (typically after the cover page).
+2. Go to **References > Table of Contents**.
+3. Choose a built-in style (e.g., "Automatic Table 1").
+4. Word scans your document for Heading 1, Heading 2, and Heading 3 styles and builds the TOC.
+
+**Update a TOC:**
+1. Click anywhere inside the TOC.
+2. Click **Update Table** (or press F9).
+3. Choose: **Update page numbers only** (quick) or **Update entire table** (if headings changed).
+
+**Customize TOC levels:**
+1. References > Table of Contents > Custom Table of Contents.
+2. Under General, change **Show levels** to 2 or 4 to control how many heading levels appear.
+3. Click **Options** to map custom styles to TOC levels.
+4. Click **Modify** to change font and formatting of each TOC level.
+
+**TOC with dot leaders:**
+In Custom Table of Contents, under "Tab leader," select the dotted line option. This helps readers trace heading text to page numbers.
+
+**Expected result:** A professional TOC that you can update in two clicks (F9 > Update entire table).
+
+**Stop condition:** You can add a new section, update the TOC, and the new entry appears with the correct page number.
+
+---
+
+## Reference Table
+
+| Task | Menu Path | Shortcut |
+|---|---|---|
+| Apply Heading 1 style | Home > Styles > Heading 1 | Ctrl+Alt+1 |
+| Apply Heading 2 style | Home > Styles > Heading 2 | Ctrl+Alt+2 |
+| Apply Normal style | Home > Styles > Normal | Ctrl+Shift+N |
+| Modify a style | Right-click style > Modify | -- |
+| Show/Hide paragraph marks | Home > Show/Hide (¶) | Ctrl+Shift+8 |
+| Insert page break | Insert > Page Break | Ctrl+Enter |
+| Insert section break (next page) | Layout > Breaks > Next Page | -- |
+| Insert header/footer | Insert > Header / Footer | -- |
+| Page number format | Insert > Page Number > Format Page Numbers | -- |
+| Insert Table of Contents | References > Table of Contents | -- |
+| Update TOC | Click TOC > Update Table | F9 |
+| Multi-level list | Home > Multilevel List | -- |
+| Go to page | Home > Find > Go To > Page | Ctrl+G |
+
+| Style | Default Shortcut | Purpose |
+|---|---|---|
+| Heading 1 | Ctrl+Alt+1 | Top-level chapter titles |
+| Heading 2 | Ctrl+Alt+2 | Section headings |
+| Heading 3 | Ctrl+Alt+3 | Sub-section headings |
+| Normal | Ctrl+Shift+N | Body paragraphs |
+| Title | -- | Document title (cover page) |
+
+---
+
+## Troubleshooting
+
+### 1. Heading style formatting "won't stick"
+- **Symptom:** You apply formatting to a heading (e.g., make it red), but it reverts after a few seconds or when you reopen the document.
+- **Root cause:** The "Automatically update" option is enabled on the style. When Word reformats the style (e.g., by applying the theme), your manual change is overwritten.
+- **Fix:** Right-click the style > Modify. UNCHECK "Automatically update." Then reapply your formatting via Modify (not via direct ribbon buttons).
+
+### 2. Page numbers restart unexpectedly
+- **Symptom:** Page numbers jump back to 1 in the middle of the document.
+- **Root cause:** A section break is present, and the new section has "Start at: 1" set in page number format.
+- **Fix:** Double-click the footer in the problem section. Right-click the page number > Format Page Numbers. Change "Start at" to "Continue from previous section."
+
+### 3. Table of Contents shows "Error! Bookmark not defined."
+- **Symptom:** The TOC displays error text instead of entries.
+- **Root cause:** The document was edited and field codes are corrupted, or headings were deleted.
+- **Fix:** Select the entire TOC (including the error text), press Delete. Then re-insert the TOC: References > Table of Contents > choose a style. Update immediately after inserting.
+
+### 4. Headers won't unlink between sections
+- **Symptom:** Changing the header in section 2 also changes the header in section 1.
+- **Root cause:** The "Link to Previous" button is still active on the section 2 header.
+- **Fix:** Double-click the section 2 header. On the Header & Footer tab, click "Link to Previous" to deselect it (it should not appear highlighted). Now changes to section 2's header will not affect section 1.
+
+### 5. Multi-level list numbering breaks after customizing
+- **Symptom:** Numbering restarts at 1 for no apparent reason, or shows "1.1" with no parent number.
+- **Root cause:** The list style is not linked to heading styles, or the "Restart list after" setting is incorrect.
+- **Fix:** Click Multilevel List > Define New Multilevel List > More >>. Select each level and verify:
+  - Level is linked to the correct heading style.
+  - "Restart list after" is set to the previous level (e.g., Level 2 restarts after Level 1).
+  - "Include level number from:" includes the parent level.
+
+---
+
+## Expert Tips
+
+**Style Separators for Mixed Formatting:** Press **Ctrl+Alt+Enter** to insert a style separator -- an invisible character that allows you to have two different styles in one paragraph (e.g., a heading and body text on the same line, useful for legal documents). Toggle Show/Hide to see the style separator (a paragraph mark with a dotted circle).
+
+**Navigate with Navigation Pane:** With styles applied, go to View > Navigation Pane. The pane shows your document outline. Click any heading to jump to that section. Drag headings to reorder entire sections. This is the fastest way to restructure a long document.
+
+**Building Blocks / Quick Parts for Reusable Content:** Select any formatted element (header, footer, boilerplate text) and go to Insert > Quick Parts > Save Selection to Quick Part Gallery. Give it a name like "Confidential Footer." Now insert it into any document in seconds.
+
+**Keyboard TOC Update on Close:** When printing, Word prompts to update fields. Uncheck "Update fields" if you intentionally froze the TOC for review. Check it if you want the final print to reflect the latest edits.
+
+**Set Default Styles for All New Documents:** Modify the Normal.dotm template (File > Open > New from template > right-click the default template > Open). Change styles here and every new document will use your defaults. This is a 15-minute setup that saves hours per year.
+
+**Quick Table Formatting:** After inserting a table, select it and go to Table Design > Table Styles. Hover over styles to preview. This applies consistent borders and shading instantly. To set your own, modify "Table Normal" style or create a custom table style.
+
+---
+
+## Summary
+
+In this tutorial you learned five skills that transform Word from a typing tool into a professional publishing platform:
+- **Styles** -- format once, apply everywhere, modify globally
+- **Headers & Footers** -- section-specific headers, Roman/Arabic pagination
+- **Multi-level Lists** -- self-numbering headings that survive edits
+- **Section Breaks** -- orientation, margins, columns per section
+- **Table of Contents** -- auto-generated, updatable in two clicks
+
+**Next steps:**
+- Learn mail merge to generate personalized documents from a template: [Mail Merge Guide](/en/office/word/mail-merge)
+- Explore Word templates (.dotx) for reusable document shells
+- Master track changes and comments for collaborative editing
+- Build a custom template (.dotm) with your company styles, headers, and boilerplate

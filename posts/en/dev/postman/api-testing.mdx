@@ -1,0 +1,279 @@
+---
+title: Postman API Testing Basics
+description: Build requests, manage environments, and write tests with Postman
+field: dev
+software: postman
+level: beginner
+language: en
+slug: api-testing
+date: 2026-05-11
+readTime: 16
+translationOf: /zh/dev/postman/api-testing
+affiliateLinks:
+  - name: Postman Pro
+    url: https://www.postman.com/pricing
+    description: Postman Pro for team collaboration features
+    vendor: Postman
+---
+
+> **Version**: Postman v11+ (Desktop) | **Difficulty**: ★☆☆☆☆ | **Time**: 30-40 min
+
+## Still Testing APIs with curl?
+
+Your workflow looks like this: open a terminal, type `curl -X POST https://api.example.com/login -H 'Content-Type: application/json' -d '{}'`, squint at the raw JSON output, and scroll to find any errors. For the next endpoint, you press up-arrow, edit the previous command, and run it again. Every API call costs you 3-5 minutes of manual setup. Worse, none of these requests are saved — tomorrow you start from scratch.
+
+**Postman** is a dedicated API development and testing platform. It lets you save requests, manage environment variables, write automated test assertions, and share entire API configurations with your team. This tutorial walks through the complete workflow from the ground up.
+
+## Preparation
+
+| Item | Requirement |
+|------|-------------|
+| Postman version | v11 or higher (download from [postman.com/downloads](https://www.postman.com/downloads)) |
+| Account | Recommended: free Postman account (enables cloud sync and sharing) |
+| Test API | We use [JSONPlaceholder](https://jsonplaceholder.typicode.com) — a free fake REST API |
+| OS | Windows, macOS, or Linux |
+
+**Installation steps**:
+1. Download the desktop client from [postman.com/downloads](https://www.postman.com/downloads)
+2. Run the installer and launch Postman
+3. Click "Sign In" in the top-right corner → "Create Account" to register (or skip for local-only use)
+4. Once signed in, the workspace loads. The interface has three main areas: left sidebar (Collections/Environments/History), center (request editor), and right (documentation/examples)
+
+## Core Workflow
+
+### 1. Build and Send Your First GET Request
+
+Start with a simple GET request to get familiar with Postman's request editor.
+
+```
+Steps:
+① Open Postman and click "New" → "HTTP" in the top-left corner
+② Enter the URL: https://jsonplaceholder.typicode.com/posts/1
+③ Confirm the method dropdown shows "GET" (default)
+④ Click the blue "Send" button (or press Ctrl+Enter)
+⑤ Examine the response area below
+```
+
+**Why JSONPlaceholder?** It is a free fake API that requires no registration or API key. It returns real RESTful responses, making it an ideal sandbox for learning API testing.
+
+**Expected output**: The response area under the "Body" tab shows:
+```json
+{
+  "userId": 1,
+  "id": 1,
+  "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+  "body": "quia et suscipit..."
+}
+```
+The right-side summary displays:
+- **Status**: 200 OK (green)
+- **Time**: ~150-400ms
+- **Size**: ~600 bytes
+
+**Stop condition**: If there is no response within 10 seconds, click "Cancel" to abort. Check the URL and your network connection.
+
+### 2. Send a POST Request with Headers
+
+Most write operations require a POST request with specific headers.
+
+```
+Steps:
+① In the same request tab, change the method from GET to POST
+② Keep the same URL: https://jsonplaceholder.typicode.com/posts
+③ Switch to the "Headers" tab and add:
+   Key: Content-Type → Value: application/json (auto-completes as you type)
+④ Switch to the "Body" tab, select "raw", then choose "JSON" from the dropdown
+⑤ Enter the following payload:
+   {
+     "title": "foo",
+     "body": "bar",
+     "userId": 1
+   }
+⑥ Click "Send"
+```
+
+**Why set Content-Type: application/json?** Most REST APIs require the client to declare the data format explicitly. Without this header, the server may reject the request with a 400 or 415 error because it cannot parse the body.
+
+**Expected output**: Status code 201 Created (not 200), with the response body:
+```json
+{
+  "title": "foo",
+  "body": "bar",
+  "userId": 1,
+  "id": 101
+}
+```
+`id: 101` is JSONPlaceholder's simulated auto-increment ID.
+
+**Stop condition**: If you receive a 415 Unsupported Media Type, check that the Content-Type header is correctly set to application/json.
+
+### 3. Create a Collection and Save Requests
+
+A collection is Postman's unit for organizing requests. Think of it as a folder for one project or one API.
+
+```
+Steps:
+① Click "Save" (or press Ctrl+S) in the request editor
+② In the dialog:
+   - Request name: "Get Single Post"
+   - Request description (optional): "GET /posts/:id - Fetch a post by ID"
+   - Below "Select a collection", click "New Collection"
+   - Collection name: "JSONPlaceholder API Tests"
+③ Click "Save to JSONPlaceholder API Tests"
+④ Observe the newly created collection and request in the left sidebar under "Collections"
+```
+
+**Why collections?** When you are testing 10, 50, or 100+ API endpoints, raw curl history mode breaks down. Collections group related requests, support ordering and descriptions, and can be exported and shared with your team as a single JSON file.
+
+**Expected output**: The Collections panel on the left shows:
+```
+JSONPlaceholder API Tests
+└── Get Single Post
+```
+
+**Stop condition**: If you saved to the wrong collection, right-click the request in Collections → "Move" or "Delete".
+
+### 4. Set Up Environment Variables
+
+Environment variables let you switch between development, staging, and production setups without editing individual requests.
+
+```
+Steps:
+① Click the "Environments" icon (gear icon) in the left sidebar
+② Click "New Environment"
+③ Name it: "JSONPlaceholder Test"
+④ Add two variables:
+   Variable: base_url → Initial Value: https://jsonplaceholder.typicode.com
+   Variable: token → Initial Value: (leave empty for now)
+⑤ Click "Save", close the editor
+⑥ Back in the request editor, replace the URL with: {{base_url}}/posts/1
+⑦ Select "JSONPlaceholder Test" from the environment dropdown (top-right)
+⑧ Click "Send" — the request should work exactly as before
+
+# Variable override test:
+① Create a second environment "Local Dev" with base_url set to http://localhost:3000
+② Switch environments — the URL resolves automatically to {{base_url}}/posts/1
+```
+
+**Why environment variables?** Imagine maintaining dev, staging, and production environments. Without variables, each of 50 requests needs manual URL, Token, and API Key updates for each environment — 150 edits total. With variables, you just switch a dropdown.
+
+**Expected output**: After switching environments, `{{base_url}}` resolves to the corresponding value automatically. The request sends correctly and returns a 200 response.
+
+**Stop condition**: If the URL sends as literal `{{base_url}}/posts/1` (not replaced), the environment is not selected or the variable name is misspelled.
+
+### 5. Write Test Assertions
+
+Postman supports automated JavaScript assertions that execute after every request.
+
+```
+Steps:
+① Open the "Get Single Post" request
+② Switch to the "Tests" tab
+③ Paste the following test script:
+
+   // Verify status code is 200
+   pm.test("Status code is 200", function () {
+       pm.response.to.have.status(200);
+   });
+
+   // Verify response time is under 500ms
+   pm.test("Response time is under 500ms", function () {
+       pm.expect(pm.response.responseTime).to.be.below(500);
+   });
+
+   // Verify response has all required fields
+   pm.test("Response has required fields", function () {
+       const jsonData = pm.response.json();
+       pm.expect(jsonData).to.have.property("userId");
+       pm.expect(jsonData).to.have.property("id");
+       pm.expect(jsonData).to.have.property("title");
+       pm.expect(jsonData).to.have.property("body");
+   });
+
+   // Verify title is a string
+   pm.test("Title is a string", function () {
+       const jsonData = pm.response.json();
+       pm.expect(jsonData.title).to.be.a("string");
+   });
+
+④ Click "Send"
+⑤ Examine the "Test Results" tab below the response area
+```
+
+**Why write test assertions?** Visually scanning JSON responses is error-prone — you might miss a missing field or overlook a status code change. Test assertions automate the verification so every check is consistent and documented.
+
+**Expected output**: The Test Results tab shows:
+```
+PASS Status code is 200
+PASS Response time is under 500ms
+PASS Response has required fields
+PASS Title is a string
+```
+All four assertions pass with green checkmarks. Any failure is shown in red with an error message.
+
+**Stop condition**: If a test fails, check that the field names in your assertion match the actual API response. Use `console.log(pm.response.json())` and view the Postman Console (View → Show Postman Console) for debugging.
+
+## Quick Reference
+
+| Action | Shortcut / Method | Description |
+|--------|------------------|-------------|
+| Send Request | `Ctrl+Enter` | Send the current request |
+| Save Request | `Ctrl+S` | Save to current collection |
+| New Request | `Ctrl+N` | Create a new HTTP request |
+| Search / Replace | `Ctrl+F` | Search within the request editor |
+| Switch Environment | Top-right dropdown | Change active variable environment |
+| Format JSON | `Ctrl+B` / "Pretty" button | Beautify JSON response formatting |
+| Copy as cURL | Right-click request → "Code" → cURL | Export the request as a curl command |
+| Postman Console | `Ctrl+Alt+C` | Open debug console |
+| Collection Runner | Collections → Run | Batch-run all requests in a collection |
+
+## Troubleshooting
+
+**Issue 1: "Could not get any response" error**
+- **Root cause**: Network connectivity issue or the target server is unreachable. Postman's default timeout is 10 seconds
+- **Fix**: Check your system network connection. Try accessing the API URL directly in a browser. Review Postman's proxy settings (Settings → Proxy) — corporate networks often require a proxy. Try disabling VPN temporarily
+
+**Issue 2: `{{base_url}}` is not resolved when sending the request**
+- **Root cause**: The environment is not selected, or the variable does not exist in the selected environment
+- **Fix**: Confirm the correct environment is selected in the top-right dropdown. Open the Environments panel and verify the variable exists and is spelled correctly. Note: variable names are case-sensitive — `{{Base_Url}}` and `{{base_url}}` are different
+
+**Issue 3: POST request returns 415 Unsupported Media Type**
+- **Root cause**: The `Content-Type: application/json` header is missing
+- **Fix**: Add the header in the Headers tab, or select "JSON" body format (Postman auto-adds the header). For GraphQL endpoints, use `Content-Type: application/json` (not `application/graphql`)
+
+**Issue 4: Test script returns "ReferenceError: pm is not defined"**
+- **Root cause**: The script was placed in the "Pre-request Script" tab instead of "Tests"
+- **Fix**: Move the script to the "Tests" tab (executed after the response is received). The `pm.*` API is not available in Pre-request Script — there you need the legacy `postman.*` API (deprecated but still functional)
+
+**Issue 5: Collections disappear after signing out**
+- **Root cause**: Postman cloud sync is enabled but local data was not saved, or you are signed into a different account
+- **Fix**: Click the "Sync" icon at the top of the Collections panel to force sync. For offline work, enable local-first mode in Preferences → Sync. Regularly export collections as JSON backups via the "Export" button
+
+## Expert Tips
+
+**Time-savings data**: Proper use of collections and environment variables reduces API debugging time by approximately 70%. Each request goes from 3-5 minutes of manual setup down to 10 seconds (select request + click Send).
+
+**Best practices**:
+- **Organize collections by module**: Split collections by API domain (Users, Orders, Payments). Use folders within collections to group by HTTP method (GET / POST / PUT / DELETE)
+- **Fill in descriptions and examples**: Add a Description to every request documenting its purpose. Save sample responses in Examples (success and error cases) so teammates understand expected API behavior
+- **Variable layering strategy**: Globals < Collection < Environment. Store constants (API version, default page size) in Collection Variables. Store environment-specific values (base URL, API key) in Environment Variables
+- **Leverage Pre-request Scripts**: Automate signature calculation, timestamp injection, and data extraction from previous responses. For example, auto-set an `X-Timestamp` header to the current Unix epoch
+- **Keep SSL verification ON**: For production environments, leave SSL certificate verification enabled (Settings → General → SSL certificate verification). Disable only for local dev with self-signed certs
+
+**Common pitfalls**:
+- **Global variable pollution**: Storing temporary values in Globals causes clutter. Clean up after use, or use `pm.variables.set()` for request-scoped temporary variables
+- **Hardcoded tokens**: Never paste bearer tokens directly into requests. Store them in environment variables as `{{token}}`. Switching accounts becomes a single value change
+- **Forgetting to save**: A modified request that is not saved (Ctrl+S) reverts on reload. Build a habit of saving after every successful test run
+
+## Summary
+
+You have learned Postman's core workflow: building GET and POST requests, organizing APIs with collections, managing multi-environment configurations with variables, and writing automated test assertions. These skills form the foundation of efficient API testing.
+
+**Next steps**:
+- Learn [Postman Automation & CI](../automation/) to run collections from the command line with Newman
+- Try the Collection Runner to batch-execute every request in a collection
+- Explore Postman's API documentation generator and Mock Server features
+
+---
+
+> This article is part of the Postman tutorial series. Check out [more Postman tutorials](../) for additional guides.

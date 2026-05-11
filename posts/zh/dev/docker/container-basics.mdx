@@ -1,0 +1,503 @@
+---
+title: Docker 容器化入门
+description: 理解镜像与容器，构建并运行首个应用
+field: dev
+software: docker
+level: beginner
+language: zh
+slug: container-basics
+date: 2026-05-11
+readTime: 20
+affiliateLinks: []
+---
+
+> **版本**: Docker Desktop 4.x / Docker Engine 24+
+> **难度**: ★★☆☆☆（需基本命令行操作经验）
+> **用时**: 30-45 分钟
+
+## "我机器上能跑啊"——环境不一致的噩梦
+
+最让开发者抓狂的场景莫过于：代码在自己电脑上完美运行，部署到服务器后却报各种莫名其妙的错误。Python 版本不对、Node.js 版本不同、系统依赖缺失、环境变量没配置——每换一台机器就要重新折腾一遍环境。
+
+这个问题根源于 **环境不一致**：你的开发机是 macOS，CI 服务器是 Ubuntu 22.04，生产服务器是 CentOS 7，每个环境的操作系统、系统库、运行时版本都不一样。
+
+Docker 的解决方案：将应用及其依赖打包到一个称为"容器"的标准化单元中。容器的特点可以概括为三条：
+
+1. **一次构建，到处运行**——在任何安装了 Docker 的机器上以完全相同的方式运行
+2. **隔离性**——一个容器内的进程不会影响到其他容器
+3. **轻量级**——不像虚拟机需要模拟整个操作系统，容器共享宿主机的内核
+
+本教程带你从零开始：安装 Docker、拉取镜像、运行容器、编写 Dockerfile、使用 Docker Compose 编排多服务。
+
+## 准备工作
+
+- **操作系统**：Windows 10/11（需启用 WSL2）、macOS 12+、Linux（推荐 Ubuntu 22.04+）
+- **Docker Desktop**（Windows/macOS）或 **Docker Engine**（Linux）
+- 终端基础操作：`cd`、`ls`、文件编辑
+- 一个文本编辑器（VSCode 最佳，支持 Dockerfile 语法高亮）
+- **至少 2GB 可用磁盘空间**（用于下载镜像）
+
+**Windows 特别提示**：Docker Desktop for Windows 需要 WSL2 后端。在安装 Docker Desktop 前，打开 PowerShell（管理员）运行：
+
+```powershell
+wsl --install -d Ubuntu
+```
+
+安装完成后重启电脑，再安装 Docker Desktop。
+
+## 核心工作流
+
+### 1. 验证安装
+
+打开终端，运行：
+
+```bash
+docker --version
+# 输出示例: Docker version 24.0.7, build afdd53b
+
+docker run hello-world
+```
+
+**预期结果**：Docker 拉取 `hello-world` 镜像并打印 Hello from Docker! 信息。最后会看到 `This message shows that your installation appears to be working correctly.`
+
+**失败排查**：如果提示 `docker: command not found`，说明 Docker 未正确安装。如果提示 `Cannot connect to the Docker daemon`，检查 Docker Desktop 是否正在运行。
+
+### 2. 镜像与容器的关系
+
+在动手操作前，先理解两个核心概念：
+
+- **镜像（Image）**：一个只读的模板，包含操作系统基础层、运行时、应用代码和配置。类似于"类"（class）。
+- **容器（Container）**：镜像的运行实例，可以被启动、停止、删除。类似于"对象"（instance）。一个镜像可以启动多个容器。
+
+**命令关系**：
+
+```bash
+# 查看本地镜像
+docker images
+
+# 查看运行中的容器
+docker ps
+
+# 查看所有容器（包括已停止的）
+docker ps -a
+```
+
+### 3. 拉取并运行 Nginx 镜像
+
+```bash
+# 从 Docker Hub 拉取 Nginx 镜像
+docker pull nginx:alpine
+```
+
+**为什么用 `nginx:alpine` 而不是 `nginx:latest`**：Alpine 版本基于 Alpine Linux（约 5MB），而 `latest` 基于 Debian（约 140MB）。在基础镜像大小上，Alpine 版小 28 倍。
+
+```bash
+# 查看镜像信息
+docker images nginx
+# REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
+# nginx        alpine    xxxxxxxx       2 weeks ago   23.5MB
+```
+
+**运行容器**：
+
+```bash
+docker run -d --name my-nginx -p 8080:80 nginx:alpine
+```
+
+- `-d`：后台运行（detached），不会占用终端
+- `--name my-nginx`：给容器命名
+- `-p 8080:80`：端口映射。将宿主机的 8080 端口映射到容器的 80 端口。格式为 `宿主机端口:容器端口`
+- `nginx:alpine`：使用的镜像名称和标签
+
+**验证**：打开浏览器访问 `http://localhost:8080`，应该看到 Nginx 的欢迎页面。
+
+**停止和删除容器**：
+
+```bash
+# 停止容器
+docker stop my-nginx
+
+# 删除容器（需要先停止）
+docker rm my-nginx
+
+# 强制删除运行中的容器
+docker rm -f my-nginx
+```
+
+### 4. 编写 Dockerfile —— 容器化一个 Node.js 应用
+
+现在来容器化一个真实的 Web 应用。先创建一个项目结构：
+
+```bash
+mkdir my-docker-app && cd my-docker-app
+```
+
+创建 `package.json`：
+
+```json
+{
+  "name": "my-docker-app",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0"
+  }
+}
+```
+
+创建 `server.js`：
+
+```javascript
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+  res.send('Hello from Docker!');
+});
+
+app.listen(port, () => {
+  console.log(`App running on port ${port}`);
+});
+```
+
+在项目根目录创建 `Dockerfile`（无扩展名）：
+
+```dockerfile
+# 使用官方 Node.js 镜像作为基础
+FROM node:18-alpine
+
+# 设置工作目录
+WORKDIR /app
+
+# 先复制 package.json，利用层缓存加速构建
+COPY package.json .
+
+# 安装依赖
+RUN npm install --production
+
+# 复制应用代码
+COPY . .
+
+# 声明容器运行时监听的端口
+EXPOSE 3000
+
+# 容器启动时执行的命令
+CMD ["node", "server.js"]
+```
+
+**逐行解释**：
+
+- `FROM node:18-alpine`：基于 Node.js 18 的 Alpine 精简版。选择 `alpine` 版本比 `slim` 更小
+- `WORKDIR /app`：容器内的工作目录。后续命令都在此目录下执行
+- `COPY package.json .`：先复制依赖描述文件。Docker 构建时，每一行 `RUN`/`COPY` 都形成一个缓存层。将 `package.json` 和 `npm install` 放在源码复制之前，当只有源码变化时，可以直接复用 `npm install` 的缓存层
+- `RUN npm install --production`：只安装生产依赖，不含 devDependencies
+- `COPY . .`：复制剩余源码
+- `EXPOSE 3000`：文档说明，告诉使用者此容器监听 3000 端口。实际映射仍需 `-p` 参数
+- `CMD ["node", "server.js"]`：容器启动命令。注意必须是数组格式（exec 形式），而非字符串形式
+
+**构建和运行**：
+
+```bash
+# 构建镜像（注意最后的 . 表示 Dockerfile 所在目录）
+docker build -t my-docker-app .
+
+# 查看镜像大小
+docker images my-docker-app
+
+# 运行容器
+docker run -d --name my-app -p 3000:3000 my-docker-app
+
+# 验证
+curl http://localhost:3000
+# 输出: Hello from Docker!
+```
+
+**为什么先复制 `package.json` 再复制源码**：Docker 的构建缓存机制——只要 `package.json` 没变，`RUN npm install` 这一层就可以复用缓存。如果反过来先复制源码，每次修改代码都会导致 npm install 重新执行。在一个大型项目中，这能节省 60-80% 的构建时间。
+
+### 5. Docker Compose —— 编排多服务
+
+实际项目通常不只有一个服务——前端、后端、数据库、缓存，需要同时启动并互相通信。Docker Compose 用 YAML 文件定义多容器应用。
+
+创建 `docker-compose.yml`：
+
+```yaml
+version: "3.8"
+
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DB_HOST=db
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: myapp
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  pgdata:
+```
+
+**关键配置解释**：
+
+- `services.web.build: .`：使用当前目录下的 Dockerfile 构建 web 服务
+- `services.web.depends_on: - db`：确保 db 服务先于 web 启动（但不等待数据库完全就绪）
+- `services.db.volumes: - pgdata:/var/lib/postgresql/data`：数据持久化。`pgdata` 是 Docker 管理的卷，容器删除后数据仍在
+- `services.db.image: postgres:16-alpine`：直接使用官方镜像，无需编写 Dockerfile
+
+**启动和停止**：
+
+```bash
+# 启动所有服务（-d 后台运行）
+docker compose up -d
+
+# 查看运行中的服务
+docker compose ps
+
+# 查看日志
+docker compose logs -f
+
+# 停止所有服务
+docker compose down
+
+# 停止并删除数据卷（危险：会清空数据库数据）
+docker compose down -v
+```
+
+### 6. 数据卷（Volumes）与数据持久化
+
+容器的文件系统在容器删除后就会消失。卷（Volume）是 Docker 推荐的持久化方式。
+
+```bash
+# 创建数据卷
+docker volume create my-data
+
+# 使用卷挂载运行容器
+docker run -d --name data-demo -v my-data:/app/data nginx:alpine
+
+# 查看挂载信息
+docker inspect data-demo | grep Mounts -A 10
+```
+
+**三种数据挂载方式**：
+
+| 方式 | 语法 | 用途 | 由谁管理 |
+|------|------|------|----------|
+| Volume | `-v vol-name:/path` | 持久化数据（数据库等） | Docker |
+| Bind Mount | `-v /host/path:/path` | 开发时热更新代码 | 用户 |
+| tmpfs Mount | `--tmpfs /path` | 临时文件（不持久化） | 内存 |
+
+**开发模式 bind mount**：将本地代码目录挂载到容器内，修改代码后容器内自动生效，无需重新构建：
+
+```bash
+docker run -d -p 3000:3000 -v $(pwd):/app my-docker-app
+```
+
+### 7. 网络配置
+
+Docker 自动为 `docker compose` 中的服务创建网络。服务名就是主机名，服务间可通过服务名通信。
+
+**手动网络操作**：
+
+```bash
+# 创建自定义网络
+docker network create my-network
+
+# 在指定网络中运行容器
+docker run -d --name nginx1 --network my-network nginx:alpine
+
+# 查看网络中的容器
+docker network inspect my-network
+
+# 容器间通信测试
+docker run --rm --network my-network alpine ping nginx1
+```
+
+## 命令速查表
+
+| 命令 | 作用 | 常用选项 |
+|------|------|----------|
+| `docker pull <镜像>` | 拉取镜像 | |
+| `docker images` | 列出本地镜像 | |
+| `docker rmi <镜像>` | 删除镜像 | `-f` 强制删除 |
+| `docker run <镜像>` | 运行容器 | `-d` 后台, `--name` 命名, `-p` 端口映射, `-v` 挂载卷, `-e` 环境变量 |
+| `docker ps` | 列出运行中的容器 | `-a` 包括已停止的 |
+| `docker stop <容器>` | 停止容器 | |
+| `docker start <容器>` | 启动已停止的容器 | |
+| `docker rm <容器>` | 删除容器 | `-f` 强制删除运行中的 |
+| `docker logs <容器>` | 查看容器日志 | `-f` 持续跟踪 |
+| `docker exec -it <容器> sh` | 进入容器内部 | `-it` 交互式终端 |
+| `docker build -t <名称> .` | 构建镜像 | `-t` 标签 |
+| `docker compose up` | 启动多服务 | `-d` 后台, `--build` 重新构建 |
+| `docker compose down` | 停止多服务 | `-v` 同时删除卷 |
+| `docker volume ls` | 列出数据卷 | |
+| `docker network ls` | 列出网络 | |
+
+## 常见问题
+
+### 问题 1：端口冲突（端口已被占用）
+
+**症状**：`docker run -p 8080:80 nginx` 输出：
+```
+docker: Error response from daemon: driver failed programming external connectivity on endpoint my-nginx: Bind for 0.0.0.0:8080 failed: port is already allocated.
+```
+
+**原因**：宿主机的 8080 端口已被其他进程或容器占用。
+
+**解决**：
+
+```bash
+# 查看哪个进程占用了端口
+# Linux/macOS
+lsof -i :8080
+
+# Windows（管理员 PowerShell）
+netstat -ano | findstr :8080
+
+# 方案一：使用其他端口
+docker run -d -p 8081:80 --name my-nginx nginx:alpine
+
+# 方案二：停止占用端口的进程
+docker stop <占用端口的容器>
+
+# 方案三：使用动态端口分配（让 Docker 自动分配）
+docker run -d -p 80 --name my-nginx nginx:alpine
+docker port my-nginx  # 查看映射的端口
+```
+
+### 问题 2：Docker 守护进程未运行
+
+**症状**：任何 docker 命令都输出：
+```
+Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+```
+
+**原因**：
+- Windows/macOS：Docker Desktop 未启动
+- Linux：docker daemon 服务未运行
+
+**解决**：
+
+```bash
+# Windows/macOS：启动 Docker Desktop 应用（从开始菜单或 Applications）
+# 检查状态：任务栏/菜单栏中的 Docker 鲸鱼图标
+
+# Linux：
+sudo systemctl start docker
+sudo systemctl enable docker   # 设置开机自启
+```
+
+### 问题 3：容器内权限不足（Permission denied）
+
+**症状**：容器启动后，日志显示 `Permission denied` 或无法写入挂载的卷。
+
+**原因**：容器内的进程默认以 root 用户运行，但挂载到宿主机的文件系统时可能受宿主机的权限限制。或者某些安全配置的容器以非 root 用户运行。
+
+**解决**：
+
+```bash
+# 方案一：在 Dockerfile 中指定用户
+FROM node:18-alpine
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
+# 方案二：运行时指定用户
+docker run --user 1000:1000 -v $(pwd):/app my-docker-app
+```
+
+### 问题 4：镜像构建慢
+
+**症状**：每次修改代码，`docker build` 都需要很长时间。
+
+**原因**：没有利用 Docker 的层缓存机制。`COPY . .` 放在了 `RUN npm install` 之前，导致每次代码修改都触发重新安装依赖。
+
+**解决**：确保 Dockerfile 中指令的顺序是"从最不常变到最常变"：
+
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+
+# 1. 最不常变：安装系统依赖
+RUN apk add --no-cache curl
+
+# 2. 次不常变：项目依赖描述文件
+COPY package.json package-lock.json ./
+RUN npm ci --production
+
+# 3. 最常变：源码
+COPY . .
+
+CMD ["node", "server.js"]
+```
+
+使用 `npm ci` 而非 `npm install`：`npm ci` 严格按照 `package-lock.json` 安装，速度更快且构建结果可重现。
+
+### 问题 5：容器内时区错误
+
+**症状**：容器内的时间与宿主机不一致，日志时间戳是 UTC 而非本地时间。
+
+**原因**：Alpine 基础镜像默认使用 UTC 时区，不包含时区数据。
+
+**解决**：
+
+```dockerfile
+FROM node:18-alpine
+# 安装时区数据并设置为上海时间
+RUN apk add --no-cache tzdata
+ENV TZ=Asia/Shanghai
+```
+
+## 专家建议
+
+- **.dockerignore 文件**：在项目根目录创建 `.dockerignore`，避免将 `node_modules`、`.git`、`*.log` 等文件复制到镜像中，既减少构建上下文大小（Docker 需要将构建上下文打包发送给 daemon），又避免覆盖容器内的 `node_modules`：
+
+```
+node_modules
+.git
+*.log
+.env
+.gitignore
+Dockerfile
+docker-compose.yml
+```
+
+- **标签管理**：永远不要使用 `latest` 标签部署到生产环境。使用语义化版本号或 Git 提交哈希作为标签：
+
+```bash
+docker build -t my-app:1.0.0 .
+docker build -t my-app:$(git rev-parse --short HEAD) .
+```
+
+- **多用 Alpine 镜像**：`node:18-alpine`（约 120MB）比 `node:18`（约 350MB）小近 3 倍，大幅减少拉取和存储成本。但注意 Alpine 使用 musl libc 而非 glibc，某些原生模块可能需要额外编译。
+
+- **docker compose 日志别名**：多服务项目日志中，每行日志前会显示服务名。可使用 `--project-name` 区分不同项目：
+
+```bash
+docker compose --project-name myblog up -d
+```
+
+- **资源限制**：生产环境应限制容器的资源使用，防止一个容器耗尽所有内存：
+
+```bash
+docker run -d --memory="512m" --cpus="1.0" my-docker-app
+```
+
+## 总结
+
+本教程从 Docker 的核心概念（镜像 vs 容器）出发，实际演练了：安装验证、运行 Nginx 容器、Dockerfile 编写（Node.js 示例）、Docker Compose 多服务编排、数据卷持久化、网络配置。每个步骤包含具体命令、预期输出和常见错误的解决方法。
+
+下一步推荐学习 [Docker 多阶段构建优化](/zh/dev/docker/multi-stage)，优化镜像大小，提升构建效率，并将 Docker 集成到 CI/CD 流水线中。

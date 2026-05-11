@@ -1,0 +1,331 @@
+---
+title: Git 分支策略最佳实践
+description: Git Flow、Trunk-based 分支策略对比与实战
+field: dev
+software: git
+level: intermediate
+language: zh
+slug: branch-strategy
+date: 2026-05-11
+readTime: 20
+affiliateLinks: []
+---
+
+> **版本**: Git 2.30+（持续集成需配合 GitHub/GitLab）
+> **难度**: ★★★☆☆（需理解分支、合并等基础概念）
+> **用时**: 25-35 分钟
+
+## 没有分支策略的团队，合代码就像碰运气
+
+"我在 feature/login 上改了登录页面，但合并后首页崩了。"、"release 分支上该包含哪些功能？"、"hotfix 改完之后，develop 和 main 哪个同步？"
+
+没有分支策略的团队，Git 仓库最终会走向以下几种结局之一：
+
+1. **所有人直接在 main 上开发**——提交信息混乱，Bug 直接上生产
+2. **分支随意创建不清理**——半年后有 47 个没人记得用途的僵尸分支
+3. **合并毫无章法**——一次 merge 带进来 30 个无关提交
+
+本教程不是为了告诉你"Git Flow 是最好的"，而是分析几种主流策略的适用场景，让你能根据团队规模、发布频率、CI/CD 能力选择最合适的方式。
+
+**先决条件**：理解 `git branch`、`git merge`、`git rebase` 的基本用法。
+
+## 准备工作
+
+- **Git** 2.30+
+- 一个用于练习的仓库（可创建一个空仓库并 Clone 到本地）
+- 理解 CI/CD 基本概念（持续集成 / 持续交付）
+- 建议团队 3 人以上时实施分支策略，1-2 人项目过度设计反而拖慢效率
+
+## 三种主流分支策略
+
+### 策略一：Git Flow —— 适合版本发布型项目
+
+Git Flow 是最经典的分支模型，由 Vincent Driessen 在 2010 年提出，适用于有固定发布周期（每两周或每个月）的项目。
+
+#### 分支类型
+
+| 分支 | 命名 | 用途 | 生命周期 |
+|------|------|------|----------|
+| main | `main` / `master` | 生产环境代码 | 永续 |
+| develop | `develop` | 集成分支，日常开发目标 | 永续 |
+| feature | `feature/*` | 新功能开发 | 功能完成后合并回 develop 并删除 |
+| release | `release/*` | 发布准备（Bug 修复、版本号更新） | 发布后合并到 main 和 develop |
+| hotfix | `hotfix/*` | 生产环境紧急修复 | 修复完成后合并到 main 和 develop |
+
+#### 工作流程
+
+```bash
+# 1. 从 develop 创建功能分支
+git checkout develop
+git checkout -b feature/user-profile
+
+# 2. 开发完成后合并回 develop
+git checkout develop
+git merge --no-ff feature/user-profile
+git branch -d feature/user-profile
+
+# 3. 准备发布时创建 release 分支
+git checkout develop
+git checkout -b release/1.2.0
+# 更新版本号、修复小 Bug
+
+# 4. 发布 release 到 main 和 develop
+git checkout main
+git merge --no-ff release/1.2.0
+git tag -a v1.2.0 -m "版本 1.2.0"
+git checkout develop
+git merge --no-ff release/1.2.0
+git branch -d release/1.2.0
+
+# 5. 生产问题：hotfix
+git checkout main
+git checkout -b hotfix/critical-login-bug
+# 修复后
+git checkout main
+git merge --no-ff hotfix/critical-login-bug
+git tag -a v1.2.1 -m "紧急修复登录 Bug"
+git checkout develop
+git merge --no-ff hotfix/critical-login-bug
+```
+
+#### `--no-ff` 的作用
+
+`--no-ff` 强制创建 merge commit（即使可以快进）。它保留了"这是一次功能合入"的历史信息。在高版本 Git 中，可以使用 `git config merge.ff false` 全局设置。
+
+#### 适用场景
+
+- 有明确版本号的项目（如移动 App、桌面软件）
+- 需要同时维护多个版本（如 v1.x 线上运行，v2.0 还在开发）
+- 团队规模较大（10 人以上），需要严格的分支管控
+
+### 策略二：Trunk-based Development —— 适合持续交付
+
+Trunk-based（主干开发）强调所有开发者在 `main` 分支上工作，通过短寿命功能分支（不超过 2 天）和频繁合并来保持主分支始终可发布。
+
+#### 工作流程
+
+```bash
+# 1. 从 main 创建短寿功能分支
+git checkout main
+git pull --rebase
+git checkout -b feat-user-avatar
+
+# 2. 频繁提交并保持分支简短
+# （不超过 1-2 天的开发量）
+
+# 3. 合并前 rebase 到最新 main
+git checkout main
+git pull --rebase
+git checkout feat-user-avatar
+git rebase main
+
+# 4. 合并回 main
+git checkout main
+git merge --ff-only feat-user-avatar
+# 或 squash merge
+git merge --squash feat-user-avatar
+git commit -m "feat: 用户头像上传功能"
+```
+
+#### 关键实践
+
+- **功能开关（Feature Flags）**：未完成的功能通过配置开关隐藏，不在 UI 中暴露。合并到 main 后，功能默认关闭，只有内部测试可开启。
+- **短寿命分支**：分支存在不超过 2 个工作日。超过 2 天的分支应从 main rebase 并解决冲突。
+- **频繁集成**：每天至少合并一次到 main。每个合并都应该通过 CI 检查和自动化测试。
+
+#### 适用场景
+
+- SaaS 产品、Web 应用（随时可发布）
+- DevOps 成熟度高的团队（自动化测试覆盖率 > 80%）
+- 5-15 人的中小团队
+
+### 策略三：GitHub Flow —— 简化的 PR 工作流
+
+GitHub Flow 是 Trunk-based 的简化版本，结合 Pull Request 代码审查机制。
+
+#### 工作流程
+
+```bash
+# 1. 创建分支
+git checkout -b feat-api-endpoint
+
+# 2. 开发和提交
+git add .
+git commit -m "feat: 添加用户列表 API"
+
+# 3. 推送到远程
+git push origin feat-api-endpoint
+
+# 4. 在 GitHub 上创建 PR
+# （设置 reviewers、labels、milestone）
+
+# 5. PR 通过审查和 CI 后合并
+# 在 GitHub 上点击 "Merge pull request"
+# 选项：Create a merge commit / Squash and merge / Rebase and merge
+
+# 6. 删除远程分支
+git push origin --delete feat-api-endpoint
+```
+
+#### 三种合并方式的选择
+
+| 方式 | 效果 | 使用时机 |
+|------|------|----------|
+| Create a merge commit | 保留所有中间提交 | 分支包含多个独立改动 |
+| Squash and merge | 所有提交压缩为一个 | WIP 提交多，不想污染历史 |
+| Rebase and merge | 线性历史，无 merge commit | 追求干净的单线历史 |
+
+## 分支策略对比表
+
+| 维度 | Git Flow | Trunk-based | GitHub Flow |
+|------|----------|-------------|-------------|
+| 分支数量 | 多（5+ 类型） | 少（2 类型） | 少（2 类型） |
+| 学习曲线 | 高 | 低 | 低 |
+| 发布频率 | 固定周期 | 任意频率 | 任意频率 |
+| 版本管理 | 强（tag + release） | 依赖 CI/CD | 依赖 CI/CD |
+| 同时维护多版本 | 支持 | 困难 | 困难 |
+| 适合团队规模 | 10+ 人 | 5-15 人 | 3-10 人 |
+| 冲突频率 | 中（release 阶段集中） | 高（需要频繁 rebase） | 中 |
+| CI/CD 依赖度 | 低 | 高 | 高 |
+
+## 分支命名规范
+
+统一的命名规范让团队可以通过分支名判断其用途：
+
+```
+<type>/<描述>
+
+# 示例
+feature/user-login          # 新功能
+bugfix/login-error          # Bug 修复
+hotfix/security-patch       # 紧急修复
+release/v1.2.0              # 发布准备
+chore/update-deps           # 杂项（依赖更新、配置修改）
+docs/api-docs               # 文档更新
+refactor/auth-module        # 重构
+test/add-e2e-tests          # 测试
+```
+
+**描述部分建议**：
+- 使用短横线分隔（kebab-case）
+- 不超过 50 个字符
+- 英文，小写
+- 必要时可包含 issue/票号：`feature/PROJ-123-user-avatar`
+
+## Merge 冲突解决策略
+
+### 场景一：两个人的功能分支都修改了同一文件
+
+```bash
+# 在分支 B 上合并 main（或 develop）
+git checkout feature-b
+git merge main
+
+# 发生冲突
+# Auto-merging src/user.ts
+# CONFLICT (content): Merge conflict in src/user.ts
+
+# 查看冲突文件
+git diff
+
+# 打开文件，查找冲突标记
+# <<<<<<< HEAD（当前分支 B 的代码）
+#   const name = user.name;
+# =======
+#   const name = `${user.firstName} ${user.lastName}`;
+# >>>>>>> main（main 分支的代码）
+
+# 手动编辑保留正确内容
+# 删除冲突标记
+git add src/user.ts
+git commit -m "merge: 合并 main 并解决 user.ts 冲突"
+```
+
+### 场景二：同一功能分支 rebase 后重复冲突
+
+```bash
+# 使用 rerere（Reuse Recorded Resolution）
+git config --global rerere.enabled true
+```
+
+启用后，Git 会记住你解决过的冲突模式，下次遇到相同冲突时自动应用之前的解决方案。对于频繁 rebase 的开发者非常有用。
+
+## 常见问题
+
+### 问题 1：main 和 develop 分支严重偏离
+
+**症状**：release 合并到 main 后发现 main 落后 develop 很多提交，或者 main 上有 hotfix 没有同步到 develop。
+
+**原因**：没有及时在 release 合并后将 main 合并回 develop，或者 hotfix 只合并到了 main。
+
+**解决**：每次 release 或 hotfix 合并到 main 后，立即执行：
+
+```bash
+git checkout develop
+git merge main
+git push
+```
+
+同时可以在 CI 脚本中强制检查：如果 main 领先 develop，则自动创建一个提醒。
+
+### 问题 2：功能分支存在时间太长，合并时冲突巨大
+
+**症状**：一个 feature 分支开发了 3 周，准备合并时发现与 main 有 40 多个冲突文件。
+
+**原因**：功能分支长时间没有从 main rebase，main 上的其他改动积累成大量差异。
+
+**解决**：
+
+- 规定功能分支寿命不超过 2 天（Trunk-based 策略）
+- 如果确实需要长时间开发，每天从 main rebase：
+
+```bash
+git checkout feature-big
+git rebase main
+```
+
+- 将大型功能拆分为多个小功能，逐个合并
+
+### 问题 3：多人同时修改同一个功能区域，冲突反复出现
+
+**症状**：A 和 B 都在修改用户认证模块，每次合并都冲突。
+
+**原因**：缺乏沟通和模块拆分。两个人没有明确的分工边界。
+
+**解决**：
+
+1. 在项目文档中明确模块负责人
+2. 将大型功能拆分为独立接口/文件，减少同一文件的并发修改概率
+3. 如果无法拆分，采用"串行开发"——一个人做完再切给另一个人
+4. 提高沟通频率，合并前在群里说一声
+
+### 问题 4：Git Flow 中 hotfix 修复后忘记同步到 develop
+
+**症状**：hotfix 修复了生产 Bug，但下次从 develop 发布时同一个 Bug 又出现了。
+
+**原因**：hotfix 合并到 main 后，没有合并回 develop。
+
+**解决**：在 CI/CD 脚本或 git hooks 中增加检查：
+
+```bash
+#!/bin/bash
+# post-merge hook: 检测 main 是否有未同步到 develop 的提交
+# 这是一个简易的检测脚本，不是最终方案
+if [ $(git rev-list --count main ^develop) -gt 0 ]; then
+  echo "警告: main 分支领先 develop，请合并。"
+fi
+```
+
+## 专家建议
+
+- **小团队直接选 GitHub Flow**：3-8 人的团队，GitHub Flow 是最佳起点。它够简单，PR 审查保证质量，Squash merge 保持历史干净。不要为了"专业"而引入 Git Flow 的复杂度。
+- **大型团队用 Git Flow，但需要工具辅助**：10 人以上的团队用 Git Flow 需要搭配自动化工具（Jira 做 issue 管理，自动化脚本处理 release 和 hotfix 的跨分支合并），否则分支管理的手动操作会成为瓶颈。
+- **Feature Flags 比分支管理更重要**：Trunk-based 的核心不是"短寿命分支"，而是"不完整的功能也能安全合并到 main"。没有 Feature Flags 的 Trunk-based 只是把 main 变成了新的 develop。
+- **约定优于工具**：无论选择哪种策略，重要的是团队达成共识并严格执行。用 Git hooks 做自动化检查：`pre-push` hook 检查分支命名规范，`commit-msg` hook 检查提交信息格式（推荐 Conventional Commits）。
+- **不要在一个策略上死磕**：Git Flow 在 2010 年设计时是为 Linux 内核风格的项目。如果你们的场景变了（从固定发布变为持续交付），果断换策略而非强行适配。
+
+## 总结
+
+本教程对比了三种主流分支策略：Git Flow（多分支、适合版本发布）、Trunk-based（短寿命分支、适合持续交付）、GitHub Flow（PR 驱动、适合中小团队）。每种策略的分析包括适用场景、工作流程图解和关键实践。此外还介绍了分支命名规范和冲突解决的实战方法。
+
+相关教程：[Git Rebase 高级用法](/zh/dev/git/advanced-rebase) —— 将 rebase 与分支策略结合，进一步优化协作流程。

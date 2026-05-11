@@ -1,0 +1,231 @@
+---
+title: VSCode 必装扩展推荐
+description: 精选 8 款提升开发效率的 VSCode 扩展
+field: dev
+software: vscode
+level: beginner
+language: zh
+slug: extensions-guide
+date: 2026-05-11
+readTime: 13
+affiliateLinks:
+  - name: GitHub Copilot
+    url: https://github.com/features/copilot
+    description: AI 编程助手
+    vendor: GitHub
+---
+
+> **版本**: VSCode 1.90+（2024年5月更新）
+> **难度**: ★★☆☆☆（需基础编程经验）
+> **用时**: 20-30 分钟
+
+## 从零搭建高效开发环境
+
+刚安装完 VSCode 时，面对空空如也的编辑器，大部分人第一反应是去市场搜索扩展。但 VSCode Marketplace 上有超过 3 万个扩展，随便搜一个关键词就能看到上百条结果。装了一大堆，结果编辑器变慢、功能冲突、快捷键失灵，最终不得不全删了重来。
+
+本教程不会列一个几百项的"必装清单"，而是精选 **8 款真正提升效率的核心扩展**，涵盖代码补全、格式化、Git 可视化、AI 辅助、主题美化五大方向。每一款都经过实际项目验证，装完即可投入生产开发。
+
+## 准备工作
+
+- **VSCode** 1.90+ 版本（2024年5月更新）
+- 操作系统：Windows 10+ / macOS 12+ / Linux（GNOME/KDE）
+- 网络能访问 Marketplace（中国用户可配置国内镜像源）
+- 建议先创建一个测试项目文件夹，用于验证扩展效果
+
+## 八个扩展的分步安装与配置
+
+### 1. Prettier —— 代码格式化标准
+
+代码风格争论（缩进用空格还是 Tab、行尾要不要分号）浪费了无数 Code Review 时间。Prettier 作为"固执的格式化工具"，一刀切掉所有风格争论。
+
+**安装**：打开扩展面板（`Ctrl+Shift+X`），搜索 `Prettier - Code formatter`，点击安装。
+
+**配置为默认格式化器**：
+
+```json
+// 在 settings.json 中添加
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "prettier.singleQuote": true,
+  "prettier.trailingComma": "all",
+  "prettier.tabWidth": 2,
+  "prettier.printWidth": 100
+}
+```
+
+**验证方式**：打开任意 JS/TS 文件，编写一段格式混乱的代码（如缩进不一致、混用引号），按 `Shift+Alt+F`。Prettier 会自动重整格式。开启 `formatOnSave` 后，保存文件时自动格式化。
+
+### 2. ESLint —— 代码质量守门员
+
+Prettier 管格式，ESLint 管质量。它能在你写代码的瞬间发现未使用变量、遗漏的错误处理、可能的空指针引用。
+
+**安装**：搜索 `ESLint`（作者 Microsoft），安装。
+
+**初始化项目配置**：
+
+```bash
+# 在项目目录中
+npm init -y
+npm install eslint --save-dev
+npx eslint --init
+```
+
+按照提示选择你的项目类型（如 React/Vue/Node.js），ESLint 会生成 `.eslintrc.json` 配置文件。
+
+**验证方式**：在 JS 文件中声明一个未使用的变量 `const x = 1;`，立即会看到波浪线警告。鼠标悬停可查看规则详情。
+
+### 3. GitLens —— Git 历史可视化
+
+Git 命令行看历史记录不够直观，GitLens 将每一行代码的提交信息直接内嵌到编辑器中。
+
+**安装**：搜索 `GitLens`（作者 GitKraken），安装。
+
+**核心功能验证**：
+
+1. 打开一个有 Git 历史的文件，在行号右侧能看到 **blame 注解**（谁、何时、为什么改了这行）
+2. 点击编辑器右上角的 **GitLens 工具栏**，选择 **File History** 查看文件变更时间线
+3. 状态栏会显示当前行的最后提交信息
+
+**建议配置**：在设置中搜索 `gitlens.blame.compact`，开启紧凑模式减少视觉干扰。
+
+### 4. GitHub Copilot —— AI 代码补全
+
+Copilot 不再只是"根据注释生成代码"，它能在你写代码时预测整个函数体，甚至根据测试用例生成实现。
+
+**安装**：搜索 `GitHub Copilot`，安装后点击底部状态栏的 Copilot 图标登录 GitHub 账号。
+
+**使用技巧**：
+
+- 写注释描述功能：`// 计算斐波那契数列前 N 项`，换行后 Copilot 会建议实现
+- 接受建议：按 `Tab`
+- 查看下一个建议：按 `Alt+]`
+- 触发手动建议：`Ctrl+Enter` 打开建议面板
+
+**验证方式**：在一个空的 JS 文件中输入 `function fibonacci(n) {` 并回车，Copilot 应自动补全函数体。
+
+### 5. Material Icon Theme —— 文件图标辨识
+
+文件类型靠文件名后缀区分效率太低。图标主题让文件夹、配置文件和源码文件一目了然。
+
+**安装**：搜索 `Material Icon Theme`（作者 Philipp Kief），安装并点击 **Set File Icon Theme**。
+
+**效果**：`.js` 文件显示 JS 图标，`.tsx` 显示 React 图标，`node_modules` 文件夹显示齿轮图标，`.env` 文件显示设置图标。查找文件时不再需要逐行看后缀。
+
+### 6. Bracket Pair Colorizer 2（已内置于 VSCode） —— 括号匹配
+
+多级嵌套的箭头函数、三元表达式、复杂 JSX 里，括号匹配是刚需。VSCode 1.90+ 已原生支持彩色括号匹配。
+
+**无需安装**，只需在 `settings.json` 中启用：
+
+```json
+{
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true
+}
+```
+
+**效果**：一层括号一种颜色（紫色、蓝色、绿色交替），垂直引导线清晰标示作用域范围。
+
+### 7. Path Intellisense —— 自动补全文件路径
+
+`import` 和 `require` 中手动输入路径易出错，Path Intellisense 在输入 `./` 或 `../` 时自动列出当前目录。
+
+**安装**：搜索 `Path Intellisense`（作者 Christian Kohler），安装。
+
+**验证方式**：在 JS 文件的 import 语句中输入 `import { something } from './'`，立即弹出当前目录的文件列表供选择。
+
+### 8. One Dark Pro —— 护眼主题
+
+好的主题不仅是"好看"，而是减少视觉疲劳。One Dark Pro 基于 Atom 的经典配色，对比度适中，长时间编码不易疲劳。
+
+**安装**：搜索 `One Dark Pro`，安装后按 `Ctrl+K Ctrl+T` 选择 **One Dark Pro** 主题。
+
+## 扩展配置速查表
+
+| 扩展名 | 用途 | 关键配置 | 扩展ID |
+|--------|------|----------|--------|
+| Prettier | 代码格式化 | `formatOnSave: true` | `esbenp.prettier-vscode` |
+| ESLint | 代码质量检查 | 项目级 `.eslintrc.json` | `dbaeumer.vscode-eslint` |
+| GitLens | Git 历史可视化 | `blame.compact: true` | `eamodio.gitlens` |
+| GitHub Copilot | AI 代码补全 | GitHub 账号登录 | `GitHub.copilot` |
+| Material Icon Theme | 文件图标主题 | 设为文件图标主题 | `PKief.material-icon-theme` |
+| Path Intellisense | 路径自动补全 | 无需配置 | `christian-kohler.path-intellisense` |
+| One Dark Pro | 护眼主题 | 设为颜色主题 | `zhuangtongfa.Material-theme` |
+
+## 常见问题
+
+### 问题 1：安装扩展后编辑器启动变慢
+
+**症状**：VSCode 启动需要 10 秒以上，状态栏长时间显示"正在激活扩展"。
+
+**原因**：同时启用了太多扩展，尤其是那些需要在启动时扫描整个项目的扩展（如 ESLint、GitLens）。
+
+**解决**：在扩展面板中搜索 `@builtin` 禁用不需要的内置扩展；对部分项目使用 **扩展 Profile** 功能——右键扩展图标选择 **添加到工作区建议**，仅在该项目中启用。
+
+### 问题 2：Prettier 和 ESLint 格式化冲突
+
+**症状**：保存文件时，Prettier 把单引号改成双引号，ESLint 又报错要求单引号；或者两者互相覆盖格式。
+
+**原因**：Prettier 和 ESLint 的规则重叠，没有统一配置。
+
+**解决**：
+
+```bash
+npm install --save-dev eslint-config-prettier
+```
+
+在 `.eslintrc.json` 的 `extends` 数组中，将 `prettier` 放在最后：
+
+```json
+{
+  "extends": ["eslint:recommended", "plugin:react/recommended", "prettier"]
+}
+```
+
+`eslint-config-prettier` 会关闭所有与 Prettier 冲突的 ESLint 规则。
+
+### 问题 3：GitLens 导致编辑器卡顿
+
+**症状**：打开大型项目（如 monorepo）时，GitLens 导致滚动卡顿、输入延迟。
+
+**原因**：GitLens 默认对所有文件启用 blame 注解，大型仓库中每行都要查询 Git 历史。
+
+**解决**：在设置中搜索 `gitlens.blame.highlight.enabled` 设为 `false`；将 `gitlens.currentLine.enabled` 设为 `false`。改为按需查看：在行号上点击右键选择 **Toggle GitLens Blame**。
+
+### 问题 4：Copilot 没有自动弹出建议
+
+**症状**：安装了 Copilot 并登录，但写代码时没有自动建议。
+
+**原因**：可能是 VSCode 的 Inline Suggest 功能被关闭，或网络环境无法连接 Copilot 服务。
+
+**解决**：
+
+1. 检查设置 `editor.inlineSuggest.enabled` 是否为 `true`
+2. 检查状态栏底部 Copilot 图标是否为金色（灰色表示未登录或未连接）
+3. 中国用户可能需要配置代理：在设置中搜索 `github.copilot.advanced`，配置 `proxy` 地址
+
+## 专家建议
+
+- **少即是多**：生产环境只装 10-15 个扩展即可。每多一个扩展，启动时间增加约 0.3-0.5 秒，且增加快捷键冲突的概率。
+- **使用扩展 Profile**：VSCode 1.90+ 支持 Profile 功能，可将扩展按场景分组（如前端开发、Python 数据科学、Go 后端），在不同项目间一键切换。`文件 > 首选项 > Profile`。
+- **工作区建议**：在项目根目录创建 `.vscode/extensions.json`，列出团队推荐扩展：
+
+```json
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "eamodio.gitlens"
+  ]
+}
+```
+
+团队成员打开项目时会自动收到安装提示。
+- **定期审查**：每季度检查一次扩展列表，禁用不再使用的。在扩展面板搜索 `@enabled` 可查看所有启用中的扩展。
+
+## 总结
+
+本教程精选了 8 款扩展：Prettier（格式化）、ESLint（质量检查）、GitLens（历史可视化）、Copilot（AI 补全）、Material Icon Theme（图标辨识）、Bracket Pair Colorization（括号匹配）、Path Intellisense（路径补全）、One Dark Pro（护眼主题）。从安装到验证，每个扩展都有具体的配置和测试方法。
+
+下一步可以学习 [VSCode 调式配置](/zh/dev/vscode/debugging) 来掌握断点调试，或阅读 [快捷键与效率提升](/zh/dev/vscode/shortcuts-productivity) 来进一步提升开发速度。

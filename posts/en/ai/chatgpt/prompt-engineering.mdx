@@ -1,0 +1,162 @@
+---
+title: ChatGPT Prompt Engineering Basics
+description: Write effective prompts for better responses
+field: ai
+software: chatgpt
+level: beginner
+language: en
+slug: prompt-engineering
+date: 2026-05-11
+readTime: 11
+translationOf: /zh/ai/chatgpt/prompt-engineering
+affiliateLinks:
+  - name: ChatGPT Plus
+    url: https://chatgpt.com
+    description: AI chat subscription
+    vendor: OpenAI
+---
+
+> **Version**: ChatGPT-4o / 2026-05 | **Difficulty**: ★☆☆☆☆ | **Read time**: 11 min
+
+## Why Your Prompts Keep Falling Short
+
+"Write me a marketing copy." ChatGPT returns 200 words of generic fluff. "Make it longer." Now it's 500 words of padded filler. "Sound more professional." Now it's throwing jargon you have never heard.
+
+This isn't ChatGPT's fault. Your prompt lacks **structure**.
+
+Most people write a single vague sentence. No role, no context, no output format, no constraints. The AI has no idea what you actually want, so it guesses — and guessing is a coin flip.
+
+This article gives you a proven five-element framework: **Role + Task + Context + Format + Constraints**. Apply it and your first output will be 80% ready for use.
+
+## Preparation
+
+- An OpenAI account ([ChatGPT Plus](https://chatgpt.com) recommended for GPT-4 access, which handles complex prompts far better than the free tier)
+- Optional: [OpenAI Playground](https://platform.openai.com/playground) to experiment with System Prompts
+- No coding experience required
+
+## Core Workflow: The Five-Element Prompt Method
+
+### Step 1: Set a Role
+
+Tell the AI who it is. Role determines knowledge scope and tone.
+
+```
+You are a senior Python developer with 7 years of experience in data engineering.
+```
+
+Without a role, ChatGPT defaults to a neutral "helpful assistant" voice — useful for nothing specific.
+
+### Step 2: Define the Task
+
+State exactly what you want in one sentence. Avoid vague verbs.
+
+**Weak**: Help me write about cloud computing.
+**Strong**: Write a 2000-word blog post for CTOs arguing why SMBs should fully migrate to serverless architecture by 2026.
+
+### Step 3: Provide Context
+
+Give the AI enough background to eliminate guesswork.
+
+```
+Context:
+- Target audience: tech leads at SMBs, 30-45 years old, worried about migration cost and security
+- Existing internal whitepaper on cloud cost (attached after this prompt)
+- Brand tone: data-driven, professional but accessible
+- Competitor AWS just released a new serverless pricing plan
+```
+
+### Step 4: Specify the Format
+
+Define the output structure. This is the most overlooked yet most impactful element.
+
+```
+Please use this structure:
+1. Headline (include a number and a keyword)
+2. Executive summary (3 sentences max)
+3. Body (5 subheadings with 100-150 words each)
+4. Call to action at the end
+
+No emoji. Bold the first sentence of each paragraph.
+```
+
+### Step 5: Set Constraints
+
+Tell the AI what NOT to do. Constraints dramatically improve output quality.
+
+```
+Rules:
+- Avoid industry jargon and acronyms
+- Cite sources for any data (use "industry estimates show" if uncertain)
+- No paragraph longer than 150 words
+- Total length: 1800-2200 words
+```
+
+### Complete Example
+
+Combine all five elements:
+
+```
+Role: You are a senior product marketing director at a SaaS company, specializing in B2B tech writing.
+Task: Write an 1800-2200 word blog post for CTOs arguing for full serverless migration by 2026.
+Context: Readers worry about migration cost. AWS's recent price cut is your hook.
+Format: Headline + summary + 5 subheadings + CTA. Bold first sentence of each paragraph.
+Constraints: No acronyms, cite data sources, no emoji, paragraphs under 150 words.
+```
+
+**Expected result**: A first draft that needs only minor edits.
+
+**Stop condition**: The output is logically complete, follows the format, and contains no factual errors. No further iteration needed.
+
+## Reference Table: Prompt Elements Cheat Sheet
+
+| Element | Purpose | Example |
+|---------|---------|---------|
+| **Role** | Scope knowledge and tone | "You are a senior data engineer" |
+| **Task** | Describe the requirement precisely | "Write a Pandas script to merge two CSVs" |
+| **Context** | Reduce information gap | "Data format is in the attached file, match by order_id" |
+| **Format** | Control output structure | "Use a Markdown table, bold first 3 rows" |
+| **Constraints** | Eliminate bad output | "No lists, each paragraph under 100 words" |
+| **Few-shot** | Provide style template | "Follow the format of this example: ..." |
+| **Negative instruction** | Explicitly forbid things | "Just give the code, no explanation" |
+| **Chain-of-thought** | Force reasoning | "First analyze, then propose, then code" |
+
+## Troubleshooting
+
+### Q1: ChatGPT ignores format instructions, outputs plain paragraphs
+
+**Root cause**: Format instruction is buried at the end of a long prompt, losing weight.
+**Fix**: Move format to the beginning or isolate it in its own paragraph. Better yet, use the System Prompt field (API or Playground) which carries higher weight than user messages.
+
+### Q2: Output is too generic, lacks depth
+
+**Root cause**: Role is too vague ("you are an expert"), context is too sparse.
+**Fix**: Add concrete numbers and experience — "You wrote 3 Python books" beats "You are a Python expert" every time.
+
+### Q3: AI fabricates facts and data
+
+**Root cause**: Hallucination is inherent to LLMs. When the model lacks knowledge, it confidently invents.
+**Fix**: Add "If you are unsure, say you are unsure" to constraints. Use step-by-step prompts to force reasoning before answering.
+
+### Q4: Quality degrades after multiple iterations
+
+**Root cause**: Each new exchange adds previous output to context, diluting attention on the original task.
+**Fix**: Start a fresh conversation and re-apply the prompt, or say "Ignore our previous conversation and re-generate from the original requirements."
+
+## Expert Tips
+
+- **Temperature control**: In the API/Playground, set Temperature 0.3-0.5 for factual tasks (analysis, code), 0.7-1.0 for creative tasks (copy, brainstorming). ChatGPT web default is ~0.7.
+- **Few-shot power**: 2-3 examples beat any abstract description. In classification tasks, 3 examples improved accuracy from 72% to 94% in real tests.
+- **Chain prompting**: Don't do complex tasks in one shot. Ask for an outline first, then expand. Two-step quality is ~40% better than one-shot on long-form content.
+- **Reverse questioning**: Add "Ask me clarifying questions if you need more information." This shifts partial initiative to the AI and often surfaces conditions you missed.
+- **Token cost awareness**: GPT-4 runs ~$0.03 per 1K tokens. A complex prompt can consume 2000+ tokens including output. Keep prompts lean to save on API costs.
+
+## Summary
+
+You now have a proven framework for prompt engineering:
+
+- **Role + Task + Context + Format + Constraints** = high-quality prompts every time
+- **Format and Constraints** are the two most impactful yet most overlooked elements
+- **Few-shot examples** and **chain prompting** unlock advanced quality
+- **Temperature** balances creativity vs. precision
+
+Next: Learn to create **Custom GPTs** so your best prompts are always one click away. Or check [Advanced Use Cases](../advanced-use-cases) for coding and data analysis techniques.

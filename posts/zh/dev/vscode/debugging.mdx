@@ -1,0 +1,267 @@
+---
+title: VSCode 调试配置详解
+description: 从 launch.json 到断点调试，一次掌握
+field: dev
+software: vscode
+level: intermediate
+language: zh
+slug: debugging
+date: 2026-05-11
+readTime: 17
+affiliateLinks:
+  - name: GitHub Copilot
+    url: https://github.com/features/copilot
+    description: AI 编程助手
+    vendor: GitHub
+---
+
+> **版本**: VSCode 1.90+（2024年5月更新）
+> **难度**: ★★★☆☆（需理解运行进程、端口概念）
+> **用时**: 25-35 分钟
+
+## console.log 调试法的困境
+
+排查 bug 时，很多人的第一反应是在代码里插入 `console.log('here1')`、`console.log('here2', variable)`，刷新页面看控制台输出。这种方法的问题是：
+
+- **修改代码本身**：每加一条 log 都要重启应用，忘记删除的 log 还可能被提交到仓库
+- **不完整**：只能看到离散的时间点状态，看不到完整的变量变化轨迹
+- **性能影响**：高频率的 `console.log` 会拖慢应用，甚至改变异步时序
+
+VSCode 的内置调试器可以让你在任何代码行 **暂停执行**，实时检查所有变量、调用堆栈和表达式状态，且不需要修改一行代码。
+
+## 准备工作
+
+- **VSCode** 1.90+ 版本
+- **Node.js** 18+（本教程以 Node.js/JavaScript 项目为例）
+- 一个可运行的 JS 项目（或新建一个 `npm init -y` 的项目，创建 `index.js`）
+- 理解基本的运行进程概念
+
+## 核心调试流程（六步掌握）
+
+### 第一步：创建 launch.json 启动配置
+
+调试器需要知道如何启动你的应用。点击 VSCode 左侧的 **运行和调试** 图标（`Ctrl+Shift+D`），点击 **创建 launch.json 文件**，选择 **Node.js**。
+
+VSCode 会生成 `.vscode/launch.json`：
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "启动程序",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/index.js"
+    }
+  ]
+}
+```
+
+**关键字段说明**：
+- `type`：调试器类型（node、chrome、python 等）
+- `request`：`launch`（启动新进程）或 `attach`（附加到已有进程）
+- `program`：入口文件路径。`${workspaceFolder}` 是当前项目根目录的变量
+- `skipFiles`：跳过 Node.js 内部模块，避免进入 `node_modules` 的迷宫
+
+**验证方式**：在 `index.js` 中写一个简单的函数 `function add(a, b) { return a + b; } console.log(add(1, 2));`，按 `F5`，确认调试器启动并在控制台打印 `3`。
+
+### 第二步：设置基础断点
+
+在编辑器左侧行号旁边点击，会出现一个红色圆点——这就是断点。当程序执行到这一行时，会 **暂停**，而不是直接运行到底。
+
+**练习**：在 `console.log(add(1, 2))` 这一行设置断点，按 `F5` 启动调试。
+
+**预期结果**：编辑器停留在断点行，黄色高亮表示当前暂停位置。屏幕上方出现调试工具栏。
+
+### 第三步：掌握调试工具栏
+
+调试工具栏控制执行流程，五个按钮从左到右：
+
+| 按钮 | 快捷键 | 作用 |
+|------|--------|------|
+| ▶️ 继续 | `F5` | 恢复执行到下一个断点 |
+| ⏭️ 单步跳过 | `F10` | 执行当前行，不进入函数内部 |
+| ⏬ 单步进入 | `F11` | 进入当前行调用的函数内部 |
+| ⏫ 单步跳出 | `Shift+F11` | 执行完当前函数，返回到调用处 |
+| 🔄 重启 | `Ctrl+Shift+F5` | 终止当前调试会话并重新启动 |
+| ⬛ 停止 | `Shift+F5` | 终止调试会话 |
+
+### 第四步：监视变量
+
+调试暂停时，左侧 **变量** 面板显示当前作用域的所有变量（局部、闭包、全局）。
+
+更强大的是 **监视** 面板：
+
+1. 在 **监视** 部分点击 ➕
+2. 输入任意 JavaScript 表达式：如 `a + b`、`arr.length`、`user.name.toUpperCase()`
+3. 每次单步执行后，监视表达式会自动重新计算
+
+**练习**：在 `add` 函数返回语句设置断点，运行调试。在监视面板添加表达式 `a + b`，观察单步执行时值的变化。
+
+### 第五步：条件断点与 Logpoint
+
+右键点击行号区域，可以选择两种高级断点类型：
+
+**条件断点**（Conditional Breakpoint）：
+
+只在指定条件满足时暂停。右键点击行号，选择 **条件断点**：
+
+- **表达式**：输入 `a > 100`，只有当 `a` 大于 100 时才暂停
+- **命中次数**：输入 `>= 5`，经过第 5 次时再暂停（适用于循环调试）
+
+**Logpoint**（日志点）：
+
+比 `console.log` 更好的替代方案。右键点击行号，选择 **Logpoint**，输入要输出的消息：
+
+- 在"信息"框中输入：`变量 a 的值是：{a}`
+- 执行时不会暂停，但会在调试控制台输出消息
+- 不修改源代码，不会意外提交到仓库
+
+### 第六步：调用堆栈分析
+
+当程序暂停时，**调用堆栈**（Call Stack）面板显示当前函数是如何被一路调用过来的。
+
+**实际场景**：你读一个复杂项目的源码，发现某个工具函数被调用了但不知道是哪里调的。在工具函数里设断点，暂停后看调用堆栈面板——从上到下依次是：当前函数 → 调用者 → 调用者的调用者 → ... → 全局入口。
+
+双击堆栈中的任意一层，编辑器会跳转到对应的源码位置，且 **变量面板自动切换为该层的作用域**。
+
+## launch.json 配置速查表
+
+| 配置项 | 类型 | 说明 | 示例 |
+|--------|------|------|------|
+| `type` | string | 调试器类型 | `node`, `chrome`, `python` |
+| `request` | string | 启动或附加 | `launch`, `attach` |
+| `name` | string | 配置名称，显示在启动下拉菜单 | `启动程序` |
+| `program` | string | 入口文件路径 | `${workspaceFolder}/index.js` |
+| `args` | string[] | 传递给程序的命令行参数 | `["--port", "3000"]` |
+| `env` | object | 环境变量 | `{ "NODE_ENV": "development" }` |
+| `cwd` | string | 当前工作目录 | `${workspaceFolder}` |
+| `skipFiles` | string[] | 跳过调试的文件 | `["<node_internals>/**", "**/node_modules/**"]` |
+| `runtimeExecutable` | string | 可执行文件路径 | `npm`, `yarn`, `ts-node` |
+| `runtimeArgs` | string[] | 运行时参数 | `["run", "dev"]` |
+| `restart` | boolean | 调试终止后自动重启 | `true` |
+| `sourceMaps` | boolean | 启用 Source Map | `true` |
+| `outFiles` | string[] | Source Map 输出文件 | `["${workspaceFolder}/dist/**/*.js"]` |
+
+## 常见问题
+
+### 问题 1：断点显示空心圆（无法命中）
+
+**症状**：设置了断点，但断点是空心（未填充）的，程序运行不停。
+
+**原因**：
+
+- 对于 TypeScript 项目，没有启用 Source Map，调试器不知道 `.ts` 文件对应 `.js` 的哪个位置
+- 断点所在文件与调试器运行的实际文件不是同一个（比如调试的是 `dist/index.js` 但你断点打在 `src/index.ts`）
+
+**解决**：
+
+```json
+{
+  "type": "node",
+  "request": "launch",
+  "name": "调试 TS",
+  "program": "${workspaceFolder}/src/index.ts",
+  "runtimeExecutable": "ts-node",
+  "runtimeArgs": ["--transpile-only"],
+  "sourceMaps": true,
+  "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+}
+```
+
+关键：确保 `sourceMaps: true`，且 `outFiles` 指向编译输出目录。
+
+### 问题 2：附加到已有进程失败（Address already in use）
+
+**症状**：使用 `attach` 模式调试时，提示端口被占用或连接被拒绝。
+
+**原因**：Node.js 默认没有开启调试端口。或者调试端口与正在运行的进程端口混淆。
+
+**解决**：
+
+1. 先用 `--inspect` 启动 Node 进程：
+
+```bash
+node --inspect=9229 index.js
+```
+
+2. 创建 `attach` 配置：
+
+```json
+{
+  "type": "node",
+  "request": "attach",
+  "name": "附加到进程",
+  "port": 9229,
+  "restart": true
+}
+```
+
+3. 不同端口含义：`--inspect=9229` 是调试协议端口（VSCode 连接用），应用本身的端口（如 `3000`）是 HTTP 服务端口，互不冲突。
+
+### 问题 3：React 项目断点不生效
+
+**症状**：使用 Create React App 或 Vite 开发 React 项目，在组件中设断点，浏览器里的代码停不下来。
+
+**原因**：VSCode 直接调试 Node.js 用的是内置的 `node` 调试器。前端项目需要在浏览器中运行，需要用 Chrome Debugger 扩展并配置正确的 URL。
+
+**解决**：
+
+1. 安装扩展：搜索 `Debugger for Chrome`（或使用 VSCode 内置的 JavaScript Debugger）
+2. 配置 launch.json：
+
+```json
+{
+  "type": "chrome",
+  "request": "launch",
+  "name": "调试 React",
+  "url": "http://localhost:3000",
+  "webRoot": "${workspaceFolder}/src",
+  "sourceMapPathOverrides": {
+    "webpack:///src/*": "${webRoot}/*"
+  }
+}
+```
+
+3. 先启动 `npm start`，再按 `F5` 启动调试。
+
+### 问题 4：调试控制台乱码
+
+**症状**：变量值显示为乱码或 `undefined`，但代码中确实有值。
+
+**原因**：可能是 Source Map 映射错误，导致调试器看到的变量名与实际不符。也可能是 `skipFiles` 配置错误导致停在了错误的栈帧。
+
+**解决**：在监视面板中直接输入完整的全局表达式（如 `globalThis`），确认调试上下文是否正确。检查 `skipFiles` 是否误跳过了关键模块。临时将所有 `skipFiles` 注释掉，确认是配置问题还是 Source Map 问题。
+
+## 专家建议
+
+- **Logpoint 替代 console.log**：在生产环境调试时，需要确认某个线上函数是否执行。在 CI/CD 部署前，在关键路径上设置 Logpoint（不修改源码），调试完毕后统一删除所有 Logpoint。不会出现"忘记删除调试代码"的尴尬。
+- **调试 npm scripts**：在 `package.json` 的 scripts 中，可以在命令前加 `--inspect`，然后用 `attach` 模式连接。更简单的方式：在 launch.json 中直接配置 `runtimeExecutable: "npm"`、`runtimeArgs: ["run", "dev"]`。
+- **条件断点性能**：条件断点每次经过都会计算表达式，在热循环（每秒执行数万次的热点路径）中可能导致严重卡顿。此时先用 Logpoint 确认进入次数，再改用条件断点。
+- **多目标调试**：同时调试前端（Chrome）和后端（Node.js）时，在 launch.json 中使用 `compounds` 配置：
+
+```json
+{
+  "compounds": [
+    {
+      "name": "前端+后端",
+      "configurations": ["调试 React", "启动程序"]
+    }
+  ]
+}
+```
+
+在启动下拉菜单中选择"前端+后端"，按 `F5` 即可同时启动两个调试会话。
+
+## 总结
+
+本教程系统讲解了 VSCode 调试功能：从 launch.json 的基础配置到条件断点、Logpoint、Source Map 调试。核心方法论是"暂停-检查-步进"三循环，替代传统的 console.log 调试。
+
+下一步建议学习 [VSCode 快捷键与效率提升](/zh/dev/vscode/shortcuts-productivity)，将调试工作流中的重复操作用快捷键替代。
+
+### 相关文章
+
+- [VSCode 必装扩展推荐](/zh/dev/vscode/extensions-guide)
+- [VSCode 快捷键与效率提升](/zh/dev/vscode/shortcuts-productivity)

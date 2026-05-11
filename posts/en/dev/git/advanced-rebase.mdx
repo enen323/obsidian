@@ -1,0 +1,415 @@
+---
+title: Advanced Git Rebase Techniques
+description: Interactive rebase, cherry-pick, and bisect in depth
+field: dev
+software: git
+level: advanced
+language: en
+slug: advanced-rebase
+date: 2026-05-11
+readTime: 20
+translationOf: /zh/dev/git/advanced-rebase
+affiliateLinks: []
+---
+
+> **Version**: Git 2.30+ (Git 2.40+ recommended as of 2024)
+> **Difficulty**: ★★★★☆ (familiarity with basic git commits required)
+> **Time**: 30-40 min
+
+## Messy Commit History Is Dragging Your Team Down
+
+In team collaboration, the typical pattern is: each person works on their own branch with commit messages like "fix", "update", "wip", or "aaa". When merged to main, the history becomes an incomprehensible tangle: `Merge branch 'feature/login' into main` lines criss-crossing, `fix typo` commits intermixed with `add new feature` commits. Try to revert a specific feature and you have no idea which commits belong to it.
+
+Many developers accept this as normal — "thats just how git is." But Git provides **rebase**, **cherry-pick**, **bisect**, and other tools that let you rewrite, organize, and filter commit history before merging. A well-maintained main branch reads like a book's table of contents.
+
+This guide assumes you are comfortable with `git add`, `git commit`, `git push`, `git pull`, and `git merge`.
+
+## Prerequisites
+
+- **Git** 2.30+ (2.40+ recommended)
+- A test repository with **at least 5 commits**
+- Basic terminal proficiency
+- Practice on a test repo first, not a production project
+
+Create a test repository:
+
+```bash
+mkdir rebase-test && cd rebase-test
+git init
+echo "line 1" > file.txt && git add . && git commit -m "initial commit"
+echo "line 2" >> file.txt && git add . && git commit -m "add second line"
+echo "line 3" >> file.txt && git add . && git commit -m "add third line"
+echo "line 4" >> file.txt && git add . && git commit -m "add fourth line"
+echo "line 5" >> file.txt && git add . && git commit -m "add fifth line"
+```
+
+You now have a repo with 5 linear commits.
+
+## Core Operations: Step by Step
+
+### 1. Interactive Rebase (`git rebase -i`)
+
+Interactive rebase lets you modify, merge, reorder, or delete commits. It is the primary tool for cleaning up history.
+
+#### Step 1: Choose the base
+
+```bash
+# Edit the last 3 commits
+git rebase -i HEAD~3
+```
+
+This opens an editor showing the 3 most recent commits:
+
+```
+pick abc1234 add third line
+pick def5678 add fourth line
+pick ghi9012 add fifth line
+
+# Commands:
+# p, pick = use this commit
+# r, reword = use commit but edit the message
+# s, squash = use commit, but meld into previous
+# f, fixup = like squash, but discard this commits log message
+# d, drop = remove commit
+# e, edit = stop here to amend the commit
+# x, exec = run a shell command
+# b, break = stop here
+```
+
+#### Step 2: Apply operations
+
+**Scenario A — Squash the last two commits**:
+
+Change `pick` to `squash` or `s` on the second commit:
+
+```
+pick def5678 add fourth line
+squash ghi9012 add fifth line
+```
+
+Save and exit. Git asks for a new combined commit message. You can edit it to say: `Add fourth and fifth lines`.
+
+**Why squash**?: Development micro-commits ("fix typo", "adjust margin") should not appear in the final history. Squash merges them into one logical unit.
+
+**Scenario B — Reword a commit message**:
+
+```
+pick abc1234 add third line
+reword def5678 add fourth line
+pick ghi9012 add fifth line
+```
+
+After saving, Git opens another editor for you to change the message of `def5678`.
+
+**Scenario C — Drop a commit**:
+
+If a commit introduced bad code:
+
+```
+pick abc1234 add third line
+drop def5678 add fourth line
+pick ghi9012 add fifth line
+```
+
+#### Step 3: Handle conflicts
+
+If a conflict occurs during rebase, Git pauses:
+
+```
+Auto-merging file.txt
+CONFLICT (content): Merge conflict in file.txt
+error: could not apply def5678... add fourth line
+hint: Resolve all conflicts manually, mark them as resolved with
+hint: "git add/rm <conflicted_files>", then run "git rebase --continue".
+```
+
+**Resolution process**:
+
+1. Open the conflicted file, search for `<<<<<<<`, `=======`, `>>>>>>>` markers
+2. Manually edit to keep the correct content, remove conflict markers
+3. `git add file.txt`
+4. `git rebase --continue`
+
+To abort the rebase entirely:
+
+```bash
+git rebase --abort
+```
+
+#### Stop condition
+
+When all commits have been processed, Git outputs `Successfully rebased and updated refs/heads/main.`
+
+### 2. Cherry-Pick (`git cherry-pick`)
+
+Cherry-pick applies a specific commit from another branch to your current branch without merging the entire branch.
+
+**Scenario**: On the `feature` branch, you developed feature A and feature B. Feature B is needed for an urgent release, but feature A is not ready.
+
+```bash
+# On the main branch
+git checkout main
+
+# View feature branch history
+git log feature --oneline
+# Output:
+# a1b2c3d Feature B commit
+# e4f5g6h Feature A commit
+
+# Only bring Feature B to main
+git cherry-pick a1b2c3d
+```
+
+**Common options**:
+
+| Option | Effect |
+|--------|--------|
+| `-n` / `--no-commit` | Stage changes without auto-committing (useful for combining multiple cherry-picks) |
+| `-x` | Append the source commit hash to the commit message (good for traceability) |
+| `-e` / `--edit` | Edit the commit message |
+| `-m 1` | When cherry-picking a merge commit, specify which parent to follow |
+
+**Batch cherry-pick**:
+
+```bash
+# Cherry-pick a range of consecutive commits
+git cherry-pick a1b2c3d..e4f5g6h   # Range: excludes a1b2c3d, includes e4f5g6h
+
+# Cherry-pick non-consecutive commits
+git cherry-pick a1b2c3d e4f5g6h i7j8k9l
+```
+
+**Stop condition**: After successful application: `[main abc1234] Feature B commit`.
+
+### 3. Advanced Stash (`git stash`)
+
+Stash temporarily saves uncommitted changes, giving you a clean working directory.
+
+**Scenario**: You are developing a new feature when a critical production bug needs an immediate fix.
+
+```bash
+# Check current status — uncommitted changes exist
+git status
+
+# Temporarily save all changes
+git stash push -m "WIP: login feature in progress"
+
+# Confirm clean working directory
+git status
+
+# Switch to fix the bug
+git checkout hotfix
+
+# After fixing, return to the feature branch
+git checkout feature/login
+
+# Restore stashed changes
+git stash pop   # Restore and remove the stash
+# or
+git stash apply  # Restore without removing the stash
+```
+
+**Advanced stash operations**:
+
+```bash
+# List all stashes
+git stash list
+# stash@{0}: On feature/login: WIP: login feature in progress
+# stash@{1}: On feature/login: style changes
+
+# Apply a specific stash
+git stash apply stash@{1}
+
+# Stash only unstaged files, keep staged files as-is
+git stash push --staged -m "staged changes only"
+
+# Create a branch from a stash
+git stash branch new-feature stash@{0}
+```
+
+### 4. Bisect Debugging (`git bisect`)
+
+When a bug appears but you have no idea which commit introduced it — and there are dozens or hundreds of commits in between — bisect uses binary search to pinpoint the guilty commit.
+
+```bash
+# Start bisect
+git bisect start
+
+# Mark the current version as "bad"
+git bisect bad
+
+# Mark a known "good" version (e.g., one week ago)
+git bisect good HEAD~100
+```
+
+Git checks out a middle commit. You test this version:
+
+```bash
+# If this version does NOT have the bug
+git bisect good
+
+# If this version HAS the bug
+git bisect bad
+```
+
+Repeat about 7 times (for a 100-commit range), and bisect pinpoints the exact commit:
+
+```
+def5678 is the first bad commit
+commit def5678...
+Author: ...
+Date: ...
+    Modified login validation logic
+```
+
+**Automated bisect**:
+
+```bash
+# Write a test script (exit 0 for good, non-zero for bad)
+git bisect run npm test
+```
+
+### 5. Reset Strategies (`git reset`)
+
+Understand the three reset modes to avoid data loss.
+
+| Mode | Working Directory | Staging Area (Index) | Repository | Use Case |
+|------|------------------|---------------------|------------|----------|
+| `--soft` | Unchanged | Unchanged | Reset | Undo commits but keep changes for re-committing |
+| `--mixed` (default) | Unchanged | Reset | Reset | Undo commits and staging, keep working changes |
+| `--hard` | Reset | Reset | Reset | Discard all changes permanently |
+
+**Examples**:
+
+```bash
+# Forgot to include a file in the last commit
+git commit -m "Add user registration feature"
+# Oops, forgot register.js
+
+# --soft: undo commit, changes go back to staging
+git reset --soft HEAD~1
+git add register.js
+git commit -m "Add user registration feature"
+
+# --hard is DANGEROUS: go back 3 commits, discarding everything
+git reset --hard HEAD~3
+```
+
+## Command Reference Table
+
+| Command | Parameters | Effect | Risk |
+|---------|-----------|--------|------|
+| `git rebase -i HEAD~N` | `N` = number of commits | Edit the last N commits interactively | ⚠️ Medium |
+| `git rebase -i <hash>` | Base commit hash | Edit from a specific commit | ⚠️ Medium |
+| `git rebase --continue` | None | Continue after resolving conflicts | — |
+| `git rebase --abort` | None | Abort the current rebase | — |
+| `git cherry-pick <hash>` | Commit hash | Apply a specific commit | ✅ Safe |
+| `git cherry-pick -x <hash>` | Commit hash | Same, with source reference | ✅ Safe |
+| `git stash push -m "msg"` | Description | Save current changes | ✅ Safe |
+| `git stash pop` | None | Restore and remove latest stash | ✅ Safe |
+| `git stash list` | None | List all stashes | ✅ Safe |
+| `git stash drop stash@{N}` | Stash number | Delete a specific stash | ⚠️ Low |
+| `git bisect start/bad/good` | Commit markers | Binary search for bugs | ✅ Safe |
+| `git bisect run <script>` | Script path | Automated bisect | ✅ Safe |
+| `git bisect reset` | None | End bisect, return to original branch | ✅ Safe |
+| `git reset --soft HEAD~N` | Steps back | Undo N commits, keep changes | ✅ Safe |
+| `git reset --hard HEAD~N` | Steps back | Discard N commits completely | 🔴 Dangerous |
+| `git reflog` | None | View all HEAD operation history | ✅ Safe |
+
+## Troubleshooting
+
+### Issue 1: Rebase conflict resolved, but continue fails
+
+**Symptom**: `git rebase --continue` says "No changes - did you forget to use 'git add'?" and exits. The branch is left in a broken state.
+
+**Root cause**: After resolving conflicts, the file content matches what it was before the rebase patch was applied. Git considers this an "empty" commit.
+
+**Fix**:
+
+```bash
+# If you confirm this commit is no longer needed
+git rebase --skip
+
+# If you want to start over safely
+git rebase --abort
+git rebase -i HEAD~3
+```
+
+**Prevention**: Always use `git stash` to ensure a clean working directory before starting a rebase.
+
+### Issue 2: Cherry-picking a merge commit fails
+
+**Symptom**: `git cherry-pick <merge-commit-hash>` outputs "fatal: Commit xxx is a merge but no -m option was given."
+
+**Root cause**: Merge commits have multiple parents. Git does not know which parents changes to apply.
+
+**Fix**:
+
+```bash
+# -m 1 typically means "keep the changes from the primary branch"
+git cherry-pick -m 1 <merge-commit-hash>
+```
+
+### Issue 3: Lost commits after `git reset --hard`
+
+**Symptom**: You ran `git reset --hard HEAD~5` and immediately regretted it.
+
+**Root cause**: `--hard` discards commits, but Gits garbage collector does not run immediately.
+
+**Fix**:
+
+```bash
+# Use reflog to find lost commits
+git reflog
+# Output:
+# a1b2c3d HEAD@{0}: reset: moving to HEAD~5
+# e4f5g6h HEAD@{1}: commit: Important feature implementation
+
+# Restore to the lost commit
+git reset --hard e4f5g6h
+```
+
+**Key point**: `reflog` records local HEAD movement history, not the repos commit graph. As long as `git gc` has not run, most mistakes are recoverable.
+
+### Issue 4: Bisect mis-marked a commit, results are wrong
+
+**Symptom**: Bisect identified a commit that clearly does not contain the bug. The actual buggy commit is earlier.
+
+**Root cause**: During the bisect process, a bad commit was mistakenly marked as "good."
+
+**Fix**:
+
+```bash
+# End the current bisect
+git bisect reset
+
+# Restart with more care
+git bisect start
+git bisect bad HEAD~5       # Be explicit about the bad version
+git bisect good HEAD~50     # Be explicit about the good version
+```
+
+Use a test script or log each test results carefully to avoid mis-marking.
+
+## Expert Tips
+
+- **Rebase before merging to main**: Before merging a feature branch into `main`, run `git rebase main` to rebase your branch onto the latest main. Then use `--no-ff` for the merge. The main branch history stays linear and clean, without octopus-merge topology.
+- **Always interactive rebase before a PR**: Squash WIP commits into 1-3 logical, meaningful commits. Reviewers do not need to see every "fix typo" and "adjust margin" you made during development.
+- **Never rebase a public branch**: The golden rule: If you have already `git push`-ed commits that others may have pulled, do NOT rebase that branch. Rebase rewrites commit hashes, causing duplicate commits in your collaborators repos. Only rebase your personal branches.
+- **Track cherry-pick sources**: Always use the `-x` flag so the commit message includes the original commit hash. "cherry-pick from a1b2c3d" in the message is invaluable for future debugging.
+- **Alias for speed**: Add these to `~/.gitconfig`:
+
+```ini
+[alias]
+  rb = rebase -i
+  cp = cherry-pick
+  ss = stash push -m
+  sl = stash list
+  l = log --oneline --graph --all --decorate
+```
+
+## Summary
+
+This guide covered five advanced Git operations: interactive rebase for cleaning commit history, cherry-pick for selective merging, stash for flexible context switching, bisect for binary-search debugging, and reset strategies for safe rollbacks. Each operation included concrete scenarios, command parameters, and conflict handling procedures.
+
+Next, explore [Git Branch Strategy Best Practices](/en/dev/git/branch-strategy) to integrate rebase and cherry-pick into your daily branch management workflow.

@@ -1,0 +1,278 @@
+---
+title: Postman API 测试入门
+description: 从零开始用 Postman 构建请求、管理环境和自动化测试
+field: dev
+software: postman
+level: beginner
+language: zh
+slug: api-testing
+date: 2026-05-11
+readTime: 16
+affiliateLinks:
+  - name: Postman Pro
+    url: https://www.postman.com/pricing
+    description: Postman 专业版团队协作功能
+    vendor: Postman
+---
+
+> **适用版本**: Postman v11+（桌面版） | **难度**: ★☆☆☆☆ | **预估用时**: 30-40 分钟
+
+## 还在终端里敲 curl？
+
+你是这样测试 API 的：打开终端敲 `curl -X POST https://api.example.com/login -d '{}'`，看着满屏的 JSON 输出找有没有报错。下一个接口需要换参数，你按方向上键找到上一条命令，修改参数，再执行。每次都要手动拼 URL、设置 Headers、复制 Token——每次调试一个接口平均浪费 3-5 分钟在这些重复劳动上。更糟糕的是，这些请求不会被保存，第二天再测同一个接口又要重新来一遍。
+
+**Postman** 是专业的 API 开发和测试工具。它让你保存请求、管理环境变量、编写自动化断言，并且可以与团队共享所有配置。本教程从最基础的操作开始，带你掌握 Postman 的完整工作流。
+
+## 准备工作
+
+| 项目 | 要求 |
+|------|------|
+| Postman 版本 | v11 或更高（从 [postman.com/downloads](https://www.postman.com/downloads) 下载） |
+| 账号 | 建议注册 Postman 账号（免费，用于云同步和集合分享） |
+| 测试 API | 本教程使用 [JSONPlaceholder](https://jsonplaceholder.typicode.com) 提供的免费 API |
+| 操作系统 | Windows / macOS / Linux 均可 |
+
+**安装步骤**：
+1. 访问 [postman.com/downloads](https://www.postman.com/downloads) 下载桌面版客户端
+2. 运行安装程序，完成后启动 Postman
+3. 点击右上角 "Sign In" → "Create Account" 注册免费账号（或跳过，本地使用）
+4. 注册登录后，工作区会自动加载。界面分为：左侧边栏（集合/环境/历史）、中间区域（请求编辑器）、右侧（文档/示例）
+
+## 核心操作流程
+
+### 1. 构建并发送第一个 GET 请求
+
+从最简单的 GET 请求开始，熟悉 Postman 的请求编辑器界面。
+
+```
+操作步骤：
+① 打开 Postman，点击左上角 "New" → "HTTP" 创建一个新请求
+② 在 URL 输入框中输入：https://jsonplaceholder.typicode.com/posts/1
+③ 确认请求方法下拉框显示为 "GET"（默认值）
+④ 点击 "Send" 按钮（蓝色按钮，或按 Ctrl+Enter）
+⑤ 查看响应区内容
+```
+
+**为什么用 JSONPlaceholder？** 这是一个免费的 Fake API，不需要注册或 Token，返回真实的 RESTful 响应数据，是学习 API 测试的理想沙箱环境。
+
+**预期输出**：下方响应区在 "Body" 标签页显示：
+```json
+{
+  "userId": 1,
+  "id": 1,
+  "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+  "body": "quia et suscipit..."
+}
+```
+右侧选项卡显示：
+- **Status**: 200 OK（绿色）
+- **Time**: 约 150-400ms
+- **Size**: 约 600 bytes
+
+**减速/停止条件**：请求发送后，如果 10 秒内没有响应，点击 "Cancel" 停止请求，检查 URL 是否正确或网络是否通畅。
+
+### 2. 发送 POST 请求并设置 Headers
+
+大多数 API 的写入操作需要 POST 请求和特定的请求头。
+
+```
+操作步骤：
+① 在同一个请求标签页中，将方法从 GET 改为 POST
+② URL 保持不变：https://jsonplaceholder.typicode.com/posts
+③ 切换到 "Headers" 选项卡，添加一个请求头：
+   Key: Content-Type → Value: application/json（输入时会有自动补全）
+④ 切换到 "Body" 选项卡，选择 "raw" 格式，从下拉列表中选择 "JSON"
+⑤ 在文本框中输入：
+   {
+     "title": "foo",
+     "body": "bar",
+     "userId": 1
+   }
+⑥ 点击 "Send"
+```
+
+**为什么设置 Content-Type: application/json？** 大多数 REST API 要求客户端明确告知发送的数据格式。不加这个请求头，服务端可能无法正确解析请求体，返回 400/415 错误。
+
+**预期输出**：状态码 201 Created（而非 200），响应体包含：
+```json
+{
+  "title": "foo",
+  "body": "bar",
+  "userId": 1,
+  "id": 101
+}
+```
+`id: 101` 是 JSONPlaceholder 模拟创建后返回的自增 ID。
+
+**停止条件**：如果收到 415 Unsupported Media Type，检查 Content-Type 是否正确设置。
+
+### 3. 创建集合并保存请求
+
+集合（Collection）是 Postman 组织请求的基本单位。一个项目或一个 API 对应一个集合。
+
+```
+操作步骤：
+① 在请求编辑器中，点击 "Save" 按钮（或 Ctrl+S）
+② 在弹出的对话框中：
+   - Request name 输入："获取单篇文章"
+   - Request description（可选）输入："GET /posts/:id - 获取指定 ID 的文章"
+   - 在 "Select a collection" 下方点击 "New Collection"
+   - Collection name 输入："JSONPlaceholder API 测试"
+③ 点击 "Save to JSONPlaceholder API 测试"
+④ 观察左侧边栏 "Collections" 下出现刚刚创建的集合和请求
+```
+
+**为什么需要集合？** 当你需要测试 10 个、50 个 API 接口时，没有集合管理就回到了 curl 的历史记录模式——混乱且不可复用。集合可以将关联的请求分组、排序、编写描述，并一键导出分享给团队。
+
+**预期输出**：左侧 Collections 面板下出现：
+```
+JSONPlaceholder API 测试
+└── 获取单篇文章
+```
+
+**停止条件**：如果保存到了错误的集合，在 Collections 面板中右键请求 → "Move" 或 "Delete" 重新操作。
+
+### 4. 设置环境变量
+
+环境变量让你在开发、测试、生产环境之间无缝切换，无需手动修改 URL。
+
+```
+操作步骤：
+① 点击左侧边栏顶部 "Environments" 图标（齿轮图标）
+② 点击 "New Environment"
+③ 输入环境名称："JSONPlaceholder 测试环境"
+④ 添加两组变量：
+   Variable: base_url → Initial Value: https://jsonplaceholder.typicode.com
+   Variable: token → Initial Value: （留空，后续使用）
+⑤ 点击 "Save"，关闭环境编辑器
+⑥ 回到请求编辑器，将 URL 中的 https://jsonplaceholder.typicode.com 替换为 {{base_url}}
+⑦ 在右上角环境选择器中，选择 "JSONPlaceholder 测试环境"
+⑧ 再次点击 "Send"，确认请求能正常工作
+
+# 变量值覆盖测试：
+① 创建第二个环境 "本地开发环境"，将 base_url 设为 http://localhost:3000
+② 切换环境，URL 自动更新，无需修改请求本身
+```
+
+**为什么用环境变量？** 想象一下你同时维护开发、测试、预发布三套环境。没有变量时，每个环境的请求都要手动修改 URL、Token、API Key——50 个请求 × 3 个环境 = 150 次手动修改。使用变量后只需切换环境下拉菜单即可。
+
+**预期输出**：切换环境后，URL 中的 `{{base_url}}` 自动解析为对应环境的值。请求依然正常发送并收到 200 响应。
+
+**停止条件**：如果发送后 URL 显示为 `{{base_url}}/posts/1` 未被替换，说明环境变量未正确选择或变量名拼写错误。
+
+### 5. 编写测试断言（Tests）
+
+Postman 支持在请求返回后自动执行 JavaScript 断言，实现自动化验证。
+
+```
+操作步骤：
+① 打开刚才的 "获取单篇文章" 请求
+② 切换到 "Tests" 选项卡
+③ 粘贴以下测试脚本：
+
+   // 验证状态码为 200
+   pm.test("Status code is 200", function () {
+       pm.response.to.have.status(200);
+   });
+
+   // 验证响应时间小于 500ms
+   pm.test("Response time is under 500ms", function () {
+       pm.expect(pm.response.responseTime).to.be.below(500);
+   });
+
+   // 验证返回数据包含必需的字段
+   pm.test("Response has required fields", function () {
+       const jsonData = pm.response.json();
+       pm.expect(jsonData).to.have.property("userId");
+       pm.expect(jsonData).to.have.property("id");
+       pm.expect(jsonData).to.have.property("title");
+       pm.expect(jsonData).to.have.property("body");
+   });
+
+   // 验证 title 是字符串
+   pm.test("Title is a string", function () {
+       const jsonData = pm.response.json();
+       pm.expect(jsonData.title).to.be.a("string");
+   });
+
+④ 点击 "Send" 发送请求
+⑤ 查看响应区下方的 "Test Results" 选项卡
+```
+
+**为什么需要测试断言？** 肉眼检查 JSON 响应非常不可靠——你可能漏掉一个字段，或者没有注意到状态码变成了 201。测试断言让 Postman 自动检查每一个验证点，测试结果一目了然。
+
+**预期输出**：Test Results 标签页显示：
+```
+PASS Status code is 200
+PASS Response time is under 500ms
+PASS Response has required fields
+PASS Title is a string
+```
+所有 4 个断言通过，显示绿色 ✓。如果有失败，显示红色 ✗ 并附带错误信息。
+
+**停止条件**：如果某个测试失败，检查断言中的字段名是否与 API 实际返回一致。可以使用 `console.log(pm.response.json())` 在 Postman Console（View → Show Postman Console）中查看完整响应进行调试。
+
+## 常用操作速查表
+
+| 操作 | 方法 | 说明 |
+|------|------|------|
+| 发送请求 | `Ctrl+Enter` | 快速发送当前请求 |
+| 保存请求 | `Ctrl+S` | 保存到当前集合 |
+| 新建请求 | `Ctrl+N` | 创建新的 HTTP 请求 |
+| 查找替换 | `Ctrl+F` | 在请求编辑器中搜索 |
+| 切换环境 | 右上角下拉菜单 | 切换变量环境 |
+| 格式化 JSON | `Ctrl+B` / "Pretty" 按钮 | 美化 JSON 响应格式 |
+| 复制为 cURL | 右键请求 → "Code" → cURL | 将请求导出为 curl 命令 |
+| 打开控制台 | `Ctrl+Alt+C` | 打开 Postman Console 调试 |
+| 集合运行器 | Collections → Run | 批量运行集合中的所有请求 |
+
+## 常见问题排查
+
+**问题 1：请求发送后收到 Could not get any response**
+- **原因**：网络连接问题，或目标服务器不可达。Postman 默认超时时间为 10 秒
+- **解决**：检查系统网络连接。尝试在浏览器中直接访问 API URL 确认服务在线。检查 Postman 的代理设置（Settings → Proxy），企业网络可能需要配置代理。尝试关闭 VPN 或调整网络环境
+
+**问题 2：{{base_url}} 在发送时没有被替换为实际值**
+- **原因**：环境未正确选择，或变量不存在于当前环境中
+- **解决**：确认右上角环境选择器已选中正确的环境。检查 Environments 面板中该变量是否存在且拼写正确。注意：Postman 变量名区分大小写，`{{Base_Url}}` 和 `{{base_url}}` 是不同的
+
+**问题 3：POST 请求返回 415 Unsupported Media Type**
+- **原因**：未设置 `Content-Type: application/json` 请求头
+- **解决**：切换到 Headers 选项卡，添加 `Content-Type: application/json`。或者在 Body 选项卡中选择 JSON 格式后，Postman 会自动添加该请求头。如果使用 GraphQL，需要 `Content-Type: application/json` 而非 `application/graphql`
+
+**问题 4：测试断言报告 ReferenceError: pm is not defined**
+- **原因**：测试脚本写在了 Pre-request Script 选项卡中，而非 Tests 选项卡
+- **解决**：确认脚本粘贴在 "Tests" 选项卡中（请求发送后执行），而非 "Pre-request Script"（请求发送前执行）。`pm.*` API 在 Pre-request Script 中不可用，需要使用 `postman.*` 替代（v11 已逐步弃用）
+
+**问题 5：签出（Checkout）后集合不见了**
+- **原因**：Postman 默认打开了云端同步，本地数据未保存
+- **解决**：如果使用了 Postman 账号，点击 "Collections" 面板顶部的 "Sync" 图标手动同步。离线环境下确保在 Preferences → Sync 中启用了本地优先模式。建议定期点击集合旁的 "Export" 按钮下载 JSON 备份
+
+## 专家建议
+
+**时间节省数据**：正确使用集合和环境变量后，API 调试效率可提升约 70%。从每次手动拼 URL 和 Headers 的 3-5 分钟，减少到选择请求并点击 Send 的 10 秒。
+
+**最佳实践**：
+- **集合按模块组织**：与其将所有请求放在一个集合中，不如按 API 模块拆分（用户模块、订单模块、支付模块）。每个集合内部用文件夹进一步归类（GET / POST / PUT / DELETE）
+- **使用描述和示例**：为每个请求填写 Description，记录用途和注意事项。在 Examples 中保存成功/失败的响应样本，方便团队成员理解 API 的行为
+- **变量分层策略**：Globals（全局变量）< Collection（集合变量）< Environment（环境变量）。将不变的常量（如 API 版本号）放在 Collection Variables，将环境相关的值（如 base URL、API Key）放在 Environment Variables
+- **合理使用 Pre-request Script**：在请求发送前自动执行脚本。典型用途：自动计算签名、设置时间戳参数、从上一个请求的响应中提取数据设置变量
+- **开启 SSL 验证**：Production 环境保持 SSL 验证开启（Setting → General → SSL certificate verification）。只在开发环境下关闭
+
+**常见陷阱**：
+- **全局变量的污染**：长期使用 Globals 存储临时值会导致混乱。用完临时变量后及时清理，或在 Pre-request Script 中使用 `pm.variables.set()` 设置临时作用域
+- **硬编码 Token**：不要在请求中直接粘贴 Token 字符串。Token 应该存储在环境变量中，通过 `{{token}}` 引用。这样切换账号时只需修改环境变量值
+- **忘记保存**：修改请求后忘记按 Ctrl+S，下次打开时还是旧版本。养成「测试完即保存」的习惯
+
+## 总结
+
+你已经学习了 Postman 的核心操作：构建 GET/POST 请求、使用集合管理接口、通过环境变量处理多环境配置、编写测试断言实现自动化验证。这些技能构成了 API 测试的基础工作流。
+
+**下一步**：
+- 学习 [Postman 自动化测试](../automation/) 使用 Newman 命令行工具将集合集成到 CI 流水线
+- 体验 Collection Runner 批量运行整个集合的所有请求
+- 探索 Postman 的 API 文档生成功能和 Mock Server
+
+---
+
+> 本文为 Postman 教程系列的一部分。查看 [Postman 更多教程](../) 了解更多内容。

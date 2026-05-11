@@ -1,0 +1,353 @@
+---
+title: "Photoshop Text Effects Guide: Layer Styles & 3D Typography"
+description: Create professional text effects and typography
+field: design
+software: photoshop
+level: advanced
+language: en
+slug: text-effects
+date: 2026-05-11
+readTime: 18
+translationOf: /zh/design/photoshop/text-effects
+affiliateLinks:
+  - name: Adobe Creative Cloud
+    url: https://www.adobe.com
+    description: Full suite of creative apps
+    vendor: Adobe
+---
+
+> **Version**: Photoshop 2024 (25.0+, backward compatible to CC 2019)
+> **Difficulty**: ★★★★☆ (requires solid grasp of layers and blend modes)
+> **Time**: 30-45 minutes
+
+## Default Text Doesn't Deserve Your Design
+
+You type a word on the canvas: white, Arial, 12 pt. That is what 99% of people see when they first open Photoshop. Then you scroll through Pinterest looking for text effects and find neon tubes, brushed metal logos, and 3D typography that looks like it needs a full day in Illustrator with custom brushes.
+
+The reality is different. Photoshop's Layer Style system can produce a professional-grade text effect in under 30 seconds with no drawing skills required. This tutorial starts with a basic shadow and builds up to brushed metal, neon tubes, and 3D extrusion. Every effect uses built-in tools—no third-party plugins needed.
+
+## Preparation
+
+**Software Requirements**
+- Adobe Photoshop 2024 (25.0+) or CC 2019 or newer
+- For the 3D feature (Step 3): Photoshop 2021+ with a graphics card supporting OpenGL 3.3+
+- Verify 3D support: Edit > Preferences > Performance, confirm "Use Graphics Processor" is checked
+
+**Document Setup**
+- New document: 1920 x 1080 px, 72 ppi, RGB Color 8-bit, black background
+- Why black? Most text effects (especially glow and neon) are far more visible on dark backgrounds. A bright background washes out the fine details of shadows, glows, and reflections
+
+**Font Selection**
+- Download free fonts (always check the license for commercial use):
+  - Metallic effects: Montserrat Bold or Oswald Bold (bold, straight lines)
+  - Neon effects: Pacifico or Alex Brush (handwriting, rounded curves)
+  - 3D effects: Any extra-bold font like Anton or Bebas Neue
+- Double-click the .ttf/.otf file to install, then restart Photoshop
+
+**Prerequisite Knowledge**
+- Type tool (T key) basics: enter text, change font family and size
+- Layers panel operations: create, duplicate, reorder
+- Blend mode concepts (covered in the Layers & Masking tutorial)
+
+## Core Workflow
+
+### Step 1: Layer Style Basics — Dimensional Shadow Text
+
+Use the Type tool (T key) to enter text on the canvas. Font: Montserrat Bold, size 150 pt, color white. Double-click the blank area of the text layer (not the text itself) to open the Layer Style dialog.
+
+**Five Core Layer Styles and Their Roles**:
+
+**Drop Shadow**
+- Blend mode: Multiply, black
+- Opacity: 75%
+- Angle: 135°
+- Distance: 8 px
+- Spread: 0%
+- Size: 10 px
+- Why: A drop shadow simulates light hitting the text from the upper left, casting a shadow to the lower right. 135° is the default light angle and the most natural lighting direction for the human eye
+
+**Inner Shadow**
+- Blend mode: Multiply, black
+- Opacity: 50%
+- Distance: 3 px
+- Size: 5 px
+- Why: An inner shadow adds darkness inside the letter strokes, simulating depth and indentation. Text without an inner shadow looks like it is "stuck on" the canvas; with it, the text looks "carved in"
+
+**Outer Glow**
+- Blend mode: Screen
+- Color: light blue (#4FC3F7)
+- Opacity: 60%
+- Size: 15 px
+- Why: Outer glow adds a halo around the edges, ideal for sci-fi or neon effects. The Screen mode ensures the glow only brightens areas that are not already dark
+
+**Bevel & Emboss**
+- Style: Inner Bevel
+- Technique: Smooth
+- Depth: 150%
+- Direction: Up
+- Size: 8 px
+- Soften: 2 px
+- Highlight mode: Screen, white, opacity 80%
+- Shadow mode: Multiply, black, opacity 70%
+- Why: Bevel & Emboss is the most powerful parameter for three-dimensionality. Depth controls intensity, Size controls the width of the bevel. 150% depth + 8 px size is the most versatile combination for 100-200 pt text
+
+**Gradient Overlay**
+- Blend mode: Normal
+- Gradient: dark blue (#1A237E) to light blue (#42A5F5)
+- Style: Linear
+- Angle: 90°
+- Scale: 100%
+- Why: Gradient Overlay replaces the original text color with a smooth color transition from bottom to top. 90° produces a vertical gradient that reads naturally—lighter at the top, darker at the bottom
+
+**Apply all together**: Check all five styles and click OK.
+
+**Expected result**: White text is now a rich, dimensional headline with light and shadow transitions, colored gradient, and depth. The entire setup takes under 2 minutes.
+
+**Stop condition**: If the text looks too busy (too many competing effects), turn off styles one by one and evaluate. A good text effect is one where each style contributes silently but none calls attention to itself.
+
+### Step 2: Text Warp — Curve Text Along a Path
+
+Building on Step 1, let us bend the text to fit a specific composition.
+
+**Action**:
+1. Select the text layer
+2. Click the "Create warped text" button in the options bar (the T icon with a curved line below it)
+3. In the Warp Text dialog, choose "Arc"
+
+**Parameters**:
+- Style: Arc
+- Bend: +25%
+- Horizontal Distortion: 0%
+- Vertical Distortion: 0%
+
+**Reference warp styles**:
+
+| Style | Bend Value | Best For |
+|-------|-----------|----------|
+| Arc | +20 to +30% | Banners, headline curves |
+| Arc Upper | +15 to +25% | Logo badges, crests |
+| Arc Lower | -15 to -25% | Floor text reflections |
+| Flag | +20% | Waving banners |
+| Fish | +15% | Spherical reflection text |
+| Inflate | +30% | Balloon text |
+
+**Why not use Free Transform's Distort?** Text Warp preserves editability—double-click the text layer to change the content, font, or size and the warp automatically adapts. If you use Free Transform > Distort (`Ctrl+T` > right-click > Distort), Photoshop rasterizes the text into pixels and you lose the ability to edit it.
+
+**Expected result**: The text curves smoothly in a horizontal arc.
+
+**Stop condition**: Bend values over 50% reduce readability significantly. Keep it under 30% for poster titles.
+
+### Step 3: 3D Text — True Three-Dimensional Typography
+
+This step uses Photoshop's built-in 3D engine to create a real 3D text model.
+
+**Action**:
+1. Enter text using Anton or Bebas Neue, 200 pt, any color
+2. Select the text layer and go to `3D > New 3D Extrusion from Selected Layer`
+3. Photoshop switches to the 3D workspace—the panel layout changes
+4. In the 3D panel, select the Front Inflation Material under the text layer
+
+**Material Parameters**:
+- Diffuse: #FFD700 (gold)
+- Shininess: 80%
+- Reflection: 50%
+- Roughness: 20%
+- Specular: #FFFFFF, intensity 60%
+
+**Extrusion Depth**: Select the Extrusion section of the text layer in the 3D panel:
+- Extrusion Depth: 100 px
+- Bevel Width: 10 px
+- Bevel Angle: 45°
+
+**Lighting**:
+1. In the 3D panel, select Infinite Light 1
+2. Rotate the light to shine from the upper left at a 45° angle
+3. Intensity: 80%
+4. Softness: 30%
+
+**Why use Photoshop's 3D engine instead of a third-party renderer?** Photoshop's 3D tools are not C4D or Blender, but they integrate seamlessly with the layer system—3D text can wear Layer Styles, blend modes, and masks. For social media graphics, title cards, and banner headlines, the rendering quality is more than sufficient and the learning curve is dramatically lower than dedicated 3D software.
+
+**Expected result**: The text has real three-dimensional depth, a gold metallic finish, surface reflections, and can be rotated in 3D space.
+
+**Stop condition**: If the preview is too sluggish, change the render setting in the 3D panel to "Ray Tracing Off" (use OpenGL preview only). Switch to high-quality rendering for the final export.
+
+**Export 3D text as a flat layer**: Right-click the 3D layer and choose "Rasterize 3D."
+
+### Step 4: Neon Glow — Realistic Neon Tube Text
+
+Build on the Layer Style system from Step 1 to create a convincing neon sign effect.
+
+**Action**:
+1. New document: 1920 x 1080 px, dark background (#1A1A2E or pure black)
+2. Enter text using a handwriting or rounded font (such as Pacifico), 120 pt, white
+3. Double-click the text layer to open Layer Style
+
+**Neon core parameters**:
+
+**Outer Glow** — the most critical component of a neon effect
+- Blend mode: Screen
+- Color: pick a neon color (pink #FF4081 or cyan #00E5FF)
+- Opacity: 75%
+- Noise: 0%
+- Technique: Softer
+- Spread: 0%
+- Size: 25 px
+- Range: 50%
+- Jitter: 0%
+
+**Inner Glow** — makes it look like a real tube
+- Blend mode: Screen
+- Color: same as Outer Glow but slightly brighter
+- Opacity: 85%
+- Size: 8 px
+- Why: Inner glow adds light inside the letter strokes, simulating the internal glow of a real glass tube rather than just an edge effect
+
+**Drop Shadow** — simulates the light cast by the tube on the wall
+- Blend mode: Normal (do not use Multiply—neon does not cast black shadows)
+- Color: same as the glow color
+- Opacity: 60%
+- Distance: 20 px
+- Spread: 0%
+- Size: 35 px
+
+**Duplicate the layer for the core white glow**:
+1. Press `Ctrl+J` to duplicate the text layer
+2. Right-click the new layer and choose "Clear Layer Style"
+3. Add a fresh Outer Glow:
+   - Color: white
+   - Spread: 100%
+   - Size: 5 px
+4. Set the layer blend mode to Screen, opacity 80%
+5. Why: Real neon tubes have a white core (the tube itself) surrounded by colored glow. The two-layer stack simulates "white tube inside colored glass"
+
+**Expected result**: The text looks like a real neon sign—white-hot core, colored halo, and a cast-light glow on the wall.
+
+**Stop condition**: If the effect looks like "text glowing on a screen" rather than "a real neon tube," check whether Inner Glow is present. No inner glow is the number one difference between a screen glow and a tube glow.
+
+### Step 5: Metallic Texture — Brushed Metal Text
+
+Create a realistic brushed metal text effect.
+
+**Action**:
+1. Enter text: Montserrat Bold, 200 pt, any color
+2. Double-click to open Layer Style
+
+**Metallic Parameters**:
+
+**Bevel & Emboss** — the heart of the metal effect
+- Style: Inner Bevel
+- Technique: Chisel Hard (different from Step 1's "Smooth"—Chisel Hard produces sharper metallic reflections)
+- Depth: 250% (higher than standard text)
+- Direction: Up
+- Size: 5 px
+- Soften: 0 px
+- Highlight mode: Screen, color #FFFFFF, opacity 100%
+- Shadow mode: Multiply, color #000000, opacity 75%
+- Contour: Ring (double-hump)—produces the twin reflection bands unique to metal
+
+**Gradient Overlay** — metallic color ramp
+- Gradient: silver-gray metal
+  - Position 0%: #808080
+  - Position 25%: #E0E0E0
+  - Position 50%: #606060
+  - Position 75%: #D0D0D0
+  - Position 100%: #505050
+- Style: Linear, angle 90°
+
+**Satin** — simulates brushed metal surface texture
+- Blend mode: Multiply
+- Color: #000000
+- Opacity: 30%
+- Angle: 135°
+- Distance: 20 px
+- Size: 50 px
+- Check "Invert"
+- Why: Satin creates regular light-and-dark stripes across the surface, emulating a brushed metal finish. The 135° angle and 20 px distance produce diagonal brush strokes
+
+**Drop Shadow**
+- Opacity: 60%
+- Distance: 10 px
+- Size: 15 px
+
+**Optional: add a brushed texture layer**:
+1. Create a new layer below the text, fill with 50% gray
+2. Add noise: Filter > Noise > Add Noise, amount 15%, Gaussian, Monochromatic
+3. Motion blur: Filter > Blur > Motion Blur, angle 0°, distance 40 px
+4. Set the layer blend mode to Overlay, opacity 30%
+5. Right-click the layer and choose "Create Clipping Mask" (constrains the texture to the text area only)
+
+**Expected result**: The text has a genuine metallic look—sharp highlight edges, smooth color transitions, and a brushed surface texture.
+
+**Stop condition**: If the metal looks like "plastic" instead of metal, check two things: (1) is the Bevel technique set to "Chisel Hard"? (2) is the Contour set to "Ring"? These two parameters are what separate metal from plastic in Layer Style.
+
+## Layer Style Parameter Reference
+
+| Style | Key Parameters | Effect | Best For |
+|-------|---------------|--------|----------|
+| Drop Shadow | Angle 135°, Distance 8px, Size 10px | Bottom shadow | Essential for all effects |
+| Outer Glow | Screen, Size 15-25px | Edge halo | Neon, sci-fi |
+| Inner Glow | Screen, Size 5-8px | Internal illumination | Neon tube core |
+| Bevel & Emboss | Smooth 150% / Chisel Hard 250% | 3D depth | Metal, 3D, buttons |
+| Gradient Overlay | 90° Linear | Color transition | Metal gradients, colored text |
+| Satin | Multiply, Angle 135°, Distance 20px | Surface texture | Brushed metal, silk |
+| Stroke | Size 2-5px, Position Outside | Outline | Outlined text, titles |
+
+## Shortcut Reference
+
+| Action | Shortcut |
+|--------|----------|
+| Type tool | T |
+| Open Layer Style | Double-click layer (not text) |
+| Copy layer style | Alt+drag "fx" icon to target layer |
+| Clear layer style | Right-click layer > Clear Layer Style |
+| Show Character panel | Ctrl+T (with Type tool active) |
+| Increase/Decrease font size | Ctrl+Shift+> / < |
+| Increase/Decrease tracking | Alt+Left/Right arrow |
+| Warp text | Options bar > Warp button |
+
+## Troubleshooting
+
+### Too Many Layer Styles Make Text Unreadable
+
+- **Symptom**: After checking 6-7 styles, the text becomes blurry or gets lost against the background
+- **Root cause**: Style stacking has created an over-processed look—too-large shadows obscure the text, too much outer glow makes the edges fuzzy
+- **Fix**: Re-apply styles in the "structure first, decoration last" order: start with Drop Shadow and Bevel (build structure), add Gradient Overlay (set color), then add glows (decorate). Pause for 5 seconds after each style to evaluate
+
+### 3D Text Rendering Is Very Slow
+
+- **Symptom**: After switching to the 3D workspace, frame rate drops dramatically when rotating the view or adjusting parameters
+- **Root cause**: The graphics card does not support OpenGL 3.3+, or the document resolution is too high (4K+), or render quality is set too high
+- **Fix**: Go to Edit > Preferences > 3D and set "Highlight Rendering" to "OpenGL" instead of "Ray Tracing." Reduce document resolution to 1920x1080. If performance is still unusable, fall back to the Step 1 Layer Style approach—it does not offer true 3D rotation but renders instantly
+
+### Neon Effect Looks Like a Screen Glow, Not a Tube
+
+- **Symptom**: The text has a halo around it but looks like a glowing computer monitor, not a physical neon sign
+- **Root cause**: Missing the white core layer (inner glow) and the colored cast-light shadow
+- **Fix**: Make sure you duplicated the text layer and set it to white glow (Step 4's core glow layer). In the Drop Shadow style, change the blend mode from "Multiply" to "Normal" and set the color to the glow color instead of black—this is the correct way to simulate neon light cast on a wall
+
+### Metal Looks Like Plastic
+
+- **Symptom**: The text has depth and color, but the surface looks uniform like molded plastic rather than reflective metal
+- **Root cause**: The contour is not set to "Ring" and the Bevel technique is not "Chisel Hard"
+- **Fix**: Open Bevel & Emboss, change Technique from "Smooth" to "Chisel Hard," and set Contour to "Ring" (double-click the contour thumbnail and select Ring from the presets). Ring contour produces twin-peak reflections—the defining characteristic that separates metal from plastic
+
+## Expert Tips
+
+- **Save your Layer Style presets.** After creating a satisfying effect, click the "New Style" button in the Layer Style dialog. The next time you type text, open the Styles panel (Window > Styles) and apply it with one click. A professional effects designer typically maintains 20-30 custom style presets
+- **Alt+drag to copy styles.** Hold Alt and drag the "fx" icon from one layer to another—all styles copy instantly. This is 10x faster than recreating them manually. To copy a single style (like Drop Shadow only), right-click it in the Layer Style dialog, choose "Copy Style," then paste onto the target layer
+- **Tracking makes or breaks a title.** Select all text and press `Alt+Left/Right arrow` to adjust tracking. Large headlines (100+ pt) benefit from -20 to -50 tracking for a tighter, more professional look. Body text benefits from +10 to +20 for better readability. The gap between amateur and professional typography is often just tracking
+- **Time budget for text effects.** A complex text effect breaks down as: parameter tuning 60%, preview/review 25%, final polish 15%. Do not aim for perfection in one pass—iterate at least 3 versions, adjusting only 2-3 parameters each time
+- **Combine with adjustment layers.** Add a Gradient Map adjustment layer above all text layers, set to a dark-blue-to-orange gradient with blend mode Soft Light. This applies a unified color cast to all text elements, making multi-line or multi-layer text blocks look visually cohesive
+
+## What's Next
+
+Today you learned the core techniques of Photoshop text effects:
+1. Five essential Layer Styles (Drop Shadow, Inner Shadow, Outer Glow, Bevel & Emboss, Gradient Overlay)
+2. Text Warp for curved typography
+3. 3D Engine for true volumetric text
+4. Neon tubes via multi-layer glow stacking
+5. Brushed metal using Chisel Hard and Ring contour
+
+Next in this series:
+- [Color Grading Guide](/en/design/photoshop/color-grading) — apply professional grading to text effects for atmospheric lighting
+- [Layers & Masking Guide](/en/design/photoshop/layers-masking) — understand how blend modes shape the interaction between text and background

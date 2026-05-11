@@ -1,0 +1,282 @@
+---
+title: "Excel Power Query: Automate Data Cleaning"
+description: Clean and transform data with Power Query
+field: office
+software: excel
+level: advanced
+language: en
+slug: power-query
+date: 2026-05-11
+readTime: 16
+translationOf: /zh/office/excel/power-query
+affiliateLinks:
+  - name: Microsoft 365
+    url: https://www.microsoft.com/microsoft-365
+    description: Office suite subscription
+    vendor: Microsoft
+---
+
+> **Version:** Microsoft 365 (Power Query is built into Excel 2016+ and the Office 365 subscription)  
+> **Difficulty:** ★★★★☆ (4/5)  
+> **Time:** 50-65 minutes
+
+---
+
+Every week you receive the same CSV export from your ERP system. Column headers change case unpredictably. Dates arrive in three different formats. Some rows have extra columns that shift everything right. You spend the first two hours of every Monday fixing the same problems.
+
+The spreadsheet approach -- manual find-and-replace, copying columns, deleting duplicates -- is slow, error-prone, and untraceable. Next week you will do it all over again.
+
+Power Query (officially "Get & Transform Data") is Excel's built-in ETL engine. It records every transformation step you make and replays them on fresh data with one click. No VBA, no manual rework. This tutorial teaches you the full Power Query workflow: connecting to sources, cleaning columns, merging and appending queries, and automating the entire pipeline.
+
+---
+
+## Preparation
+
+- **Software:** Microsoft 365 desktop (Power Query is available in Excel 2016+ but the 365 version offers the most connectors). For Excel 2016/2019, verify the Power Query add-in is enabled (Data tab > Get Data).
+- **OS:** Windows 10/11 recommended. macOS Power Query has a smaller subset of connectors (no Active Directory, no Exchange, fewer file sources).
+- **Sample Files:** Prepare at least two CSV files with the same structure but different data (e.g., sales-Jan.csv, sales-Feb.csv). Include deliberate messiness: inconsistent headers, mixed date formats, extra spaces, blank rows.
+- **Prerequisites:** Comfortable with Excel tables and basic formulas. No prior Power Query or M language experience needed.
+- **A Key Mindset Shift:** Power Query is **read-only** -- it never modifies your original data. Every transformation creates a new data set. You can always go back a step or change it.
+
+---
+
+## Core Workflow
+
+### Step 1: Import Data into Power Query
+
+**Why:** Power Query's connection engine can read from files, databases, web APIs, and more. The import step defines the source.
+
+**Import a CSV file:**
+1. Go to **Data > Get Data > From File > From Text/CSV**.
+2. Select your CSV file and click Import.
+3. In the preview dialog, check that Power Query correctly detected the delimiter (comma, tab, etc.) and data types.
+4. Click **Transform Data** (not Load) to enter the Power Query Editor.
+
+**Import a named Excel table:**
+1. Select any cell in your source table.
+2. Go to **Data > From Table/Range**.
+3. Power Query opens with your table loaded.
+
+**Expected result:** The Power Query Editor window opens. On the right, the **Query Settings** pane shows one step: "Source." On the left, your data previews.
+
+**Stop condition:** You can see your data in the Power Query Editor with all original rows and columns preserved.
+
+### Step 2: Clean Columns -- Remove, Rename, Change Type
+
+**Why:** Source data rarely has the right column structure. Cleaning removes noise and standardizes types before analysis.
+
+**Remove columns:** Select columns (Ctrl+click for multiple) > Home > Remove Columns > Remove Columns. Or right-click a column header > Remove.
+
+**Rename a column:** Double-click the column header and type the new name. Or right-click > Rename.
+
+**Change data type:** Click the data type icon next to the column header (e.g., "123" for number, "ABC" for text, calendar for date). Select the correct type.
+
+**Common transformations:**
+
+| Task | Method |
+|---|---|
+| Remove empty rows | Home > Remove Rows > Remove Blank Rows |
+| Remove duplicates | Select column(s) > Home > Remove Rows > Remove Duplicates |
+| Replace a value | Right-click cell > Replace Values |
+| Fill down (last non-blank) | Right-click column > Fill > Down |
+| Pivot/unpivot columns | Select column > Transform > Pivot Column or Unpivot Columns |
+
+**Example -- Clean a "Full Name" column:**
+1. Split by delimiter: Right-click Full Name column > Split Column > By Delimiter > Space > OK.
+2. Trim spaces: Select both new columns > Transform > Format > Trim.
+3. Rename: "Full Name.1" to "First Name," "Full Name.2" to "Last Name."
+
+**Expected result:** Only the columns you need remain, with correct names and proper data types.
+
+**Stop condition:** Your data has clean column headers, correct types, and no unwanted rows.
+
+### Step 3: Merge Queries -- Combine Tables by Key
+
+**Why:** VLOOKUP in Power Query? Merge Queries does the same but faster, more transparently, and without breaking when data changes.
+
+**Scenario:** You have `Sales` (OrderID, ProductID, Qty, Amount) and `Products` (ProductID, ProductName, Category). You need to bring ProductName into the Sales table.
+
+1. In Power Query Editor, select the **Sales** query (left pane).
+2. Go to **Home > Merge Queries**.
+3. In the dialog:
+   - Select the **Products** table as the second table.
+   - Click the **ProductID** column in both tables to create the match.
+   - Keep the default join kind: **Left Outer** (all rows from Sales, matching rows from Products).
+   - Click OK.
+4. In the Sales data, a new column `Products` appears with Table values inside.
+5. Click the expand icon (two arrows) on the `Products` column header.
+6. Uncheck "Use original column name as prefix." Check only **ProductName** and **Category**.
+7. Click OK.
+
+**Expected result:** ProductName and Category columns appear in the Sales query, joined by ProductID.
+
+**Stop condition:** You have merged two tables and verified that each row in the primary table now has the looked-up value.
+
+### Step 4: Append Queries -- Stack Tables Vertically
+
+**Why:** Monthly reports come as separate files. Append combines them into one long table for a consolidated view.
+
+**Scenario:** You have `Sales-Jan`, `Sales-Feb`, and `Sales-Mar` queries (each imported from a separate CSV).
+
+1. In Power Query Editor, go to **Home > Append Queries**.
+2. Choose **Three or more tables**.
+3. Move `Sales-Jan`, `Sales-Feb`, and `Sales-Mar` from the left box to the right box.
+4. Click OK.
+
+**Alternative -- Append from folder:**
+1. Go to **Data > Get Data > From File > From Folder**.
+2. Select the folder containing all CSV files.
+3. Click **Combine > Combine & Transform Data**.
+4. Power Query automatically imports all files, detects a common schema, and appends them.
+5. If schemas differ, use the Sample File parameter to specify the template.
+
+**Expected result:** A single query containing all rows from all monthly files. The Applied Steps list shows: Source, ... , Appended Queries.
+
+**Stop condition:** You can add a new month's file to the folder, refresh the query, and the consolidated table updates automatically.
+
+### Step 5: Pivot and Unpivot Columns
+
+**Why:** Unpivoting turns wide, summary-style tables into tall, analysis-ready tables. Pivoting does the reverse.
+
+**Unpivot (most common -- fixes "bad" cross-tab data):**
+
+You have a table like:
+| Product | Q1 | Q2 | Q3 | Q4 |
+|---|---|---|---|---|
+| Widget | 100 | 120 | 110 | 130 |
+
+You want:
+| Product | Quarter | Sales |
+|---|---|---|
+| Widget | Q1 | 100 |
+
+1. Select the **Product** column.
+2. Go to **Transform > Unpivot Other Columns**.
+3. Rename "Attribute" to "Quarter" and "Value" to "Sales."
+
+**Pivot (makes tall data wide):**
+1. Select the **Quarter** column.
+2. Go to **Transform > Pivot Column**.
+3. Values column: select **Sales**.
+4. Under Advanced options: choose **Sum** as the aggregation.
+5. Click OK.
+
+**Expected result:** Data changes from wide to tall layout (unpivot) or tall to wide (pivot). Verify by checking row count changes.
+
+**Stop condition:** You can convert a cross-tab report into a flat table suitable for pivot charts or further analysis.
+
+### Step 6: Apply, Refresh, and Automate
+
+**Why:** The whole point of Power Query is reusability. Once set up, you refresh instead of redoing.
+
+**Load the result to Excel:**
+1. Go to **Home > Close & Load** (or Close & Load To if you want to choose destination).
+2. Select **Table** (default) or **PivotTable**.
+3. Choose **New worksheet** or **Existing worksheet**.
+
+**Refresh when source data changes:**
+- Right-click the result table > **Refresh**.
+- Or go to **Data > Refresh All** (keyboard: Ctrl+Alt+F5).
+- All queries refresh. Applied Steps replay from start to finish.
+
+**Automate refresh on file open:**
+1. Go to **Data > Queries & Connections**.
+2. Right-click the query > **Properties**.
+3. Check **Refresh data when opening the file**.
+
+**Expected result:** A live Excel table that updates with one refresh command, replaying every transformation step.
+
+**Stop condition:** You can add new source files, change source data, or fix a data format issue, and refresh the query to see the cleaned result -- without touching the transformation steps.
+
+---
+
+## Reference Table
+
+| Task | Menu Path | Power Query Button |
+|---|---|---|
+| Import CSV | Data > Get Data > From File > From Text/CSV | -- |
+| Import Excel Table | Data > From Table/Range | -- |
+| Remove columns | Home > Remove Columns | Column icon with X |
+| Change data type | Click type icon in column header | 123 / ABC / Calendar |
+| Split column | Home > Split Column > By Delimiter | -- |
+| Merge Queries | Home > Merge Queries | Two-table icon |
+| Append Queries | Home > Append Queries | Stacked table icon |
+| Unpivot Other Cols | Transform > Unpivot Other Columns | -- |
+| Group By | Transform > Group By | Grid with Σ icon |
+| Refresh All | Data > Refresh All | Ctrl+Alt+F5 |
+| Advanced Editor | Home > Advanced Editor | {} code icon |
+
+**Key M Language Expressions (for Advanced Editor):**
+
+```powerquery
+let
+    Source = Csv.Document(File.Contents("C:\data\sales.csv"),[Delimiter=",", Encoding=65001]),
+    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"Date", type date}, {"Amount", Currency.Type}}),
+    #"Filtered Rows" = Table.SelectRows(#"Changed Type", each [Amount] > 0)
+in
+    #"Filtered Rows"
+```
+
+---
+
+## Troubleshooting
+
+### 1. "We couldn't find the file" error
+- **Symptom:** After moving the Excel file to a different folder, Power Query shows "File not found."
+- **Root cause:** The query's Source step stores the absolute file path. Moving the file breaks the link.
+- **Fix:** Go to Data > Queries & Connections > right-click query > Properties. Under Definition, click "Browse" to repoint to the new file location. For portable workbooks, store CSVs in a relative folder path and use **Data > Get Data > From File > From Folder** instead.
+
+### 2. Data type errors after refresh
+- **Symptom:** A column that was text becomes a number (or vice versa) after refresh, causing formula errors in the worksheet.
+- **Root cause:** Power Query's "detect data types" is set to auto-detect each time. If a new data batch has mixed types, Power Query guesses wrong.
+- **Fix:** In the Applied Steps list, delete the "Changed Type" step and manually set each column's type explicitly. Then refresh -- Power Query will try to force-convert, and errors will appear as "Error" in cells, alerting you to problem rows.
+
+### 3. Merge results show many null values
+- **Symptom:** After a Merge, most rows in the expanded columns show "null."
+- **Root cause:** The join key columns don't match exactly -- extra spaces, different case, or different data types.
+- **Fix:** Before merging, clean both key columns: use Transform > Format > Trim for spaces, and ensure both have the same data type (both Text or both Number). In some cases, use a custom column with `= Text.Trim([Key Column])`.
+
+### 4. Performance is very slow on large files
+- **Symptom:** Power Query Editor takes minutes to respond when working with 500K+ row files.
+- **Root cause:** Power Query loads full data into memory for preview. Every step recomputes the preview.
+- **Fix:** Apply filters early in the query to reduce row count. Use **Query Settings > Properties** to disable the "Enable download in the Background" for heavy queries. For production ETL, consider using Power BI or a dedicated data tool.
+
+### 5. Append combines wrong columns
+- **Symptom:** After appending two tables, columns are misaligned -- data appears in wrong columns.
+- **Root cause:** The column names in each table differ (one uses "Customer Name," the other uses "Name"). Power Query matches by column name, not position.
+- **Fix:** Standardize column names across all source files before appending. In Power Query, rename columns in each query so they match exactly. Or use the "Combine Files from Folder" approach, which auto-detects and aligns the schema.
+
+---
+
+## Expert Tips
+
+**Real-World Time Savings:** A financial controller at a mid-sized firm automated their monthly consolidation with Power Query. What used to take 8 hours of manual data assembly (opening 12 department files, copy-pasting, reformatting) now takes 3 minutes -- one click to refresh the query chain.
+
+**Query Dependencies Matter:** In the Power Query Editor, go to **View > Query Dependencies**. This shows a diagram of how queries feed into each other. If Query A merges into Query B which merges into Query C, refreshing C refreshes everything downstream. Use this to plan your query order.
+
+**Parameter Queries for Dynamic Filtering:** Create a parameter (right-click in the Queries pane > New Parameter) for a date range or product filter. Reference the parameter in a Filter Rows step. Change the parameter value and refresh; the entire query chain filters dynamically. No manual editing of steps.
+
+**Column from Examples:** On the Transform tab, "Column from Examples" lets you type the result you want in a new column, and Power Query infers the M code. For example, if you type "2024-01-15" next to a cell containing 01/15/2024, Power Query detects the date conversion formula. This is the fastest way to learn M without writing code.
+
+**Performance Monitoring:** The Power Query Editor shows a step duration in the status bar at the bottom. If one step takes >5 seconds, consider optimizing: move filters earlier, remove unnecessary columns, or use Table.Buffer() for repeated lookups.
+
+**Error Handling with 'Remove Errors':** After a data type change, some cells show "Error." Go to Home > Remove Rows > Remove Errors. This deletes problem rows entirely. To investigate first, add a custom column with `= try [Column] otherwise "check"` and review what failed.
+
+---
+
+## Summary
+
+In this tutorial you built a complete Power Query automation pipeline:
+- **Import data** from files and tables
+- **Clean columns** -- remove, rename, change types
+- **Merge queries** -- combine tables by key (VLOOKUP replacement)
+- **Append queries** -- stack tables from different sources
+- **Pivot and unpivot** -- reshape between wide and tall formats
+- **Refresh and automate** -- one-click data updates
+
+**Next steps:**
+- Learn M language in depth with the Power Query Formula Reference
+- Explore Power BI Desktop (Power Query is the same engine, but with DAX)
+- Combine Power Query with PivotTables for a fully automated reporting pipeline: [Pivot Tables Guide](/en/office/excel/pivot-tables)
+- Review Excel formulas to understand what happens after data is clean: [Formulas & Functions Guide](/en/office/excel/formulas-functions)

@@ -1,0 +1,232 @@
+---
+title: Essential VSCode Extensions Guide
+description: 8 hand-picked extensions to supercharge your editor
+field: dev
+software: vscode
+level: beginner
+language: en
+slug: extensions-guide
+date: 2026-05-11
+readTime: 15
+translationOf: /zh/dev/vscode/extensions-guide
+affiliateLinks:
+  - name: GitHub Copilot
+    url: https://github.com/features/copilot
+    description: AI code assistant
+    vendor: GitHub
+---
+
+> **Version**: VSCode 1.90+ (May 2024 update)
+> **Difficulty**: ★★☆☆☆ (basic coding familiarity)
+> **Time**: 20-30 min
+
+## Building a Development Environment That Works
+
+After a fresh VSCode install, the editor is a blank slate. Most peoples first instinct is to browse the marketplace — but with over 30,000 extensions available, searching any keyword returns hundreds of results. Install too many, and the editor slows down, features conflict, and keyboard shortcuts stop working. Eventually, you wipe everything and start over.
+
+This guide wont give you a 100-item "must-install" list. Instead, it walks through **8 carefully chosen extensions** that cover five essential categories: code completion, formatting, Git visualization, AI assistance, and themes. Each one has been validated in real production projects.
+
+## Prerequisites
+
+- **VSCode** 1.90+ (May 2024 update)
+- OS: Windows 10+, macOS 12+, or Linux (GNOME/KDE)
+- Network access to the Marketplace
+- A test project folder to verify each extension
+
+## Eight Extensions: Step-by-Step
+
+### 1. Prettier — Code Formatting Standard
+
+Arguments over spacing, semicolons, and quote style waste countless code review hours. Prettier settles them all as an "opinionated formatter."
+
+**Install**: Open the Extensions panel (`Ctrl+Shift+X`), search for `Prettier - Code formatter`, and click Install.
+
+**Set as default formatter**:
+
+```json
+// Add to settings.json
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "prettier.singleQuote": true,
+  "prettier.trailingComma": "all",
+  "prettier.tabWidth": 2,
+  "prettier.printWidth": 100
+}
+```
+
+**Verify**: Open any JS/TS file, write some messy code (inconsistent indentation, mixed quotes), then press `Shift+Alt+F`. Prettier reformats it instantly. With `formatOnSave` enabled, it does this automatically on every save.
+
+### 2. ESLint — Code Quality Guardian
+
+Prettier handles formatting, ESLint handles correctness. It catches unused variables, missing error handling, and potential null-pointer references as you type.
+
+**Install**: Search for `ESLint` (by Microsoft) and install.
+
+**Initialize project config**:
+
+```bash
+# In your project directory
+npm init -y
+npm install eslint --save-dev
+npx eslint --init
+```
+
+Follow the prompts for your project type (React, Vue, Node.js, etc.). ESLint generates an `.eslintrc.json` config file.
+
+**Verify**: Declare an unused variable (`const x = 1;`) in a JS file. A squiggly underline appears immediately. Hover to see the rule details.
+
+### 3. GitLens — Git History Visualization
+
+Reading git history from the command line is powerful but not visually intuitive. GitLens embeds commit information directly into your editor gutter.
+
+**Install**: Search for `GitLens` (by GitKraken) and install.
+
+**Core features to test**:
+
+1. Open a file with git history. Youll see **blame annotations** on the left gutter (who changed each line, when, and why)
+2. Click the **GitLens toolbar** in the editor top-right and select **File History** for a timeline view
+3. The status bar shows the last commit info for the current line
+
+**Recommended setting**: Search for `gitlens.blame.compact` and enable it to reduce visual noise.
+
+### 4. GitHub Copilot — AI Code Completion
+
+Copilot goes beyond "generate code from comments." It can predict entire function bodies as you type, even implement code from test cases.
+
+**Install**: Search for `GitHub Copilot`, install, then click the Copilot icon in the status bar to log in with your GitHub account.
+
+**Usage tips**:
+
+- Write a comment describing a function: `// Calculate the first N Fibonacci numbers`, hit Enter, and Copilot suggests the implementation
+- Accept a suggestion: `Tab`
+- Cycle to next suggestion: `Alt+]`
+- Open suggestions panel: `Ctrl+Enter`
+
+**Verify**: In an empty JS file, type `function fibonacci(n) {` and press Enter. Copilot should auto-complete the function body.
+
+### 5. Material Icon Theme — File Type Recognition
+
+Relying on file extensions alone to identify file types is slow. Icon themes make folders, config files, and source files instantly recognizable.
+
+**Install**: Search for `Material Icon Theme` (by Philipp Kief), install, and click **Set File Icon Theme**.
+
+**Effect**: `.js` files get a JS icon, `.tsx` shows a React logo, `node_modules` displays a gear icon, `.env` shows a settings icon. You can scan the file tree visually without reading each extension.
+
+### 6. Bracket Pair Colorization (Built-in in VSCode 1.90+) — Bracket Matching
+
+Deeply nested arrow functions, ternary expressions, and JSX require careful bracket matching. VSCode 1.90+ includes native colorized brackets.
+
+**No installation needed** — just enable in `settings.json`:
+
+```json
+{
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true
+}
+```
+
+**Effect**: Brackets are color-coded (purple, blue, green in sequence), and vertical guide lines clearly indicate scope boundaries.
+
+### 7. Path Intellisense — Auto-complete File Paths
+
+Manually typing import paths is error-prone. Path Intellisense lists directory contents when you type `./` or `../`.
+
+**Install**: Search for `Path Intellisense` (by Christian Kohler) and install.
+
+**Verify**: In a JS file, type `import { something } from './'`. The file list in the current directory appears immediately.
+
+### 8. One Dark Pro — Eye-Friendly Theme
+
+A good theme isnt just about looks — it reduces eye strain during long coding sessions. One Dark Pro, based on Atoms classic scheme, offers balanced contrast thats comfortable for extended use.
+
+**Install**: Search for `One Dark Pro`, install, then press `Ctrl+K Ctrl+T` and select **One Dark Pro**.
+
+## Extension Reference Table
+
+| Extension | Purpose | Key Config | Extension ID |
+|-----------|---------|------------|--------------|
+| Prettier | Code formatting | `formatOnSave: true` | `esbenp.prettier-vscode` |
+| ESLint | Code quality checks | Project `.eslintrc.json` | `dbaeumer.vscode-eslint` |
+| GitLens | Git history visualization | `blame.compact: true` | `eamodio.gitlens` |
+| GitHub Copilot | AI code completion | GitHub account login | `GitHub.copilot` |
+| Material Icon Theme | File icon theme | Set as file icon theme | `PKief.material-icon-theme` |
+| Path Intellisense | Path auto-completion | No config needed | `christian-kohler.path-intellisense` |
+| One Dark Pro | Eye-friendly color theme | Set as color theme | `zhuangtongfa.Material-theme` |
+
+## Troubleshooting
+
+### Issue 1: Editor starts slowly after installing extensions
+
+**Symptom**: VSCode takes over 10 seconds to start, with "Activating extensions" showing for a long time.
+
+**Root cause**: Too many extensions are enabled simultaneously, especially those that scan the entire project on startup (like ESLint and GitLens).
+
+**Fix**: In the Extensions panel, search `@builtin` and disable unused built-in extensions. Use **Extension Profiles** for project-specific grouping — right-click an extension icon and select **Add to Workspace Recommendations**.
+
+### Issue 2: Prettier and ESLint conflict
+
+**Symptom**: On save, Prettier changes single quotes to double quotes, then ESLint errors about it. The two tools fight each other.
+
+**Root cause**: Prettier and ESLint have overlapping rules with conflicting defaults.
+
+**Fix**:
+
+```bash
+npm install --save-dev eslint-config-prettier
+```
+
+In `.eslintrc.json`, put `prettier` last in the `extends` array:
+
+```json
+{
+  "extends": ["eslint:recommended", "plugin:react/recommended", "prettier"]
+}
+```
+
+`eslint-config-prettier` disables all ESLint rules that would conflict with Prettier.
+
+### Issue 3: GitLens causes lag in large projects
+
+**Symptom**: Scrolling and typing lags in large repositories (especially monorepos) after installing GitLens.
+
+**Root cause**: GitLens queries git history for every visible line by default. In large repos, this is expensive.
+
+**Fix**: Set `gitlens.blame.highlight.enabled` to `false` and `gitlens.currentLine.enabled` to `false`. Use on-demand blame instead: right-click the line number gutter and select **Toggle GitLens Blame** only when needed.
+
+### Issue 4: Copilot suggestions dont appear
+
+**Symptom**: Copilot is installed and logged in, but no inline suggestions appear while typing.
+
+**Root cause**: Inline suggest is disabled, or the network cant reach the Copilot service.
+
+**Fix**:
+
+1. Check that `editor.inlineSuggest.enabled` is `true`
+2. Verify the Copilot status bar icon is gold (gray means not connected)
+3. For users behind a firewall: search for `github.copilot.advanced` and configure a `proxy` address
+
+## Expert Tips
+
+- **Less is more**: A production environment needs only 10-15 extensions. Each additional extension adds roughly 0.3-0.5 seconds to startup time and increases the chance of keybinding conflicts.
+- **Use Extension Profiles**: VSCode 1.90+ supports profiles to group extensions by workflow (frontend, Python data science, Go backend). Switch between them with **File > Preferences > Profile**.
+- **Workspace recommendations**: Create `.vscode/extensions.json` in your project root:
+
+```json
+{
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "eamodio.gitlens"
+  ]
+}
+```
+
+Team members opening the project will be prompted to install them.
+- **Quarterly cleanup**: Review your extension list every 3 months. Search `@enabled` in the Extensions panel to see everything currently active.
+
+## Summary
+
+This guide covered 8 extensions: Prettier (formatting), ESLint (quality), GitLens (history visualization), Copilot (AI completion), Material Icon Theme (file icons), Bracket Pair Colorization (bracket matching), Path Intellisense (path completion), and One Dark Pro (eye-friendly theme). Each was installed, configured, and verified with concrete steps.
+
+Next, learn [VSCode Debugging Configuration](/en/dev/vscode/debugging) to master breakpoint debugging, or read [Shortcuts & Productivity](/en/dev/vscode/shortcuts-productivity) to speed up your workflow further.

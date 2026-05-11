@@ -1,0 +1,192 @@
+---
+title: Illustrator Logo Design Workflow
+description: Complete logo design workflow from sketch to vector
+field: design
+software: illustrator
+level: intermediate
+language: en
+slug: logo-design
+date: 2026-05-11
+readTime: 18
+translationOf: /zh/design/illustrator/logo-design
+affiliateLinks:
+  - name: Adobe Creative Cloud
+    url: https://www.adobe.com
+    description: Full suite of Adobe creative apps
+    vendor: Adobe
+  - name: Setapp
+    url: https://setapp.com
+    description: 200+ Mac apps subscription with Illustrator alternatives
+    vendor: Setapp
+---
+
+> **Version**: Adobe Illustrator 2024+ (Windows / macOS)
+> **Difficulty**: ★★★☆☆ (comfortable with Pen Tool and basic path operations)
+> **Time**: 30-40 min
+
+## Blurry When Big, Messy When Small?
+
+That logo you made in Photoshop — it looks fine on your website. But printed on a business card, the edges are fuzzy. Blown up to poster size, the text proportions fall apart. This isn't a design skill problem — it's a tool problem. Logos must be **vectors**, and Illustrator is the industry standard for vector design.
+
+According to 99designs, **only 8% of clients accept non-vector logo formats** for delivery. JPG and PNG logos have almost no commercial value. This tutorial walks you through the complete workflow: from hand-drawn sketch to polished vector logo, covering grid alignment, typography, color strategy, and export standards.
+
+## Preparation
+
+- **Software**: Adobe Illustrator 2024 or later (CC subscription recommended for latest features)
+- **Account**: Adobe Creative Cloud subscription (7-day free trial available)
+- **Files**: Optional — a photo of your hand-drawn logo sketch (phone photo is fine)
+- **Prerequisites**: Familiarity with basic shape tools (Rectangle, Ellipse), basic Pen Tool operation, and the Layers panel
+
+## Core Workflow
+
+### Step 1: Start with a Sketch — "Digital Tracing"
+
+Don't jump straight into the computer. Explore with pen and paper first:
+
+1. Sketch 10-15 different logo concepts on paper, spending no more than 2 minutes each
+2. Pick the best 2-3, take a photo, and import into Illustrator: **File → Place** (`Ctrl+Shift+P` / `Cmd+Shift+P`)
+3. Reduce the photo opacity to 30%, lock that layer
+4. Create a new layer on top and begin tracing
+
+**Why?** Hand-drawing lets you explore ideas rapidly without toolbar constraints. Design legend Paul Rand (IBM, ABC logos) emphasized: more time on paper means less time second-guessing at the computer. Thirty minutes of sketching saves two hours of trial and error.
+
+**Stop condition**: The canvas has a sketch layer at 30% opacity with an empty tracing layer above it.
+
+### Step 2: Build a Grid System — "Close Enough" Isn't Good Enough
+
+Logo precision depends on its grid:
+
+1. Press `Ctrl+R` / `Cmd+R` to show rulers
+2. Right-click the ruler → change units to **pixels**
+3. **View → Show Grid** (`Ctrl+'` / `Cmd+'`), set gridline spacing to 10px with 1 subdivision
+4. **View → Snap to Grid** (`Shift+Ctrl+'` / `Shift+Cmd+'`)
+5. Draw a 500x500px bounding box as your logo constraint area
+
+**Why?** The grid ensures geometric precision — spacing between elements isn't "eyeballed" but measured in exact pixels. Both Google and Apple's design guidelines emphasize grid alignment for brand recognition. 500x500px is the standard starting size for logo design, balancing detail and scalability.
+
+**Stop condition**: The canvas displays grid lines (gray crosshairs), Snap to Grid is enabled, and a 500x500px bounding box is ready.
+
+### Step 3: Build with Basic Shapes — Complex from Simple
+
+Great logos are usually composed of simple geometric shapes:
+
+1. Use the Rectangle tool (`M`) and Ellipse tool (`L`) to trace basic forms over your sketch
+2. Open the **Pathfinder** panel (Window → Pathfinder, `Shift+Ctrl+F9` / `Shift+Cmd+F9`):
+   - **Unite**: Merge multiple shapes into one
+   - **Minus Front**: Cut the top shape from the bottom
+   - **Intersect**: Keep only the overlapping area
+3. Use the **Shape Builder Tool** (`Shift+M`): drag across overlapping shapes to merge, `Alt`+drag to subtract
+
+**Why?** The Pathfinder is non-destructive — keep copies of originals before merging. The Shape Builder is better for rapid iteration: drag to merge, Alt-drag to cut. It feels intuitive and fast.
+
+**Stop condition**: Your sketch's main contours are covered by 3-5 basic shapes, merged using the Pathfinder panel.
+
+### Step 4: Refine Anchor Points and Curves
+
+Geometric shapes need hand-tuning:
+
+1. Use the **Direct Selection Tool** (`A`) to click path anchor points
+2. Adjust Bezier handles precisely: hold `Shift` while dragging to constrain to 45° increments
+3. Use the **Smooth Tool** (in the Pencil Tool group's flyout menu) to clean overly complex paths
+4. Key step: **Object → Path → Simplify** — set "Curve Precision" to 80% and "Angle Threshold" to 0°, removing redundant anchors
+
+**Why?** Every extra anchor point increases file size and rendering complexity. Twenty anchors for a smooth curve? You probably only need four. Path Simplify's algorithm finds the optimal anchor count, typically reducing 60-80% of points without visibly changing the shape.
+
+**Stop condition**: All paths have optimized anchor counts — dragging Bezier handles produces smooth, jitter-free curves.
+
+### Step 5: Typography — The Power of Custom Type
+
+Logo text shouldn't just be "pick a font and type":
+
+1. Use the **Type Tool** (`T`) to enter the brand name
+2. In the Character panel (`Ctrl+T` / `Cmd+T`), choose a typeface:
+   - **Serif**: Playfair Display, Bodoni (luxury/fashion)
+   - **Sans-serif**: Montserrat, Inter (tech/modern)
+   - **Script**: Use sparingly — creative/personal brands only
+3. Critical step: **Right-click → Create Outlines** (`Shift+Ctrl+O` / `Shift+Cmd+O`) to convert text to vector paths
+4. Use the Direct Selection Tool (`A`) to fine-tune individual letter spacing and proportions
+
+**Why?** Creating outlines means the text no longer depends on the font being installed on anyone else's machine. More importantly, you can now "sculpt" letter shapes — flatten the "O", raise the crossbar on "A". This is where brand customization begins.
+
+**Stop condition**: All text is outlined. You can click individual anchor points with the Direct Selection Tool and move them.
+
+### Step 6: Color — Make It Meaningful
+
+Logo color is not "I think this looks nice":
+
+1. Open the **Swatches** panel (`Ctrl+Shift+F9` / `Cmd+Shift+F9`)
+2. Click the color tint icon → **Color Wheel**, choose a scheme (monochromatic, complementary, analogous)
+3. For monochrome logos: pick one main color, use black, white, and gray as support
+4. Create three versions: full color, monochrome (black/white), and reversed (white on dark)
+5. Use **Global Colors**: double-click a swatch, check "Global." Change this color once and everything using it updates automatically
+
+**Why?** 70% of logos end up being used in monochrome at some point (stamps, watermarks, single-color printing). Design the black-and-white version first, then add color. This ensures the logo remains recognizable without color.
+
+**Stop condition**: Three versions of the same logo exist (color, black, white fill) arranged on one artboard — all remain recognizable at 100x100px.
+
+### Step 7: Export a Specification Package
+
+The final delivery is not "here's an .ai file":
+
+1. In the **Artboards** panel, create 4 artboards: Main Mark (icon), Combination (icon+text), Monochrome, Usage Guidelines
+2. Leave at least 100px of safe margin around each artboard
+3. Export formats:
+   - **SVG**: **File → Export → Export As...** → select SVG, check "Responsive" to remove fixed dimensions
+   - **PNG**: **File → Export → Export As...** → select PNG, 3x scale (300%), 300ppi resolution
+   - **EPS**: For printers — save a copy of the AI file as EPS
+
+**Why?** SVG is best for the web — infinitely scalable with tiny file sizes. PNG at 3x scale ensures Retina display clarity. EPS is the printer industry standard — failing to provide EPS can delay print production.
+
+**Stop condition**: Your desktop has four properly-named files: `brand_logo.svg`, `brand_logo.png`, `brand_logo.eps`, and `brand_guidelines.pdf`.
+
+## Reference Table
+
+| Action | Shortcut / Path | Notes |
+|--------|-----------------|-------|
+| Place image | `Ctrl+Shift+P` / `Cmd+Shift+P` | Import hand-drawn sketch |
+| Show Grid | `Ctrl+'` / `Cmd+'` | Toggle grid display |
+| Snap to Grid | `Shift+Ctrl+'` / `Shift+Cmd+'` | Enable grid snapping |
+| Pathfinder | `Shift+Ctrl+F9` / `Shift+Cmd+F9` | Show Pathfinder panel |
+| Shape Builder | `Shift+M` | Merge/cut overlapping shapes |
+| Direct Selection | `A` | Select and move anchor points |
+| Create Outlines | `Shift+Ctrl+O` / `Shift+Cmd+O` | Convert text to vector |
+| Character Panel | `Ctrl+T` / `Cmd+T` | Typography settings |
+| Simplify Path | Object → Path → Simplify | Remove redundant anchors |
+| Global Color | Double-click swatch → check Global | Color sync across all uses |
+
+## Troubleshooting
+
+### Font looks distorted after creating outlines
+
+**Root cause**: Some fonts (especially free ones) have incomplete outline data, causing missing strokes or overlapping paths after outlining.
+**Fix**: Save an AI backup before creating outlines (keeping the text editable). If distortion occurs, restore from backup and consider using a more professionally-built font. For commercial projects, Adobe Fonts are recommended — their outline data is verified.
+
+### Shape disappears after Pathfinder operation
+
+**Root cause**: Pathfinder requires **closed paths** for all participating shapes. An open path causes the operation to fail silently.
+**Fix**: Use **Object → Path → Join** (`Ctrl+J` / `Cmd+J`) to close open paths. To check: select the path with the Direct Selection Tool — if both endpoints are hollow (not filled), the path is open.
+
+### Logo elements collide when scaled down
+
+**Root cause**: The logo contains lines thinner than 2px or elements spaced too closely. These details vanish at small sizes.
+**Test**: Scale the logo to 100x100px and check legibility. The standard: recognizable on a business card (~2cm) and as a favicon (16x16px).
+**Fix**: Set stroke widths to 2-4px, keep element spacing at 4px minimum. If thin lines are essential, thicken them or remove the feature.
+
+### Imported sketch is too blurry to trace
+
+**Root cause**: Camera shake or poor lighting when photographing the hand-drawn sketch.
+**Fix**: Photograph in natural light with the paper laid flat — avoid flash. A scanner (300dpi or higher) produces the best results. If only a photo is available, select it in Illustrator → Properties → **Image Trace** (preset: Sketch) for cleaner reference lines.
+
+## Expert Tips
+
+- **The "Three-Second Test"**: Show the logo to someone unfamiliar with the project for 3 seconds, then ask what they remember. If they name the brand and industry, your logo works. If they say "a blue circle," redesign.
+- **SVG code optimization**: Illustrator-exported SVG typically contains redundant code. Use SVGO (command line) or SVGOMG (web tool) to compress it by 30-50%.
+- **Grid generators**: Don't draw grids manually. The Polar Grid Tool is great for radial logos; the Rectangular Grid Tool works well for linear designs.
+- **Brand guidelines document**: Compile usage rules into a PDF — minimum size (print: 2cm, screen: 48px), clear space (25% of logo height around all sides), and prohibited uses (no stretching, no shadows, no color changes).
+- **Avoid trend-chasing**: The 2015 flat-design logo trend already looks dated. Choose classic over trendy — Nike's Swoosh (1971) and Coca-Cola's script (1886) have remained unchanged for decades.
+
+## Summary
+
+You now have a complete logo design workflow in Illustrator: hand-drawn sketches, grid alignment, shape construction, anchor point refinement, type outlining, color strategy, and multi-format export. The core principle: **recognizable at the smallest size**.
+
+Next, explore the [Illustrator Pen Tool Mastery](/en/design/illustrator/pen-tool) guide to strengthen your path control, or tackle a full brand identity project (logo + business card + letterhead + social media cover).

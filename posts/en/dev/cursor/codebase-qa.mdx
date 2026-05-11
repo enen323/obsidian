@@ -1,0 +1,236 @@
+---
+title: Cursor Codebase Q&A Tips
+description: Navigate large codebases with Cursor's index, @ references, and Agent mode
+field: dev
+software: cursor
+level: intermediate
+language: en
+slug: codebase-qa
+date: 2026-05-11
+readTime: 15
+translationOf: /zh/dev/cursor/codebase-qa
+affiliateLinks:
+  - name: Cursor Pro
+    url: https://www.cursor.com/pricing
+    description: Cursor Pro subscription for unlimited AI usage
+    vendor: Cursor
+---
+
+> **Version**: Cursor 0.46+ | **Difficulty**: ★★☆☆☆ | **Time**: 30-40 min
+
+## Finding One Function Among Thousands of Files
+
+You have just inherited a project with 200 modules spread across 5,000 files. A bug's root cause is buried six levels of imports deep inside a utility function. You fire up `Ctrl+Shift+F`, search for a keyword, get 40 results, and click through each one. An hour later, you have only confirmed where the bug is not. Traditional full-text search matches strings — it does not understand class hierarchies, function call chains, or data-flow relationships.
+
+**Cursor's Codebase Q&A** goes beyond search speed. It builds a full semantic index of your project, letting you ask natural-language questions about your codebase — not "find this string" but "What is the complete data flow for user login?" This tutorial covers everything from basic index configuration to advanced Agent usage.
+
+## Preparation
+
+| Item | Requirement |
+|------|-------------|
+| Cursor version | 0.46 or higher |
+| Project size | 50+ files recommended (benefits scale with project size) |
+| Disk space | ~20% of project volume for index cache |
+| Network | Stable internet connection (index communicates with cloud AI models) |
+
+**Pre-checks**:
+1. Open your project and check the indexing icon in the bottom status bar. Wait for "Indexing..." to complete before proceeding
+2. Run "Cursor: Rescan Index" from the command palette (`Ctrl+Shift+P`) to force a fresh index
+3. Verify that your `.cursorignore` is not accidentally excluding source code directories
+
+## Core Workflow
+
+### 1. Configure Indexing — Teach the AI Your Project Layout
+
+The index is the foundation of all codebase Q&A features. Cursor scans file structure, symbol definitions, and cross-file references to build a semantic knowledge graph.
+
+```
+Steps:
+① Open your project root and check for a .cursorignore file
+② If it does not exist, create one (syntax is identical to .gitignore)
+③ Exclude directories that do not need indexing:
+   node_modules/
+   dist/
+   build/
+   *.min.js
+   __pycache__/
+④ Open the command palette (Ctrl+Shift+P) and run "Cursor: Rescan Index"
+⑤ Watch the status bar icon — it changes from "Indexing..." to "✓ Indexed"
+```
+
+**Why configure `.cursorignore`?** By default, Cursor indexes every file in the project. Large directories like `node_modules` or `dist` can contain tens of thousands of files, slowing down indexing and diluting Q&A accuracy. Excluding them makes the index faster and results more precise.
+
+**Expected output**: The status bar shows "✓ Indexed" with the file count, e.g., "✓ Indexed 1,234 files".
+
+**Stop condition**: Indexing is complete when the status icon shows the checkmark. Run "Rescan Index" any time you add a significant number of new files.
+
+### 2. Use @ Symbols for Precise Context
+
+The `@` symbol is the single most important operation in Cursor Q&A. It lets you reference exact files, functions, classes, or symbols in your prompts.
+
+```
+Steps:
+① Press Ctrl+L (Cmd+L on Mac) to open the AI chat panel
+② Type @ in the input box — a context selector menu appears
+③ Choose the reference type:
+   - @file: reference an entire file (most common), type the file name, press Enter
+   - @func: reference a specific function or method, type the function name
+   - @sym: reference any symbol (type, interface, variable), type the symbol name
+   - @folder: reference an entire directory, type the directory path
+④ Type your full question, e.g.:
+   "Explain the call chain of @func validateToken from the entry point to the database"
+⑤ Press Enter to send
+```
+
+**Why @ instead of pasting code?** When you use `@file`, Cursor sends the file's indexed data (including AST-parsed symbol information) to the AI, not raw text. The AI understands exported interfaces, class inheritance, and type definitions — something plain-text paste cannot provide.
+
+**Expected output**: The AI accurately identifies the referenced code elements and delivers an analysis that includes cross-file call chains, type flow, and potential issues.
+
+**Stop condition**: If the AI still references the wrong file or function, re-enter the `@` reference and double-check the path in the selector before resending.
+
+### 3. Advanced Code Search and Navigation
+
+Beyond chat-based @ references, Cursor provides a dedicated Code Search panel for quick symbol discovery.
+
+```
+Steps:
+① Press Ctrl+Shift+P to open the command palette
+② Type "> Code Search"
+③ Select "Cursor: Code Search" — the search panel opens
+④ In the search box, enter:
+   - Symbol name: type a function or class name for semantic search
+   - Description: descriptive search like "payment processing"
+   - Regex: JavaScript regular expression like "function\s+handle[A-Z]"
+⑤ Results are sorted by relevance — click an entry to jump to its definition
+```
+
+**Why is this better than `Ctrl+Shift+F`?** Traditional full-text search only matches strings — searching "getUser" will not find "fetchUserProfile". Cursor's semantic search understands code intent and associates related symbols even when naming differs.
+
+**Expected output**: A ranked result list with relevance scores and code preview snippets. The most relevant match appears at the top.
+
+**Stop condition**: Click the desired entry to navigate to that line of code.
+
+### 4. Agent Mode — Autonomous Multi-Step Execution
+
+Agent mode is Cursor's most advanced feature. The AI does not just answer questions — it reads files, modifies code, and runs terminal commands autonomously.
+
+```
+Steps:
+① Press Ctrl+Shift+I to open the full-screen AI panel
+② Switch the mode from "Chat" to "Agent" using the toggle in the bottom-right corner
+③ Enter a multi-step task, for example:
+   "Find all files in src/services that use deprecated APIs, add @deprecated JSDoc annotations, and create a migration guide file"
+④ Press Enter or Ctrl+Enter to send
+⑤ The Agent begins working: reading files → analyzing code → modifying files → creating new files
+⑥ By default, the Agent asks for confirmation before each action
+⑦ Review all changes — the Agent displays a summary of modified files when done
+```
+
+**Why use Agent instead of manual editing?** An Agent can execute 10-20 sequential operations without requiring your constant input. For batch refactoring, code migration, and technical debt cleanup, Agent mode compresses hours of work into minutes.
+
+**Expected output**: The Agent panel shows a live log of operations — files read, modifications made, and terminal output. A change summary appears at the bottom.
+
+**Stop conditions**:
+- Click "Stop" at any time to halt the Agent
+- If the Agent goes in the wrong direction, correct it in the chat
+- After completion, review each file's diff and use Accept All or individual Accept
+
+**Key settings**:
+- **Auto Confirm ON**: Agent executes all steps without asking (safe when you have Git backup)
+- **Auto Confirm OFF**: Agent pauses before each action for approval (recommended for exploratory tasks)
+- **Token budget**: Configure the maximum tokens per Agent session in Settings > AI
+
+### 5. Custom Rules (.cursorrules) — Control AI Behavior
+
+The `.cursorrules` file lets you define project-specific constraints for AI responses.
+
+```
+Steps:
+① Create a .cursorrules file in the project root directory
+② Write your rules, for example:
+
+   You are an expert in TypeScript, React, and NestJS.
+   - Use functional components with hooks, never class components
+   - Use Tailwind CSS for styling, never inline styles
+   - Use `zod` for validation, never `joi` or `yup`
+   - Prefer `Promise.all` over sequential awaits for independent calls
+   - Generate unit tests using Vitest, not Jest
+   - Always include error boundaries for new React components
+   - Follow the existing folder structure: feature-based modules
+
+③ Save the file — Cursor loads it automatically, no restart needed
+④ Test by asking the AI: "I need to build a new user list component — what pattern should I use?"
+```
+
+**Why `.cursorrules`?** Without rules, the AI answers from general knowledge — it might suggest class components for a functional-component project, or recommend Mocha when your team uses Vitest. Rules keep AI output aligned with your actual project conventions.
+
+**Expected output**: AI responses follow the constraints defined in `.cursorrules`. When you ask "How do I add an API endpoint?" the AI produces NestJS controller code matching your tech stack.
+
+**Iteration**: If the AI consistently goes off-track on certain topics, append specific rules to `.cursorrules`. Commit this file to version control so the whole team shares the same AI behavior.
+
+## Quick Reference
+
+| Action | Shortcut / Command | Description |
+|--------|-------------------|-------------|
+| AI Chat | `Ctrl+L` / `Cmd+L` | Open or focus the AI chat panel |
+| Full AI Panel | `Ctrl+Shift+I` / `Cmd+Shift+I` | Full-screen panel; toggle Chat/Agent mode here |
+| Agent Mode | Toggle in full-screen panel bottom-right | Let AI autonomously execute multi-step tasks |
+| Reference File | `@file <path>` | Reference a specific file in conversation |
+| Reference Function | `@func <name>` | Reference a specific function or method |
+| Reference Symbol | `@sym <name>` | Reference a type, interface, or variable |
+| Reference Folder | `@folder <path>` | Reference an entire directory |
+| Command Palette | `Ctrl+Shift+P` | Run commands like Rescan Index |
+| Code Search | Command palette → "Code Search" | Semantic code search across the project |
+| Rescan Index | Command palette → "Rescan Index" | Force-rebuild the project index |
+| Auto Confirm Toggle | Agent panel toggle | Whether Agent pauses before each action |
+
+## Troubleshooting
+
+**Issue 1: The @ reference menu does not appear when typing @**
+- **Root cause**: The project index has not finished building, or the index job encountered an error
+- **Fix**: Check the status bar icon. If it shows "Indexing...", wait for completion. If it shows "Error", run "Cursor: Rescan Index". Verify `.cursorignore` is not accidentally excluding source directories
+
+**Issue 2: Agent mode gets stuck or repeats the same operation**
+- **Root cause**: The Agent entered a loop (e.g., retrying to read a non-existent file), or the token budget was exhausted mid-operation
+- **Fix**: Click "Stop" to terminate. Tell the Agent "Skip that step and do not retry" in the chat. Increase the token budget (Settings > AI > Max Tokens). If loops persist, disable "Auto Confirm" so the Agent pauses before each action
+
+**Issue 3: AI answers are low quality despite having a .cursorrules file**
+- **Root cause**: Conflicting rules (e.g., requiring both Vue and React), or rules that are too vague
+- **Fix**: Keep rules specific and consistent. Replace "Write good code" with "Use TypeScript strict mode, no `any` type". Verify the file is UTF-8 encoded. Restart Cursor to ensure rules are reloaded
+
+**Issue 4: Code Search returns too many irrelevant results**
+- **Root cause**: Search term is too short or generic; the index includes test files or third-party code
+- **Fix**: Use more specific terms — replace "payment" with "processRefund". Exclude `test/` and `spec/` directories in search filters. Ensure `.cursorignore` excludes `node_modules` and `vendor`
+
+**Issue 5: AI responses include "Based on the project structure... but I cannot see the specifics"**
+- **Root cause**: The question was too broad without file-level context
+- **Fix**: Always use `@file` to anchor the AI to specific files. Instead of "How does the auth system work?", ask "@file src/auth/auth.service.ts explain the auth flow, and @file src/auth/auth.module.ts show how modules connect"
+
+## Expert Tips
+
+**Performance data**: On a 10,000-file project, Cursor indexing takes approximately 3-5 minutes (SSD + 16GB RAM). Semantic search response time is typically 500ms-2s — significantly faster than full-text search across the same codebase.
+
+**Best practices**:
+- **Tighten `.cursorignore` boundaries**: Default exclusions should include `node_modules`, `build`, `dist`, `.git`. Also exclude `proto` or `generated` directories if present. A leaner index produces more accurate Q&A results
+- **@ reference priority**: `@func` > `@file` > `@folder`. Single-function references are the most precise. Use `@folder` only when you need broad context
+- **Agent task decomposition**: Each Agent task should have a clear input and output boundary. "Migrate all pure functions in utils to a separate `@shared/utils` package" is better than "Refactor the utils directory"
+- **Template `.cursorrules`**: Maintain a team-wide `.cursorrules` template repository. New projects copy it and customize. Common rules include: language/framework version, test framework, naming conventions, import ordering, error-handling strategy
+- **Version-controlled rules**: Commit `.cursorrules` to the repository. Code reviews should also review rule changes. Everyone on the team benefits from consistent AI behavior
+
+**Common pitfalls**:
+- **Do not index generated code**: `prisma/client`, protobuf-generated code, and `graphql-codegen` output inflate the index without providing useful semantic signal
+- **Agent limitations**: Agent mode performs poorly on tasks requiring human judgment (UX decisions, API design reviews). Good Agent tasks: batch refactoring, code migration, template generation, documentation
+- **Long Agent sessions degrade**: After 50+ steps in a single Agent session, context pressure builds and the AI may "forget" earlier instructions. Start a "New Session" when this happens
+
+## Summary
+
+You have covered the core skills of Cursor Codebase Q&A: index configuration, @ symbol references, semantic code search, Agent mode, and `.cursorrules` customization. These techniques turn codebase exploration from file-by-file manual hunting into direct question-answering.
+
+**Next steps**:
+- Configure `.cursorignore` on your real project, re-index, and use `@func` to find a function definition you could never locate before
+- Try Agent mode on a small refactoring task (e.g., renaming an interface that spans multiple files)
+- Share a `.cursorrules` file with your team to align AI output across everyone's Cursor instances
+
+---
+
+> This article is part of the Cursor tutorial series. Check out [more Cursor tutorials](../) for the full guide collection.

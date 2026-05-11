@@ -1,0 +1,205 @@
+---
+title: Custom GPTs Development Guide
+description: Create and share custom GPT applications
+field: ai
+software: chatgpt
+level: intermediate
+language: en
+slug: gpts-custom
+date: 2026-05-11
+readTime: 15
+translationOf: /zh/ai/chatgpt/gpts-custom
+affiliateLinks:
+  - name: ChatGPT Plus
+    url: https://chatgpt.com
+    description: AI chat subscription
+    vendor: OpenAI
+---
+
+> **Version**: ChatGPT GPTs / 2026-05 | **Difficulty**: ★★★☆☆ | **Read time**: 15 min
+
+## Tired of Typing the Same Prompts Every Time?
+
+You spent 15 minutes crafting the perfect set of prompts — role, context, format, constraints, all there. A week later, you cannot remember a word of it. So you rewrite it — and get half the quality.
+
+Worse, you want to share it with your team. Everyone copy-pastes, and everyone gets different results.
+
+**Custom GPTs** solve this. They package your prompts, knowledge files, and external API integrations into a reusable "AI app." Configure once, use anytime, share with a link. This guide walks you through building a complete custom GPT from scratch.
+
+## Preparation
+
+- **ChatGPT Plus subscription** ($20/month) — Custom GPTs are a Plus/Pro feature
+- Your best prompt templates ready (see our [Prompt Engineering guide](../prompt-engineering))
+- Optional: Knowledge files (PDF, TXT, Markdown) for the private knowledge base
+- For Actions API: basic understanding of REST APIs
+
+## Core Workflow: Building a Custom GPT
+
+### Step 1: Open GPT Builder
+
+Click **Explore GPTs** in the ChatGPT sidebar, then **Create**. You will see the Builder with a config panel on the left and a live preview on the right.
+
+GPT Builder offers two modes:
+- **Conversational creation**: Describe what you want in natural language
+- **Manual configuration**: Fill in fields directly (recommended for control)
+
+Let's use **Configure** (manual mode).
+
+### Step 2: Fill Basic Info
+
+| Field | Example | Notes |
+|-------|---------|-------|
+| **Name** | `Blog Writer Pro` | Short, descriptive |
+| **Description** | `Bilingual tech blog writing assistant` | Shows in GPT listings |
+| **Instructions** | See below | Core prompt, most important |
+| **Profile Picture** | Upload or auto-generate with DALL·E | Optional |
+
+### Step 3: Write Instructions (Core)
+
+Instructions are the soul of your custom GPT. Unlike regular prompts, **they auto-apply to every conversation** — no retyping.
+
+```
+## Role
+You are a technical blog writing assistant. You excel at translating complex concepts into clear, accessible English articles.
+
+## Core Rules
+1. Before writing, ask: target audience, article length, output language
+2. Always provide an outline first; write full text only after approval
+3. Define technical terms on first use
+4. Avoid empty adjectives ("amazing", "incredibly powerful")
+
+## Output Format
+- Default: Markdown
+- Code blocks must specify language (```python, ```javascript)
+- Inline code with backticks
+- Heading hierarchy: ## → ### → ####
+
+## Knowledge Files
+I have uploaded 3 reference articles in Knowledge. When asked about style, prioritize these.
+
+## Boundaries
+- Do not answer non-writing technical questions
+- Do not generate illegal or infringing content
+- Do not promise specific release dates or product features
+```
+
+**Tip**: Keep Instructions between 500-1500 words. Too short = unstable behavior. Too long = the model may "forget" parts mid-conversation.
+
+### Step 4: Upload Knowledge Files
+
+Under **Knowledge**, click **Upload files**. These documents are embedded into the GPT's context window.
+
+| Format | Best for |
+|--------|----------|
+| PDF | Reports, whitepapers, ebooks |
+| TXT | Plain text notes, code snippets |
+| Markdown (.md) | Articles, documentation |
+| JSON / CSV | Structured data |
+
+**Why upload?** GPT-4's knowledge stops at its training cutoff. Knowledge files let it access your private information. Keep it to 5-10 core files, total size under 10MB.
+
+### Step 5: Configure Actions (API Integration)
+
+Actions let your GPT call external APIs. Provide an **OpenAPI Schema** describing the endpoints.
+
+Example — connecting a blog publishing API:
+
+```yaml
+openapi: 3.0.0
+info:
+  title: Blog Publisher API
+  version: 1.0.0
+paths:
+  /api/posts:
+    post:
+      summary: Publish a new article
+      operationId: publishPost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Post published successfully
+```
+
+After configuration, your GPT can publish directly to your blog.
+
+### Step 6: Publish and Share
+
+Click **Save** then **Publish**. Choose your visibility:
+
+| Option | Visibility | When to use |
+|--------|-----------|-------------|
+| **Only me** | Private | Personal tools |
+| **Anyone with the link** | Anyone with the URL | Share with clients or team |
+| **Public** | GPT Store | Open to all ChatGPT users |
+
+Your GPT will appear under **My GPTs** in the sidebar.
+
+**Stop condition**: Run 3 test cases — one normal task, one edge case, one boundary test. Pass all three before publishing.
+
+## Reference Table: GPTs Configuration Cheat Sheet
+
+| Field | Purpose | Best Practice |
+|-------|---------|---------------|
+| **Name** | Identify the GPT | 2-4 words, keyword-inclusive |
+| **Description** | Explain functionality | 1-2 sentences |
+| **Instructions** | Core behavior | 500-1500 words, structured |
+| **Conversation starters** | Suggested first messages | 3-4 typical questions |
+| **Knowledge** | Private knowledge files | 5-10 files, &lt;10MB total |
+| **Capabilities** | Web Browsing, DALL·E, Code Interpreter | Enable as needed |
+| **Actions** | External API integration | Requires OpenAPI Schema |
+
+## Troubleshooting
+
+### Q1: GPT behavior doesn't match Instructions
+
+**Root cause**: Instructions too long or poorly structured; the model "forgets" mid-conversation.
+**Fix**: Keep Instructions under 1000 words. Put critical rules first. Say "Re-read your instructions" mid-conversation to force a refresh.
+
+### Q2: Knowledge file content isn't used in conversations
+
+**Root cause**: Knowledge files load once at conversation start. Long conversations push them out of the context window.
+**Fix**: Start a fresh conversation. Keep individual exchanges short. Write the most critical knowledge directly into Instructions.
+
+### Q3: Actions API calls fail
+
+**Root cause**: Authentication failure, invalid Schema format, or CORS restrictions.
+**Fix**: Test the API with [Postman](https://www.postman.com) first. Ensure operationId values are unique in your Schema. Configure OAuth under Authentication if needed.
+
+### Q4: Shared GPT users can't see Knowledge file content
+
+**Root cause**: By design, Knowledge files are embedded in Instructions and invisible to end users. This protects your proprietary information.
+**Fix**: If you want to share certain knowledge, write it directly into the Instructions field instead.
+
+## Expert Tips
+
+- **Iterate Instructions**: Do not aim for perfection on the first try. Publish with basic Instructions, observe behavior gaps, then refine. Expect 5-8 iterations for a polished GPT.
+- **Use Conversation Starters strategically**: 4 well-designed starter messages guide how users interact with your GPT. For example, "Help me brainstorm 3 article topics" naturally leads users to start with ideation rather than demanding a full article.
+- **Chain multiple GPTs**: Create specialized GPTs (idea generator, outline writer, drafting assistant, proofreader) and use them in sequence. Serial processing yields ~35% higher final quality than one monolithic GPT.
+- **Code Interpreter + Knowledge**: Upload CSV data and enable Code Interpreter. Non-technical team members can run self-service data analysis without writing a line of code.
+- **Privacy**: For public GPTs, Instructions and Knowledge are not visible to users, but they are not cryptographically secure either. Never put API keys, passwords, or confidential data into GPT configuration.
+
+## Summary
+
+You can now:
+
+- Create a custom GPT using **manual configuration**
+- Write structured **Instructions** to control behavior precisely
+- Upload **Knowledge files** for private data access
+- Configure **Actions** for external API integration
+- Choose the right **publishing option** for your audience
+
+Next: Explore [Advanced Use Cases](../advanced-use-cases) for code generation, data analysis, and automated workflows.

@@ -1,0 +1,341 @@
+---
+title: "Notion Workspace Setup: Build Your Second Brain"
+description: Build an efficient knowledge management system
+field: office
+software: notion
+level: beginner
+language: en
+slug: workspace-setup
+date: 2026-05-11
+readTime: 15
+translationOf: /zh/office/notion/workspace-setup
+affiliateLinks:
+  - name: Notion Plus
+    url: https://www.notion.so/pricing
+    description: Notion Plus plan for individuals and teams
+    vendor: Notion
+  - name: Notion Team
+    url: https://www.notion.so/pricing
+    description: Notion Team plan for collaboration
+    vendor: Notion
+---
+
+> **Version:** Notion (Web/Desktop app, updated continuously; examples use the 2026 interface)
+> **Difficulty:** ★★☆☆☆ (2/5)
+> **Time:** 45-60 minutes
+
+---
+
+You have bookmarks in three browsers. Notes in Apple Notes, Google Keep, and a text file on your desktop. Meeting notes are scattered across Slack threads. When you need to find that decision you made six months ago, you search five different apps, and you still might not find it.
+
+The problem is not that you take too few notes. It is that your notes live in too many places with no structure. You need a single system where everything lives: notes, tasks, databases, documents, and project plans.
+
+Notion is not just another notes app. It is a workspace that combines notes, databases, wikis, and project management. This tutorial teaches you how to set up your Notion workspace from scratch: build page hierarchies, create databases with the right properties, use views to see your data differently, link databases together, and create reusable templates so you never start from blank again.
+
+---
+
+## Preparation
+
+- **Software:** Notion web app or desktop app (download from [notion.so/download](https://www.notion.so/download)). A free account is sufficient for this tutorial. Notion Plus or Team is needed for unlimited file uploads and guest access.
+- **OS:** Windows 10/11, macOS 12+, or any modern web browser.
+- **Account:** Sign up at [notion.so](https://www.notion.so). Use your work email if you plan to collaborate with colleagues.
+- **Prerequisites:** Familiarity with basic note-taking concepts. No Notion experience required.
+- **Browser Extension (optional):** Install the Notion Web Clipper for saving web pages into your workspace.
+- **Sample Content Ideas:** A few bookmarks you want to organize, a project you are planning, or a list of things you want to learn.
+
+---
+
+## Core Workflow
+
+### Step 1: Understand Page Hierarchy
+
+**Why:** Notion pages nest infinitely. This hierarchy IS your organization system. Understanding how to build it prevents the "giant list of unrelated pages" problem.
+
+**Create your first pages:**
+1. In the left sidebar, click **+ Add a page** (or press Ctrl/Cmd+N).
+2. Type a title (e.g., "My Workspace").
+3. Below the title, type `/` to open the command menu. This is how you add blocks (text, headings, images, databases, etc.).
+
+**Suggested top-level page structure:**
+
+```
+My Workspace
+├── Daily Notes (database)
+├── Projects (database)
+├── Wiki (database)
+│   ├── Company Info
+│   ├── Onboarding
+│   └── Policies
+├── Tasks (database)
+└── Archive
+```
+
+**Create sub-pages:**
+1. Open a page (e.g., "My Workspace").
+2. Type `@` and start typing the name of another page to create a link. Or type `/page` and give it a title to create a new sub-page inline.
+
+**Nesting tips:**
+- Use **indentation** in the sidebar (drag pages left/right) to create parent-child relationships.
+- Right-click a page > **Move to** > choose a parent.
+- Pages can live in multiple locations using **Links** (copy page link and paste into another page).
+
+**Expected result:** Your sidebar shows a hierarchical tree of pages, not a flat list. You can navigate by expanding and collapsing sections.
+
+**Stop condition:** You have created at least 3 top-level pages and nested at least 2 pages inside them, forming a visible hierarchy in the sidebar.
+
+### Step 2: Create a Database with the Right Properties
+
+**Why:** Databases are Notion's superpower. Unlike plain pages, databases have structured fields (properties) that let you filter, sort, and group your content.
+
+**Create a "Projects" database:**
+1. Open a blank page.
+2. Type `/database` or `/table` > select **Table - Inline**.
+3. Name the page "Projects."
+
+**Define properties (columns):**
+
+| Property | Type | Purpose |
+|---|---|---|
+| Name (exists by default) | Title | Project name |
+| Status | Select | Not Started, In Progress, Done, On Hold |
+| Priority | Select | Low, Medium, High, Urgent |
+| Deadline | Date | Project due date |
+| Team Lead | Person (or Text) | Who is responsible |
+| Budget | Number | Project budget |
+| Tags | Multi-select | Label: Marketing, Dev, Design, Research |
+
+**How to add properties:**
+1. Click the **+** button on the rightmost column of the database table.
+2. Choose a property type (Text, Number, Select, Date, etc.).
+3. For **Select** type, type the options: "Not Started," "In Progress," "Done," "On Hold."
+4. For **Multi-select**, type tags: "Marketing," "Dev," "Design," "Research."
+
+**Add sample entries:**
+1. Click **+ New** (bottom of the table) or press **Ctrl/Cmd + N** inside the database.
+2. Fill in: Name > "Q3 Marketing Campaign," Status > "In Progress," Priority > "High," Deadline > pick a date, Tags > "Marketing."
+3. Add 3-4 more sample projects.
+
+**Expected result:** A table with structured columns. Each row has a name and typed properties. You can click a cell to change a Status or Priority value.
+
+**Stop condition:** Your database has at least 5 properties of different types (Select, Date, Text, Number) and 3-4 sample entries.
+
+### Step 3: Switch Between Views -- Table, Board, Calendar, Gallery, List
+
+**Why:** The same data can look completely different depending on the view. A Board view shows your tasks as a kanban. A Calendar view shows deadlines. Views are saved and live side by side.
+
+**Add views to your Projects database:**
+1. Click the **+** next to the last view tab (at the top of the database, next to "Table view").
+2. Choose **Board**.
+3. In the Board view settings, set **Group by** to **Status**.
+4. Name the view "Kanban."
+5. Now add a **Calendar** view: click **+** > **Calendar**. Set the Calendar view's date property to **Deadline**.
+6. Add a **Gallery** view: click **+** > **Gallery**. This shows each project as a card with an optional cover image.
+
+**How views work:**
+- All views show the **same database** (same rows). Editing in any view edits the same data.
+- Each view has its own **filters, sorts, and layout settings**.
+- You can hide properties per view (e.g., hide Budget in the Kanban view).
+
+**Filter and sort in any view:**
+1. Click the **Filter** button above the database.
+2. Add a filter: "Priority equals High."
+3. Click **Sort** > "Deadline ascending."
+4. Save the view with the filter applied (click the view name > rename).
+
+**Expected result:** You can switch between Table (structured data), Board (kanban cards by status), Calendar (deadlines on a timeline), and Gallery (visual cards) -- all showing the same projects.
+
+**Stop condition:** You have created at least 3 views (Table, Board, Calendar) in your database and can switch between them instantly.
+
+### Step 4: Link Databases with Relations and Rollups
+
+**Why:** Data in a silo is limited. When you link databases, you can show tasks for each project, or calculate the total budget across projects. Relations connect databases; Rollups pull calculated data from the relation.
+
+**Create a "Tasks" database:**
+1. Create a new page > `/table` > name it "Tasks."
+2. Properties:
+   - **Task Name** (Title)
+   - **Status** (Select): To Do, In Progress, Done
+   - **Due Date** (Date)
+   - **Assigned To** (Person or Text)
+
+**Create a Relation to link Tasks to Projects:**
+1. In the Tasks database, click **+** > **Relation**.
+2. Name it "Project."
+3. Select the **Projects** database as the related database.
+4. Click **Create**. A new column appears in both databases.
+
+**Link a task to a project:**
+1. In the Tasks table, click the **Project** cell for a task.
+2. Start typing the project name > select it from the dropdown.
+3. Now that task is connected to that project.
+
+**Create a Rollup in Projects to count tasks:**
+1. Go to your Projects database.
+2. Click **+** > **Rollup**.
+3. Name it "Task Count."
+4. **Relation:** Select the relation column that points to Tasks (it was created automatically when you created the Relation from Tasks).
+5. **Property:** Select "Task Name" (or any text property from Tasks).
+6. **Calculate:** Choose **Count All**.
+7. Now each project shows the number of linked tasks.
+
+**Expected result:** Clicking a project shows its linked tasks. The project table has a "Task Count" column showing how many tasks each project has.
+
+**Stop condition:** You have linked at least 3 tasks to a project, and the project's Rollup column shows the correct count.
+
+### Step 5: Create Reusable Templates
+
+**Why:** Templates save you from recreating the same page structure every time. A "Meeting Notes" template can include a date property, an agenda checklist, and a section for action items.
+
+**Create a database template (e.g., "Meeting Notes"):**
+1. Create a new database: `/table` > name it "Meeting Notes."
+2. Properties:
+   - **Meeting Name** (Title)
+   - **Date** (Date, default = today)
+   - **Attendees** (Text)
+   - **Status** (Select): Draft, Published
+3. Click the **arrow** next to the "New" button (top-right of the database) > **+ New template**.
+4. Name the template "Weekly Team Sync."
+5. In the template content area, create the structure:
+   ```
+   # [Meeting Name]
+   
+   ## Agenda
+   - [ ] Standup updates
+   - [ ] Project review
+   - [ ] Blockers
+   
+   ## Notes
+   
+   ## Action Items
+   | Task | Owner | Due Date |
+   |------|-------|----------|
+   |      |       |          |
+   ```
+6. Click **Back** to save.
+
+**Using the template:**
+- Click the **New** button in the database > select "Weekly Team Sync" from the template dropdown.
+- A new page opens with your pre-built structure. Fill in the details.
+
+**Create a page template (for non-database pages):**
+1. Open a page you want to reuse (e.g., a project proposal).
+2. Click the **...** menu (top-right) > **Turn into template** > choose which properties to include.
+3. The template is saved in the page's database. New pages can be created from it.
+
+**Expected result:** You have a Meeting Notes database where new entries start with a pre-built agenda, action items table, and formatted sections.
+
+**Stop condition:** You have created one database template, used it to create a new entry, and verified the structure appears pre-filled.
+
+---
+
+## Reference Table
+
+| Shortcut | Action |
+|---|---|
+| Ctrl/Cmd + N | New page |
+| Ctrl/Cmd + P | Quick search (open any page) |
+| Ctrl/Cmd + Shift + N | New workspace (or log out) |
+| / | Command menu (add any block) |
+| @ | Mention a page, person, or date |
+| + | New line (same as Enter in other apps) |
+| Ctrl/Cmd + Shift + L | Toggle dark mode |
+| Ctrl/Cmd + Alt + T | Toggle To-do |
+| [[ (double bracket) | Link to another page (type page name) |
+| > | Turn text into a toggle list |
+| - (at start of line) | Create a bullet list |
+
+| Block Type | Command (type `/` then) | Use Case |
+|---|---|---|
+| Heading 1 | `/h1` | Page title section |
+| Heading 2 | `/h2` | Section header |
+| Heading 3 | `/h3` | Sub-section header |
+| Bulleted list | `/bulleted` | Unordered list |
+| Numbered list | `/numbered` | Ordered list |
+| To-do list | `/todo` | Checklist |
+| Toggle | `/toggle` | Collapsible content |
+| Divider | `/div` | Horizontal line (separator) |
+| Callout | `/call` | Highlighted info box |
+| Code | `/code` | Code block (with syntax highlighting) |
+| Quote | `/quote` | Block quotation |
+| Image | `/image` | Upload or embed image |
+| Embed | `/embed` | Embed URL (Figma, Maps, etc.) |
+
+| Property Type | Use When |
+|---|---|
+| Title | The main name field (every database has one) |
+| Text | Short freeform text (names, descriptions) |
+| Number | Quantities, budgets, counts |
+| Select | Single choice from a fixed set of options |
+| Multi-select | Multiple choices from a fixed set |
+| Date | Date, date range, or deadline |
+| Person | Assign to a workspace member |
+| Files & Media | Upload or link files |
+| Checkbox | Yes/No boolean flags |
+| URL | Links to external websites |
+| Email | Email addresses |
+| Phone | Phone numbers |
+| Formula | Calculated values (e.g., `prop("Budget") * 0.1`) |
+| Relation | Link to another database |
+| Rollup | Pull data from a relation (count, sum, average) |
+
+---
+
+## Troubleshooting
+
+### 1. Databases show "No data" despite having entries
+- **Symptom:** A database view appears empty even though you know there are entries.
+- **Root cause:** A filter is active that excludes all entries.
+- **Fix:** Click the **Filter** button above the database. Check if any filters are applied. Remove all filters by clicking the "X" on each filter condition. If the view is linked (the view name shows a link icon), check the source database: the filter might be on the original view.
+
+### 2. Relation not showing in the target database
+- **Symptom:** You created a Relation in Database A pointing to Database B, but no new column appeared in Database B.
+- **Root cause:** The "Show on [Database B]" option was unchecked during relation creation.
+- **Fix:** Go to Database A's relation column. Click the property name (the column header). In the **Edit property** panel, check "Show on [Database B]." Database B will now show the relation column. Alternatively, in Database B, add a Relation property pointing back to Database A.
+
+### 3. Rollup shows wrong value or error
+- **Symptom:** A Rollup property shows "Nothing to calculate," or the value is clearly wrong.
+- **Root cause:** The Rollup's relation path is incorrect, or the related database property is empty.
+- **Fix:** Edit the Rollup property. Verify the **Relation** selection points to the correct relation column. Verify the **Property** selection points to a property that exists on the related database. For "Count All," any property works. For "Sum," the property must be a Number type.
+
+### 4. Missing sidebar pages
+- **Symptom:** A page you created is no longer visible in the sidebar.
+- **Root cause:** The page was nested inside another page and the parent is collapsed, or the page was moved to a different location.
+- **Sort fix:** Press **Ctrl/Cmd + P** (Quick Search). Type the page name. Open it. In the page, click the **...** menu > **Move to** > select a sidebar location. Or drag the page from the search result directly into the sidebar.
+
+### 5. Notion sync conflicts
+- **Symptom:** Changes made on one device are not appearing on another, or you see a sync error icon.
+- **Root cause:** Network issues, or simultaneous edits on two devices caused a conflict.
+- **Fix:** Check your internet connection. In the desktop app, go to **Settings > Notifications** and verify sync status. Force a sync: Ctrl/Cmd + Shift + R (reload). If conflict persists, duplicate the problematic page, delete the original, and rename the duplicate. Notion's real-time sync is usually reliable, but large nested pages can occasionally lag.
+
+---
+
+## Expert Tips
+
+**Quick Search as the Primary Navigation:** Most Notion power users navigate almost exclusively with **Ctrl/Cmd + P** (Quick Search). Type the first few characters of any page or database and press Enter. This is faster than scrolling through the sidebar, especially once you have more than 50 pages. The search also finds text inside pages.
+
+**Keyboard-Only Database Entry:** To quickly add a row to a database without touching the mouse: tab into the last row > press **Tab** again when at the last cell (creates a new row). Or press **Ctrl/Cmd + N** when the database is selected. Fill in properties using Tab to move between columns.
+
+**Linked Views for Dashboards:** On a dashboard page, create a **Linked View of a Database** (type `/linked` > select the database). This embeds a filtered view of a database (e.g., "Only my tasks") without showing the entire database. You can have multiple linked views of the same database on one page, each with different filters.
+
+**Backlinks for Context:** When you `@`-mention a page, Notion automatically creates a backlink. Open a page > click **...** > **Backlinks** to see all pages that reference it. This turns your workspace into a wiki where every page knows what links to it.
+
+**Lock Pages After Finalizing:** When a page is complete (e.g., a published meeting note), click the **...** menu > **Lock page**. This prevents accidental edits. Team members can still view and copy content. Unlock by clicking **...** > **Unlock**.
+
+**Archive, Don't Delete:** Instead of deleting old pages, move them to an **Archive** page (or database). Right-click > **Move to** > Archive. Deleted pages go to the Trash (available for 30 days on free plan, forever on Plus/Team). Archived pages remain searchable but are out of your active workspace. This is a clean way to keep your workspace lean.
+
+---
+
+## Summary
+
+In this tutorial you learned the five foundational skills for building a Notion workspace:
+- **Page hierarchy** -- nested pages in the sidebar for organization
+- **Databases with properties** -- structured data with typed columns
+- **Multiple views** -- Table, Board, Calendar, Gallery from the same data
+- **Relations and Rollups** -- connect and calculate across databases
+- **Templates** -- reusable page structures for consistency
+
+**Next steps:**
+- Learn project management with Notion: [Project Management Guide](/en/office/notion/project-management)
+- Explore Notion formulas for calculated properties
+- Set up Notion API integrations for automation
+- Build a personal dashboard with linked database views and embeds

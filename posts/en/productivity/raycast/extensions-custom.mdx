@@ -1,0 +1,303 @@
+---
+title: Raycast Extension Development
+description: Build and publish custom Raycast extensions from scratch
+field: productivity
+software: raycast
+level: intermediate
+language: en
+slug: extensions-custom
+date: 2026-05-11
+readTime: 15
+translationOf: /zh/productivity/raycast/extensions-custom
+affiliateLinks:
+  - name: Raycast Pro
+    url: https://www.raycast.com/pro
+    description: Raycast Pro unlocks AI features and cloud sync
+    vendor: Raycast
+  - name: VSCode
+    url: https://code.visualstudio.com
+    description: Recommended editor for Raycast extension development
+    vendor: Microsoft
+---
+
+> **Version**: Raycast 1.80+ (requires Node.js 18+ and a code editor)
+> **Difficulty**: ★★★☆☆ (basic JavaScript/TypeScript programming required)
+> **Time**: First extension 60–90 min, subsequent extensions 20–30 min
+
+## Why You Need to Build Your Own Extension
+
+The Raycast Store has thousands of community extensions — but they can never cover every use case. You might need to query an internal company API, combine multiple HTTP requests into one workflow, or integrate a proprietary tool. Off-the-shelf extensions do not solve your specific problems.
+
+The tempting shortcut is "just use a script command" — write a shell script or AppleScript and drop it in Raycast's Script Commands directory. The problem: no UI (no parameters, no list selection), no loading states, no friendly error messages when things break. That is not a tool; it is a patch.
+
+The Raycast Extension API is the correct solution. It lets you build professional-grade extensions with native UI, preferences, shortcut bindings, and proper error handling using React + TypeScript. Write once, publish to the store for your team or the community.
+
+This tutorial builds a real extension as an example — a "GitHub PR Dashboard" that queries and displays pull requests assigned to you.
+
+## Preparation
+
+- **Node.js 18+**: Download from [nodejs.org](https://nodejs.org), or `brew install node` on macOS.
+- **VS Code** (recommended): Download from [code.visualstudio.com](https://code.visualstudio.com). The Raycast extension scaffold includes VS Code debug configs.
+- **Raycast account**: Free registration at [raycast.com](https://www.raycast.com) (required for publishing).
+- **npm**: Included with Node.js. This tutorial uses npm.
+- **GitHub Personal Access Token**: Create at GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens. Select `repo` scope.
+
+## Core Workflow
+
+### Step 1: Scaffold the Extension
+
+Raycast provides `create-raycast-extension` to generate the project template with all build configuration pre-configured.
+
+1. Open a terminal and run:
+   ```bash
+   npx create-raycast-extension my-pr-dashboard
+   ```
+2. Interactive configuration:
+   - Select: `Extension`
+   - Title: `PR Dashboard`
+   - Description: `View your GitHub pull requests at a glance`
+   - Author: Your GitHub username
+3. Enter the project directory: `cd my-pr-dashboard`
+4. Examine the generated structure:
+   ```
+   my-pr-dashboard/
+   ├── package.json
+   ├── tsconfig.json
+   ├── src/
+   │   └── index.tsx       # Extension entry point
+   ├── assets/
+   │   └── icon.png        # Default icon (512x512)
+   └── .eslintrc.json
+   ```
+5. **Expected result**: The project directory exists. Running `npm run dev` starts the development server, and pressing `Cmd+Shift+R` in Raycast reloads and shows the new extension.
+6. **Why**: The scaffold handles all the tedious build configuration — TypeScript, ESLint, React, and React DOM are pre-configured. No Webpack or Babel setup needed.
+7. **Stop when**: You can see "PR Dashboard" in Raycast and running it displays "Hello World."
+
+### Step 2: Define Commands and Preferences
+
+An extension can contain multiple commands, each appearing as a separate entry in Raycast's search bar. We will create two: one to list PRs and one to configure the token.
+
+1. Edit `package.json` to define two commands and shared preferences:
+   ```json
+   {
+     "commands": [
+       {
+         "name": "list-prs",
+         "title": "List Pull Requests",
+         "description": "Show your assigned GitHub PRs",
+         "mode": "view"
+       },
+       {
+         "name": "configure-token",
+         "title": "Configure GitHub Token",
+         "description": "Set your GitHub personal access token",
+         "mode": "view"
+       }
+     ],
+     "preferences": [
+       {
+         "name": "githubToken",
+         "title": "GitHub Token",
+         "description": "Your GitHub personal access token",
+         "type": "password",
+         "required": true
+       },
+       {
+         "name": "githubUsername",
+         "title": "GitHub Username",
+         "description": "Your GitHub username for filtering PRs",
+         "type": "textfield",
+         "required": true
+       }
+     ]
+   }
+   ```
+2. **Why**: The `preferences` array auto-generates a settings UI for your extension. Users enter values in the Raycast settings panel — no manual config file editing. `mode: "view"` means a view-based command (as opposed to no-view or inline).
+3. **Expected result**: In Raycast Settings → Extensions → PR Dashboard, you see two input fields for "GitHub Token" and "GitHub Username."
+4. **Stop when**: You can enter values in both fields.
+
+### Step 3: Build the Main List UI
+
+Now write the React component that displays the PR list.
+
+1. Create `src/list-prs.tsx`:
+   ```tsx
+   import { List, ActionPanel, Action, Icon } from "@raycast/api";
+   import { useEffect, useState } from "react";
+   
+   interface PullRequest {
+     title: string;
+     url: string;
+     state: string;
+     repository: string;
+     createdAt: string;
+   }
+   
+   export default function Command() {
+     const [prs, setPrs] = useState<PullRequest[]>([]);
+     const [isLoading, setIsLoading] = useState(true);
+   
+     useEffect(() => {
+       fetchPRs().then(setPrs).finally(() => setIsLoading(false));
+     }, []);
+   
+     return (
+       <List isLoading={isLoading} searchBarPlaceholder="Filter PRs...">
+         {prs.map((pr, index) => (
+           <List.Item
+             key={index}
+             icon={pr.state === "open" ? Icon.Circle : Icon.Checkmark}
+             title={pr.title}
+             subtitle={pr.repository}
+             accessories={[
+               { text: new Date(pr.createdAt).toLocaleDateString() },
+             ]}
+             actions={
+               <ActionPanel>
+                 <Action.OpenInBrowser url={pr.url} />
+               </ActionPanel>
+             }
+           />
+         ))}
+       </List>
+     );
+   }
+   
+   async function fetchPRs(): Promise<PullRequest[]> {
+     const { preferences } = require("@raycast/api");
+     const token = preferences.githubToken.value;
+     const username = preferences.githubUsername.value;
+   
+     const response = await fetch(
+       `https://api.github.com/search/issues?q=is:pr+assignee:${username}+is:open`,
+       {
+         headers: { Authorization: `Bearer ${token}` },
+       }
+     );
+     const data = await response.json();
+     return data.items.map((item: any) => ({
+       title: item.title,
+       url: item.html_url,
+       state: item.state,
+       repository: item.repository_url.split("/").pop(),
+       createdAt: item.created_at,
+     }));
+   }
+   ```
+2. **Expected result**: Running the extension shows a list of your GitHub PRs with title, repository, and date.
+3. **Why**: `List` is the most common Raycast UI component. It supports built-in filtering (`searchBarPlaceholder`), loading state (`isLoading`), and `ActionPanel` for actions (open in browser, copy text, run scripts).
+4. **Stop when**: You see an interactive PR list with title, repo name, and creation date per row.
+
+### Step 4: Handle Errors and Empty States
+
+Production extensions must handle API errors, network failures, and empty results gracefully.
+
+1. Add error handling to `fetchPRs`:
+   ```tsx
+   async function fetchPRs(): Promise<PullRequest[]> {
+     try {
+       const { preferences } = require("@raycast/api");
+       const token = preferences.githubToken.value;
+       const username = preferences.githubUsername.value;
+   
+       const response = await fetch(
+         `https://api.github.com/search/issues?q=is:pr+assignee:${username}`,
+         {
+           headers: { Authorization: `Bearer ${token}` },
+         }
+       );
+   
+       if (!response.ok) {
+         throw new Error(`GitHub API error: ${response.status}`);
+       }
+   
+       const data = await response.json();
+       return data.items.map((item: any) => ({
+         title: item.title,
+         url: item.html_url,
+         state: item.state,
+         repository: item.repository_url.split("/").pop(),
+         createdAt: item.created_at,
+       }));
+     } catch (error) {
+       throw new Error(`Failed to fetch PRs: ${error.message}`);
+     }
+   }
+   ```
+2. Add empty state view to the main command:
+   ```tsx
+   return (
+     <List isLoading={isLoading} searchBarPlaceholder="Filter PRs...">
+       {prs.length === 0 && !isLoading ? (
+         <List.EmptyView
+           icon={Icon.GitPullRequest}
+           title="No pull requests found"
+           description="You have no open PRs assigned to you. Time to create one!"
+         />
+       ) : (
+         prs.map((pr, index) => ( /* ... */ ))
+       )}
+     </List>
+   );
+   ```
+3. **Why**: Unhandled API errors result in a silent failure — the user sees a blank list with no explanation. Dedicated error messages and `EmptyView` elevate the experience from "the extension is broken" to "I understand what happened."
+4. **Stop when**: Running the extension shows an error message if the network is down, and an empty-state message if there are no PRs.
+
+### Step 5: Local Testing
+
+1. Run `npm run dev` in the project directory.
+2. In Raycast, press `Cmd+Shift+R` to reload extensions (or restart Raycast).
+3. Test all functionality: type keywords to filter PRs; click a PR to open it in the browser; modify preferences and verify they persist.
+4. **Why**: Dev mode applies code changes immediately after `Cmd+Shift+R` — no rebuilding or reinstalling needed.
+5. **Stop when**: The extension works correctly in Raycast and all features behave as expected.
+
+### Step 6: Publish to Raycast Store
+
+1. Ensure your extension runs correctly in Raycast.
+2. Upload the extension to a public GitHub repository.
+3. Visit https://www.raycast.com/store, click "Publish Extension," and log in.
+4. Fill in:
+   - GitHub repository URL
+   - Extension icon (512x512 PNG)
+   - Screenshots (at least one, 3 recommended showing different features)
+   - Category (select "Developer Tools")
+5. Submit for review. The Raycast team typically reviews within 2–5 business days.
+6. **Why**: Publishing to the store makes your extension installable by anyone through Raycast — team members can install it directly instead of cloning your repo.
+7. **Stop when**: Your extension appears in the Raycast Store and can be searched and installed.
+
+## Key API & Component Reference
+
+| API / Component | Purpose | Example |
+|-----------------|---------|---------|
+| List | Searchable list | `List searchBarPlaceholder="Search..."` |
+| ActionPanel | Action menu | `Action.OpenInBrowser`, `Action.CopyToClipboard` |
+| Form | Input form | `Form.TextField`, `Form.Dropdown` |
+| Detail | Markdown detail view | `Detail markdown={content}` |
+| preferences | Extension preferences | `preferences.githubToken` |
+| showToast | Toast notifications | `showToast({ title: "Done" })` |
+| Cache | Local data cache | `cache.set("key", data)` |
+
+## Troubleshooting
+
+1. **Symptom: "`npm run dev` says 'command not found'"** → **Root cause**: Outdated `create-raycast-extension` or Node.js version too low. **Fix**: Ensure Node.js >= 18 (`node --version`). Run `npm update -g create-raycast-extension` to refresh the scaffold tool.
+
+2. **Symptom: "Extension shows a blank list"** → **Root cause**: GitHub Token is missing in preferences, or the token lacks the `repo` scope. **Fix**: Fill in the token in extension preferences. Verify the token has `repo` scope in GitHub settings.
+
+3. **Symptom: "GitHub API returns 403 Forbidden"** → **Root cause**: Unauthenticated requests are rate-limited to 60/hour. **Fix**: Add a GitHub Token to preferences — this raises the limit to 5,000/hour. If 403 persists, the token may have expired.
+
+4. **Symptom: "Code changes do not appear in Raycast"** → **Root cause**: Dev mode is not running. **Fix**: Confirm `npm run dev` is running in the project directory. Press `Cmd+Shift+R` to reload. If still stuck, restart Raycast completely.
+
+5. **Symptom: "Store publishing was rejected"** → **Root cause**: Missing screenshots, incorrect icon size, or overly simplistic functionality. **Fix**: Ensure the icon is 512x512 PNG. Provide at least one clear screenshot. Write a README explaining the use case and configuration steps.
+
+## Expert Tips
+
+- **Use Cache API to reduce network calls**: Raycast provides a built-in Cache API. Cache API responses for 5–15 minutes. Check cache before fetching — this reduces GitHub API daily usage by 60–70% for repeated queries.
+- **Form component for complex input**: The `Form` component supports validation (`validation` prop), dropdowns (`Form.Dropdown`), file pickers (`FilePicker`), and date pickers (`DatePicker`). Use Form instead of multiple `preferences` fields when your extension needs conditional or complex configuration.
+- **Multi-command architecture**: Multiple commands within one extension share the same `preferences` from `package.json`. Use this to build a "main command + helper command" structure — one command for querying, another for configuration.
+- **Debugging with DevTools**: Open Raycast's developer tools with `Cmd+Shift+I` (just like browser DevTools). `console.log()` output appears here — invaluable for debugging API responses and state management.
+
+## Summary
+
+You have built a complete Raycast extension from scratch — a GitHub PR Dashboard that queries and displays pull requests. You learned: project scaffolding, command and preference configuration, React List component development, error and empty-state handling, local testing, and store publishing.
+
+This extension is just the beginning. Raycast's extension API supports system tools, time tracking, note integration, and any workflow you can imagine. Visit [developers.raycast.com](https://developers.raycast.com) for the complete API reference.

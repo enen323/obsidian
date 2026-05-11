@@ -1,0 +1,189 @@
+---
+title: Claude AI Getting Started Guide
+description: Learn Claude AI core features and usage
+field: ai
+software: claude
+level: beginner
+language: en
+slug: getting-started
+date: 2026-05-11
+readTime: 14
+translationOf: /zh/ai/claude/getting-started
+affiliateLinks:
+  - name: Claude Pro
+    url: https://claude.ai
+    description: AI chat subscription
+    vendor: Anthropic
+---
+
+> **Version**: Claude 4 Sonnet / 2026-05 | **Difficulty**: ★☆☆☆☆ | **Read time**: 14 min
+
+## What Makes Claude Different from ChatGPT?
+
+Maybe you have used ChatGPT and think AI chat tools are all the same — type a question, get an answer. But whenever you hit "content exceeds length limit," you have to chop your document into pieces. Ask them one by one, and the context never quite connects.
+
+Claude changes this with: **massive context window and deep processing**.
+
+Claude natively supports a 200K token context window (~150,000 English words or ~150,000 Chinese characters). You do not need to split files — just drop in a whole document and Claude reads it in full. This changes how you work with AI: from "feed in chunks" to "read the whole book."
+
+This guide walks you through Claude's core features from scratch.
+
+## Preparation
+
+- A [Claude](https://claude.ai) account (free tier works for basic features)
+- [Claude Pro subscription](https://claude.ai) ($20/month): higher usage limits, priority access, more model options
+- A browser — no software installation needed
+- A test long document (PDF or TXT, 10-50 pages works best)
+
+## Core Workflow: Five Key Claude Features
+
+### Step 1: Basic Conversation — Ask the Right Way
+
+The Claude chat interface is similar to ChatGPT but with key differences:
+
+**Best way to ask**:
+
+```
+Analyze the risk of the following project plan. First list all potential risks, then rank them by impact (high to low), and finally suggest mitigation strategies for each.
+
+Project plan: [paste or upload file]
+```
+
+**Claude's response style**:
+- Prefers structured output (lists, tables, headings)
+- More detailed and thorough than most alternatives
+- Responds well to correction — just say "What you said about X is not quite accurate because..."
+
+**Why this works**: You requested three output types (list, rank, suggest) in one prompt. Claude's structured output handles this cleanly in a single response.
+
+### Step 2: File Uploads — Use the Hardware Advantage
+
+Claude supports more file formats than most competitors:
+
+| Format | Max File | Typical Use |
+|--------|----------|-------------|
+| PDF | ~100MB | Reports, papers, contracts |
+| TXT | ~10MB | Code, notes |
+| CSV | ~50MB | Data tables |
+| Images (JPG/PNG) | ~20MB | Chart screenshots, scans |
+| Markdown | ~10MB | Documents |
+
+**Upload tip**: Drag and drop files directly into the chat. Claude reads them immediately — no processing time needed.
+
+```
+(After uploading a 50-page PDF report)
+Summarize this document:
+1. Core conclusions (3 sentences max)
+2. Key data points (table format)
+3. The author's main argument chain
+4. Any data contradictions or logic gaps you find
+```
+
+**Expected result**: Claude reads the entire document in ~10 seconds and produces a structured summary — something that would take a human 2-3 hours.
+
+### Step 3: Long Document Processing — 200K Context in Action
+
+This is Claude's killer feature. Hand over an entire book, codebase, or year of reports in one go.
+
+```
+Read this entire codebase. Then:
+1. Draw the architecture (ASCII or Mermaid diagram)
+2. Identify design patterns used
+3. Point out the 3 most bug-prone modules and explain why
+4. Suggest refactoring priorities
+
+[paste key files from the codebase]
+```
+
+**Why it works**: Traditional AI sees only a few pages of code. Claude sees the entire codebase — cross-file call relationships become visible.
+
+**Note**: While the context window is huge, Claude's memory of early content weakens in very long conversations (50+ exchanges). Place critical information later in the conversation, or use "Remember what I mentioned earlier about..." to reinforce.
+
+### Step 4: Coding Assistance — Generation and Review
+
+Claude's coding ability is on par with GPT-4, with the advantage of **processing entire files at once**.
+
+```
+Review the following Python code. Please:
+1. Find all potential bugs (annotate line numbers)
+2. Identify performance bottlenecks
+3. Check type safety
+4. Provide the optimized complete code
+
+Code:
+[paste code]
+```
+
+**Pro tip**: For coding tasks, add "Use the latest language features" or "Compatible with Python 3.12+" to get modern syntax.
+
+### Step 5: Writing Collaboration — Outline to Final Draft
+
+Claude excels at long-form writing — especially papers, reports, and technical documentation.
+
+**Complete writing workflow** (3 stages, 3 separate conversations):
+
+```
+Conversation 1 - Outline:
+I want to write an article about serverless architecture. Generate 3 different outlines: technical deep-dive, business decision, and beginner-friendly.
+
+Conversation 2 - Drafting (using the chosen outline):
+Using the business decision outline we agreed on, write the full article. Keep each section to 300-400 words. Formal but not overly academic tone.
+
+Conversation 3 - Polish:
+Refine the article above:
+1. Rewrite the opening hook — it needs to be stronger
+2. Add data support to section 3's argument
+3. Check full-text consistency — are technical terms used uniformly?
+```
+
+## Reference Table: Claude Core Capabilities
+
+| Feature | Capacity | Best For | Prompt Tips |
+|---------|----------|----------|-------------|
+| **Chat window** | 200K tokens | Long doc analysis, whole-book discussion | Put key info in the latter half |
+| **File upload** | ~100MB/file | PDF reports, codebases | Drag and drop, no preprocessing |
+| **Coding** | Full-file | Code review, refactoring | Annotate line numbers, specify language version |
+| **Writing** | Long coherent pieces | Papers, reports, tech docs | Stage: outline → draft → polish |
+| **Multilingual** | CN/EN/JP/FR etc. | Translation, multilingual creation | Set source and target languages explicitly |
+
+## Troubleshooting
+
+### Q1: Uploaded PDF content is not readable
+
+**Root cause**: The PDF is a scanned image (picture-based), not text-based. Claude does not currently support OCR.
+**Fix**: Run the scan through an OCR tool (like Adobe Acrobat's OCR) first to make it searchable. Alternatively, upload as JPG/PNG images and describe the content.
+
+### Q2: Response quality drops in long conversations
+
+**Root cause**: Despite the 200K window, attention shifts toward recent content after 50+ exchanges.
+**Fix**: Start fresh conversations for critical tasks. In long conversations, periodically ask "Summarize the key points we have discussed so far" to refresh context. Or manually paste key conclusions into a new conversation.
+
+### Q3: Code review results are too shallow
+
+**Root cause**: No specific review dimensions given. "Review this code" gets a generic response.
+**Fix**: Specify review dimensions and provide code context. Use "Review this code focusing on security vulnerabilities (especially SQL injection and XSS), performance bottlenecks (loops and DB queries), and TypeScript type errors."
+
+### Q4: Claude's responses are sometimes too long
+
+**Root cause**: Claude's design preference is to give detailed answers.
+**Fix**: Specify output length in your prompt. For example: "200 words max," "Summarize in 5 bullet points," "Code only, no explanation."
+
+## Expert Tips
+
+- **Mermaid diagrams**: Claude natively generates Mermaid-format flowcharts, sequence diagrams, and Gantt charts. Just ask "Generate a Mermaid diagram for this workflow" and you get renderable chart code.
+- **Projects feature**: Claude Projects (covered in a separate article) bundles multiple documents and custom instructions into a project space. Perfect for "writing projects" or "codebase maintenance."
+- **Stage your writing**: For long-form content, do not finish "outline → draft → polish" in one conversation. Split into three conversations, copying results out between them. Quality improves ~30%.
+- **Knowledge cutoff**: Claude's training data cutoff depends on the model version. For the latest information, enable Claude's web search feature (click to activate manually).
+- **Conversation title management**: Claude auto-generates chat titles, but you can rename them. Give important conversations descriptive titles (e.g., "E-commerce project data modeling 0525") for easier retrieval.
+
+## Summary
+
+You now know Claude's core features:
+
+- **Basic conversation**: Ask structurally, get structured answers
+- **File uploads**: Drag and drop, no preprocessing
+- **Long document processing**: 200K context reads entire documents at once
+- **Coding assistance**: Full-file code analysis and generation
+- **Writing collaboration**: Stage-based long-form writing
+
+Next: Learn **Claude Projects** to organize your knowledge base and workflows. Or check [ChatGPT Prompt Engineering](../chatgpt/prompt-engineering) for general prompt techniques.

@@ -1,0 +1,143 @@
+---
+title: Obsidian Publish & Sharing
+description: Share your Obsidian notes as a website, three approaches compared
+field: productivity
+software: obsidian
+level: intermediate
+language: en
+slug: publish-sharing
+date: 2026-05-11
+readTime: 14
+translationOf: /zh/productivity/obsidian/publish-sharing
+affiliateLinks:
+  - name: Obsidian Publish
+    url: https://obsidian.md/pricing
+    description: Official Obsidian publishing service, one-click publish
+    vendor: Obsidian
+  - name: Netlify
+    url: https://www.netlify.com
+    description: Static site hosting with generous free tier
+    vendor: Netlify
+---
+
+> **Version**: Obsidian 1.8.x (Publish requires v1.6.0+) | **Difficulty**: ★★★☆☆ (basic Git and CLI required for free options)
+> **Time**: Obsidian Publish: 15 min, GitHub Pages: 60 min
+
+## Why Sharing Notes Is Harder Than Writing Them
+
+Your Obsidian vault probably holds hundreds of notes by now — interlinked, tagged, and full of cross-references. But when someone asks you to share a note, your options are: take a screenshot, copy-paste plain text into a chat window, or send the raw `.md` file — breaking every link, losing all formatting, and making the graph view useless.
+
+The core problem: `.md` files are meant for humans to read, not browsers. Opening a Markdown file directly shows unclickable links, broken image paths, and zero navigation. You need a "rendering layer" to transform notes into an accessible website.
+
+There are three solutions at different price points: official Obsidian Publish (fastest, paid), Digital Garden plugin (free, moderate), and GitHub Pages + static site generator (most flexible, free, requires technical setup). This tutorial covers all three — choose the one that fits your budget and comfort level.
+
+## Preparation
+
+### Option A: Obsidian Publish
+- Obsidian account (free at [obsidian.md](https://obsidian.md))
+- Obsidian Publish subscription ($10/month starting price)
+- Obsidian desktop v1.6.0+
+
+### Option B: GitHub Pages + Quartz (free, requires CLI)
+- GitHub account (free at [github.com](https://github.com))
+- Git installed (Windows: `winget install git.git` / macOS: `brew install git`)
+- Node.js 18+ installed ([nodejs.org](https://nodejs.org))
+- Basic command-line familiarity
+
+### Option C: Digital Garden Plugin (free, minimal setup)
+- Obsidian desktop
+- GitHub account
+
+## Core Workflow
+
+### Option A: Obsidian Publish (5 min to live)
+
+1. Open Obsidian → Settings → Core plugins → Publish (enable it). Publish is a core plugin, included with every Obsidian installation — no community marketplace needed.
+2. Click the globe icon in the left ribbon (Publish button).
+3. Log in with your Obsidian account (a browser window opens for authentication).
+4. Click "Choose a site" → "Create new site." Enter a site name, e.g., `my-digital-garden`.
+5. Select the notes to publish. By default, all notes are checked. Uncheck individual notes to control visibility.
+6. Click "Publish." Obsidian uploads the selected Markdown files and renders them as a website.
+7. Visit `https://your-site-name.obsidian.md` to see the result.
+8. **Why**: Publish preserves Obsidian-native features that are difficult to replicate with other tools: clickable `[[wikilinks]]`, an interactive graph view, and a navigable backlinks panel.
+9. **Stop when**: Your browser opens the publish site and clicking a `[[wikilink]]` navigates to the target note.
+
+### Option B: Quartz + GitHub Pages (free, 45 min)
+
+Quartz is a dedicated static site generator built specifically for Obsidian vaults. It converts your entire vault into a responsive, searchable website.
+
+1. **Fork the Quartz template**: Open https://github.com/jackyzha0/quartz in a browser. Click "Use this template" → "Create a new repository." Name it `your-username.github.io`.
+2. **Clone locally**: Run `git clone https://github.com/your-username/your-username.github.io.git`.
+3. **Install dependencies**: `cd your-username.github.io && npm install`.
+4. **Configure Quartz**: Edit `quartz.config.ts`:
+   ```typescript
+   const config: QuartzConfig = {
+     configuration: {
+       pageTitle: "My Digital Garden",
+       baseUrl: "your-username.github.io",
+       // ...
+     }
+   };
+   ```
+5. **Sync Obsidian notes**: Copy or link your vault `.md` files into the `content/` directory:
+   - **Recommended (macOS/Linux)**: Symbolic link — `ln -s /path/to/your/vault content` (inside the quartz directory).
+   - **Windows**: Directory junction — `mklink /J content D:\path\to\vault` (run as Administrator).
+   - **Alternative**: Direct copy — `cp -r /path/to/vault/* content/` (requires manual re-copy on updates).
+6. **Local preview**: Run `npx quartz build --serve`, then open `http://localhost:8080` in your browser.
+7. **Deploy to GitHub Pages**:
+   ```bash
+   npx quartz build
+   git add .
+   git commit -m "deploy site update"
+   git push origin main
+   ```
+8. **Why**: Completely free (GitHub Pages hosts up to 1 GB for free), supports full Markdown rendering, syntax highlighting, full-text search, and native `[[wikilink]]` conversion.
+9. **Stop when**: `https://your-username.github.io` loads correctly and shows content matching your vault.
+
+### Option C: Digital Garden Plugin (lightweight free option)
+
+1. Install the Digital Garden plugin: Settings → Third-party plugins → Community plugins → Browse → search "Digital Garden" → Install & Enable.
+2. Configure the GitHub repo in plugin settings (create an empty GitHub repo first, e.g., `my-notes`).
+3. Enable GitHub Pages on the repo: Repository Settings → Pages → Source → "GitHub Actions."
+4. Back in Obsidian, right-click any note → "Digital Garden: Note Status" → Set to "Published."
+5. Open the Command Palette (`Ctrl+P`), type "Digital Garden: Publish all notes."
+6. **Why**: Simpler than Quartz — all operations happen inside Obsidian with no CLI. However, theme customization is limited compared to Quartz.
+7. **Stop when**: `https://your-username.github.io/my-notes` shows your published notes.
+
+## Publishing Method Comparison
+
+| Feature | Obsidian Publish | Quartz | Digital Garden |
+|---------|-----------------|--------|----------------|
+| Price | $10/mo starting | Free | Free |
+| Setup effort | ★☆☆☆☆ | ★★★☆☆ | ★★☆☆☆ |
+| Theme customization | Limited (colors/fonts) | Fully customizable | Limited |
+| Bidirectional links | Native | Auto-converted | Auto-converted |
+| Graph view | Yes | Yes | Yes |
+| Custom domain | Yes (extra fee) | Yes (free) | Yes (free) |
+| SEO | Basic | Good | Basic |
+| Search | Built-in | Built-in | Built-in |
+
+## Troubleshooting
+
+1. **Symptom: "Obsidian Publish site shows 404 on linked notes"** → **Root cause**: The linked note was not selected for publishing, or the `[[wikilink]]` points to a note outside the published set. **Fix**: In the Publish panel, ensure all referenced notes are checked. If a note must remain private, replace `[[target]]` with `[link text](target.md)` format.
+
+2. **Symptom: "Quartz build fails with 'Error: ENOTDIR'"** → **Root cause**: The `content/` symlink was created incorrectly on Windows. **Fix**: Use `mklink /J content D:\path\to\vault` (directory junction, not symbolic link) and run the terminal as Administrator.
+
+3. **Symptom: "Quartz deploys to GitHub Pages but shows a blank page"** → **Root cause**: `baseUrl` in `quartz.config.ts` is misconfigured, causing broken asset paths. **Fix**: Set `baseUrl` to `"your-username.github.io"` (no `https://`), rebuild with `npx quartz build`, and redeploy.
+
+4. **Symptom: "Digital Garden published notes have broken formatting"** → **Root cause**: Notes contain Obsidian-specific Markdown extensions (callouts `>[!note]`, diagrams ````mermaid`, LaTeX `$...$`) that the rendering engine does not support. **Fix**: Check the Digital Garden plugin documentation for supported syntax, or replace unsupported blocks with generic Markdown before publishing.
+
+5. **Symptom: "Search engines cannot find my published site"** → **Root cause**: The site has not been indexed yet. **Fix**: For Obsidian Publish, enable "SEO" in the Publish settings panel. For Quartz, verify that the build output includes proper `<meta name="description">` tags, then submit your sitemap to Google Search Console.
+
+## Expert Tips
+
+- **Password-protected Publish sites**: Obsidian Publish supports password protection — enable "Require password to access" in the Publish settings. This makes it ideal for internal documentation or team knowledge bases.
+- **Customizing Quartz appearance**: Edit `quartz/styles/custom.scss` to override CSS variables. For example, `--primary: #7c3aed;` changes the accent color to purple. No component code modification needed.
+- **Selective publishing strategy**: Do not publish your entire vault at once. Best practice: start with 10–20 of your most polished notes, get feedback, then expand. One high-quality note is worth more than 100 unprocessed drafts.
+- **Keep Quartz updated**: Run `npx quartz update` monthly to pull upstream changes. Falling behind on Quartz versions can cause build regressions that are time-consuming to diagnose.
+
+## Summary
+
+You have learned three ways to publish Obsidian notes as a website: Obsidian Publish (fastest, paid), Quartz + GitHub Pages (most flexible, free), and Digital Garden plugin (lightest, free). Choose based on your budget and technical comfort — Publish for zero-configuration, Quartz for full control, Digital Garden for a quick free trial.
+
+Publishing is just the beginning. To keep your site valuable long-term, update notes regularly, monitor reader feedback, and iterate on content. Next, read [Obsidian Plugins & Workflow](/en/productivity/obsidian/plugins-workflow) to automate your writing and publishing pipeline with Dataview and Templater.

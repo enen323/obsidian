@@ -1,0 +1,180 @@
+---
+title: Midjourney AI 绘画入门
+description: 学习 Midjourney 提示词和参数设置
+field: ai
+software: midjourney
+level: beginner
+language: zh
+slug: prompt-basics
+date: 2026-05-11
+readTime: 18
+affiliateLinks:
+  - name: Midjourney 标准计划
+    url: https://midjourney.com
+    description: AI 图像生成订阅
+    vendor: Midjourney
+---
+
+> **版本**: Midjourney V6 / 2026-05 | **难度**: ★★☆☆☆ | **阅读时间**: 18 分钟
+
+## 生成的图总是一言难尽？
+
+你输入 "a beautiful landscape" 到 Midjourney，得到了一张还算好看的风景图。但你想的是"夕阳下的雾气弥漫的森林，有丁达尔效应"，而 Midjourney 给你的是"晴朗白天的一片草地"。
+
+Midjourney 不是 Photoshop——它不"听"你说话。它从训练数据中的图像模式来理解文本。你给"a red car"，它知道红色和车。但你给"赛博朋克风格的便利店，雨夜，霓虹灯反射在湿漉漉的路面上"，它生成的图像质量取决于你是否用了它认识的关键词和参数。
+
+核心问题：你缺少两个东西——**Midjourney 认识的关键词** 和 **参数语法的准确使用**。本文从零开始，覆盖 V6 模型的核心概念：提示词结构、参数、垫图、种子值。
+
+## 准备工作
+
+- 一个 [Midjourney 订阅](https://midjourney.com)（基础计划 $10/月起，包含约 200 次生成）
+- Discord 账号（Midjourney 通过 Discord Bot 运行）或 [Midjourney Web Alpha](https://alpha.midjourney.com)
+- 在任意 Discord 频道（或 Midjourney 网页版）中输入 `/imagine` 开始
+
+## 核心工作流：五步写出高质量提示词
+
+### 第 1 步：理解提示词结构
+
+Midjourney V6 的提示词由三部分组成：
+
+```
+[主体描述] + [环境/氛围] + [风格/媒介/参数]
+```
+
+**示例**：
+
+```
+/imagine a serene Japanese garden in autumn, red maple leaves covering a stone path, koi pond with lily pads, soft morning sunlight filtering through trees, mist rising from the water --ar 16:9 --v 6
+```
+
+- **主体**：Japanese garden, red maple leaves, stone path, koi pond
+- **环境**：autumn, soft morning sunlight, mist rising
+- **参数**：`--ar 16:9`（宽屏比例）、`--v 6`（使用 V6 模型）
+
+**为什么 V6 模型不同**：V6 相比 V5 更理解自然语言（你可以写更长、更描述性的句子），对构图的遵循程度更高。
+
+### 第 2 步：掌握核心参数
+
+Midjourney 的参数写在提示词末尾，以 `--` 开头。以下是你最先需要掌握的 5 个参数：
+
+| 参数 | 作用 | 示例 | 建议初始值 |
+|------|------|------|-----------|
+| `--ar` | 画面宽高比 | `--ar 16:9` | 16:9（宽屏）, 1:1（方图）, 9:16（竖屏） |
+| `--v` | 模型版本 | `--v 6` | 6（当前最新） |
+| `--s` | 风格化程度 0-1000 | `--s 250` | 100（写实），250（默认），600（超风格化） |
+| `--c` | 多样性 0-100 | `--c 20` | 0（保守），20-40（多样），70-100（非常多样） |
+| `--no` | 否定元素 | `--no text, watermark, signature` | 排除不希望出现的内容 |
+
+**参数对比测试**：
+
+```
+// 低风格化 — 更写实
+/imagine portrait of an elderly fisherman, weathered face, detailed wrinkles --ar 3:2 --v 6 --s 50
+
+// 高风格化 — 更艺术感
+/imagine portrait of an elderly fisherman, weathered face, detailed wrinkles --ar 3:2 --v 6 --s 700
+```
+
+`--s 50` 生成接近照片的结果。`--s 700` 加入更多艺术化处理，色彩更饱和，细节可能偏离现实。
+
+### 第 3 步：使用权重调整焦点
+
+用 `::` 语法给提示词的不同部分分配权重。
+
+```
+/imagine a castle::2 on a mountain::1 misty morning --ar 16:9 --v 6
+```
+
+上例中 `castle` 权重是 `mountain` 的两倍，Midjourney 会更优先渲染城堡。权重默认为 1。
+
+### 第 4 步：使用 Image Prompts（垫图）
+
+把一张图片作为参考：将图片 URL 放在提示词开头。
+
+```
+/imagine [图片URL] a chair in the style of the reference image, modern minimalist --ar 3:2 --v 6 --iw 0.8
+```
+
+- `--iw`（Image Weight）控制参考图的影响力（0-2）。`--iw 0.5` 保持构图但改变风格，`--iw 1.5` 严格遵循参考图风格。
+
+**为什么用垫图**：当纯文字无法准确描述你想要的构图、颜色或风格时，垫图是最有效的手段。
+
+### 第 5 步：种子值与控制一致性
+
+每张 Midjourney 生成的图都有一个种子值（seed）。种子相同 + 提示词相同 = 结果相似。种子主要用于**微调**。
+
+获取种子：在 Discord 中对生成的图片点击 ✨（表情符号）-> 选择 envelope，Midjourney 会私信你图片的 seed 号。
+
+```
+// 同一提示词 + 同一 seed = 高度一致的结果
+/imagine product photo of a minimalist watch on marble surface --ar 4:3 --v 6 --seed 123456
+```
+
+**实际用途**：
+1. 生成了一张图，构图不错但颜色不对 → 保持 seed + 调整颜色关键词
+2. 找到好 seed → 用在不同构图中获得相似风格
+3. 团队协作：分享 seed + 提示词 = 任何人都能复现同一风格
+
+**停手条件**：当构图、风格、元素都达到预期，且同一提示词变体（更换 seed）也能稳定产出可接受结果时，当前的提示词方案就成熟了。
+
+## 参考表：Midjourney V6 参数速查
+
+| 参数 | 范围 | 默认值 | 用途 |
+|------|------|--------|------|
+| `--ar` | 任意比例 | 1:1 | 画面宽高比 |
+| `--v` | 5, 5.2, 6 | 6 | 模型版本 |
+| `--s` | 0-1000 | 100 | 风格化程度（越高越艺术感） |
+| `--c` | 0-100 | 0 | 多样性（越高 4 张图差异越大） |
+| `--no` | 文本 | - | 排除元素 |
+| `--iw` | 0.5-2 | 1 | 垫图的影响力 |
+| `--seed` | 0-4294967295 | 随机 | 控制随机性 |
+| `--style raw` | - | - | 使用原始模式（更忠实于提示词） |
+| `--stylize` | 同 `--s` | - | 同 `--s` 的别名 |
+| `--tile` | - | - | 生成无缝平铺纹理 |
+| `--chaos` | 同 `--c` | - | 同 `--c` 的别名 |
+
+## 常见问题排查
+
+### Q1: 生成的图片和提示词描述完全不符
+
+**原因**：常见于 V5 及更早版本。V6 已大幅改善，但仍可能因提示词过短（< 5 个词）而偏离。
+**解决**：写完整的描述句而非关键词列表。至少 10-20 个词。如果加了 `--style raw` 但结果仍偏离，去掉该参数让 Midjourney 自由发挥。
+
+### Q2: 图片中出现多余的物体/文字/扭曲的手
+
+**原因**：Midjourney 对文字和复杂人手的生成仍不稳定。这是 V6 已知的弱点。
+**解决**：使用 `--no text, letters` 减少文字出现。对于人手，在提示词中加 "detailed hands" 或后期用 Photoshop 修复。不要期待 Midjourney 完美处理手指细节。
+
+### Q3: 同样的提示词每次生成不同的风格
+
+**原因**：没有固定 seed。Midjourney 每次生成随机 seed，导致风格波动。
+**解决**：找到满意的结果后获取 seed。使用相同的 seed + 提示词可复现；固定 seed + 微调提示词可做变体。
+
+### Q4: 上传的垫图对结果没有影响
+
+**原因**：`--iw` 参数值太低（默认 1 在 V6 中可能不够）或提示词权重过大冲淡了参考图影响。
+**解决**：提高 `--iw` 到 1.5 或 2。在提示词中加 "in the style of the reference image" 或 "similar composition" 来强化参考。
+
+### Q5: 生成的图像分辨率不够
+
+**原因**：Midjourney 初始生成 1024x1024（正方形），其他比例类似低分辨率。
+**解决**：生成后点击 U1/U2/U3/U4 放大选中的图片，或点击 Upscale to Max 获得最高分辨率（最高约 2048x2048）。
+
+## 专家技巧
+
+- **提示词长度 vs 效果**：V6 中 15-30 个词效果最优。少于 10 个词输出不可控，多于 60 个词边际收益递减。实测 25 词左右的提示词在 V6 中取得最佳平衡。
+- **参考优秀作品的提示词**：在 [Midjourney Prompt Helper](https://prompt.noonshot.com/) 或 [Midlibrary](https://www.midlibrary.io/) 中搜索你喜欢的风格，学习它们的关键词组合。
+- **艺术家风格混搭**：在提示词中加入多位艺术家的名字（by artist1 and artist2），Midjourney 会融合他们的风格。例如 "by James Gurney and Hayao Miyazaki" 产生奇幻水彩 + 吉卜力的融合效果。
+- **材质关键词**：快速提升图像质感：octane render, volumetric lighting, subsurface scattering, ray tracing, 8K, detailed texture。但不要把太多堆在一起，选 2-3 个即可。
+- **使用 Blend 功能**：在 Discord 中使用 `/blend` 命令合并两张图的构图和风格，不需要写提示词。适合快速原型。
+
+## 总结
+
+你现在掌握了 Midjourney V6 的核心：
+
+- **提示词结构**：主语 + 环境 + 风格/参数
+- **核心参数**：`--ar` 比例、`--s` 风格化、`--c` 多样性、`--no` 排除、`--iw` 垫图权重
+- **种子值**：通过 seed 控制和复现风格
+- **权重语法**：用 `::` 调整元素的重要性
+
+下一步：学习 **Midjourney 专业工作流**，掌握批量生成、图生图、角色一致性等高级技巧。

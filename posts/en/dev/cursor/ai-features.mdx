@@ -1,0 +1,206 @@
+---
+title: Cursor AI Coding Features Guide
+description: "Master Cursor AI features: chat, inline editing, tab completion, error fixing, and composer"
+field: dev
+software: cursor
+level: beginner
+language: en
+slug: ai-features
+date: 2026-05-11
+readTime: 14
+translationOf: /zh/dev/cursor/ai-features
+affiliateLinks:
+  - name: Cursor Pro
+    url: https://www.cursor.com/pricing
+    description: Cursor Pro subscription for unlimited AI usage
+    vendor: Cursor
+---
+
+> **Version**: Cursor 0.45+ | **Difficulty**: ★☆☆☆☆ | **Time**: 25-35 min
+
+## Stop Writing Code Manually — Let AI Handle the Grunt Work
+
+Every developer knows the pattern: a TypeScript type error stops you mid-flow, so you open a browser and search Stack Overflow. Refactoring one function means jumping between five files. Writing unit tests is copy-paste repetition. These rituals cost you 1-2 hours every single day. The traditional edit-compile-debug loop is slow by design.
+
+**Cursor** is a code editor (forked from VS Code) with deep AI integration. Unlike autocomplete-only tools, Cursor understands your entire codebase — it can answer questions about architecture, refactor code inline, and edit multiple files from a single prompt. This tutorial walks through each core AI feature with exact steps and real examples.
+
+## Preparation
+
+Before you start, make sure your environment is ready:
+
+| Item | Requirement |
+|------|-------------|
+| Cursor version | 0.45 or higher (download from [cursor.com](https://cursor.com)) |
+| Account | GitHub or GitLab account (required for AI features) |
+| Runtime | Node.js 18+ (for the tutorial examples) |
+| Project | A local codebase with Git initialized (recommended for undoing AI changes) |
+
+**Setup steps**:
+1. Download the installer from [cursor.com/downloads](https://cursor.com/downloads) for your OS
+2. Launch Cursor, click the profile icon in the top-right corner, and sign in with GitHub
+3. Open the command palette (`Ctrl+Shift+P`), run `Cursor: Settings`, and confirm AI features are enabled (the status bar should show "AI Ready")
+4. Open a project you are familiar with — Cursor will index it automatically (progress shown in the status bar)
+
+## Core Workflow
+
+### 1. AI Chat — Understand Code (`Ctrl+L` / `Cmd+L`)
+
+Use AI Chat to ask questions about your code, analyze logic, and debug issues.
+
+```
+Steps:
+① Open a .ts or .js file in your project
+② Select a function (e.g., an API route handler or data transformer)
+③ Press Ctrl+L (Cmd+L on Mac) — the chat panel opens on the right
+④ The selected code is automatically attached as context
+⑤ Type: "Explain what this function does and identify potential issues or optimizations"
+```
+
+**Why select code first?** Selection narrows the AI's focus to the exact code you care about. Without a selection, the AI only sees the file path and guesses at your intent — responses are noticeably worse.
+
+**Expected output**: A natural-language explanation covering the function's purpose, parameters, return type, and any error-handling gaps or type safety issues. The response usually ends with suggested improvements and code snippets.
+
+**Stop condition**: Press `Esc` to close the panel once you have a satisfactory answer. You can follow up with "How would you fix the type issue mentioned?" — the conversation history is preserved.
+
+### 2. Inline Editing — Transform Code (`Ctrl+K` / `Cmd+K`)
+
+Refactor, modify, or generate code without leaving your current editing position.
+
+```
+Steps:
+① Select the code you want to change (e.g., a promise chain using .then().catch())
+② Press Ctrl+K (Cmd+K on Mac) — an edit input box appears at the cursor
+③ Type an instruction: "Convert this to async/await style with try/catch error handling"
+④ Wait 2-5 seconds for the AI to generate a diff preview
+⑤ Review: green = added code, red = removed code. Press Tab to accept, Esc to reject
+```
+
+**Why use inline editing?** This is Cursor's most-used feature (over 60% of daily AI operations). It shows exactly what changed before you commit. For mechanical tasks — renaming, syntax conversion, type annotation — it is 3-5x faster than manual editing.
+
+**Expected output**: A color-coded diff inline in the editor. Accepted changes replace the original code immediately.
+
+**Rollback**: If the preview looks wrong, press `Esc` and refine the prompt. If you already accepted a bad edit, press `Ctrl+Z` (Cmd+Z) immediately.
+
+### 3. Tab Completion — Predictive Typing
+
+Cursor's completions are not word-by-word — they predict entire blocks of code you are about to write.
+
+```
+Steps:
+① Type a function signature, e.g., "async function fetchUserData(userId: string) {"
+② Start writing the body, then pause for about 0.5 seconds
+③ A gray completion appears to the right of the cursor
+④ Press Tab to accept the whole suggestion
+⑤ Press Ctrl+→ (Cmd+→ on Mac) to accept only the next word
+```
+
+**Why pause?** The completion model takes 300-500ms to generate a suggestion. If you type continuously, the model never fires. The brief pause triggers prediction. Quality depends on your recent edit history and similar patterns in the project.
+
+**Expected output**: A multi-line code block rendered in gray. After pressing Tab, the text is committed (turns solid).
+
+**Stop condition**: Keep typing to ignore the suggestion. If you accidentally accepted a completion, undo with `Ctrl+Z`.
+
+### 4. AI Error Fixing (`Cmd+;` / `Ctrl+Shift+R`)
+
+Fix compiler and linter errors with one shortcut.
+
+```
+Steps:
+① Move the cursor to a line with a red squiggle (TypeScript error or ESLint violation)
+② Press Ctrl+Shift+R (Windows/Linux) or Cmd+; (Mac)
+③ Wait 2-3 seconds — the AI analyzes the error and produces a fix
+④ Read the explanation, review the diff preview
+⑤ Press Tab to apply the fix, or Esc to cancel
+```
+
+**Why this beats manual fixing?** The traditional flow — read error message, recall syntax, check docs, edit code — takes 30+ seconds each time. Cursor reads the compiler error directly and produces a context-aware fix in about 3 seconds.
+
+**Expected output**: An info box showing the root cause (e.g., "Missing import for Observable") and the fix (e.g., adding `import { Observable } from 'rxjs'`).
+
+**Fallback**: If the fix is wrong, press `Esc` and fix manually. If applied incorrectly, `Ctrl+Z` immediately.
+
+### 5. Composer — Multi-file Edits (`Ctrl+Shift+L`)
+
+When a task spans multiple files (adding a feature, refactoring a module), Composer handles everything in one session.
+
+```
+Steps:
+① Press Ctrl+Shift+L (Cmd+Shift+L on Mac) to open the Composer panel
+② Describe the task, e.g., "Add rate-limiting middleware to all API routes using @nestjs/throttler"
+③ If the AI does not auto-detect relevant files, use @file: "@file src/app.module.ts @file src/cats/cats.module.ts"
+④ Press Ctrl+Enter or click Send
+⑤ Review the list of affected files — each file shows a side-by-side diff
+⑥ Click Accept for individual files or Accept All to apply everything
+```
+
+**Why Composer over manual multi-file editing?** Cross-file refactoring is error-prone — you update file A but forget file B, or the import paths get out of sync. Composer shows every change in one view so nothing slips through.
+
+**Expected output**: A panel listing 3-8 files with diffs. Stats at the bottom show total lines added/removed.
+
+**Stop condition**: If a particular file's diff looks wrong, click Skip/Reject for that file only. Accepted files are updated; rejected files stay untouched.
+
+## Quick Reference
+
+| Feature | Windows/Linux | macOS | Description |
+|---------|--------------|-------|-------------|
+| AI Chat | `Ctrl+L` | `Cmd+L` | Ask questions about selected code or context |
+| Inline Edit | `Ctrl+K` | `Cmd+K` | Refactor or generate code at cursor position |
+| Composer | `Ctrl+Shift+L` | `Cmd+Shift+L` | Multi-file editing and refactoring |
+| Fix Error | `Ctrl+Shift+R` | `Cmd+;` | Fix compiler/runtime error at cursor |
+| Accept Suggestion | `Tab` | `Tab` | Apply completion, edit, or fix |
+| Reject/Cancel | `Esc` | `Esc` | Cancel current AI operation |
+| Accept Next Word | `Ctrl+→` | `Alt+→` | Accept only the next word of a completion |
+| Full AI Panel | `Ctrl+Shift+I` | `Cmd+Shift+I` | Full-screen AI panel (used for Agent mode) |
+| Reference File/Symbol | `@` + name | `@` + name | Reference a specific file, function, or symbol |
+| Undo AI Change | `Ctrl+Z` | `Cmd+Z` | Roll back the last AI modification |
+
+## Troubleshooting
+
+**Issue 1: `Ctrl+L` does nothing — the chat panel stays closed**
+- **Root cause**: AI service is not connected or a firewall is blocking WebSocket connections
+- **Fix**: Check the status bar in the bottom-right corner. It should show "AI Ready ✓". If you see "Offline" or "Disconnected", click it and select "Reconnect". Corporate networks may need to allow connections to `*.cursor.com` and `*.openai.com` on ports 443 and 8443
+
+**Issue 2: Tab completions never appear**
+- **Root cause**: Model files have not finished downloading, or the file extension is not recognized
+- **Fix**: Wait 2-5 minutes after first install for model downloads (check progress in Settings > Models). Confirm the file extension (.ts, .js, .py, .go, etc.) is in Cursor's supported language list. Close and reopen the file to trigger re-indexing
+
+**Issue 3: AI responses reference files or functions that do not exist**
+- **Root cause**: No @-symbol context was provided, so the AI guessed wrong files; or the project index is stale
+- **Fix**: Always use `@file` or `@func` in prompts to pin the AI to specific code. Run the command palette (`Ctrl+Shift+P`) → "Cursor: Rescan Index" to rebuild the index. Check `.cursorignore` for accidentally excluded directories
+
+**Issue 4: Composer modified files it should not have**
+- **Root cause**: "Accept All" was clicked without reviewing individual diffs
+- **Fix**: Run `git diff` immediately to see all changes, then `git checkout -- <file>` to restore specific files. Best practice: always use individual Accept in Composer, never Accept All
+
+**Issue 5: Inline edits produce poorly formatted code**
+- **Root cause**: No formatter configuration, or the prompt lacked formatting instructions
+- **Fix**: Ensure ESLint + Prettier is set up in the project. Append "Please follow ESLint and Prettier rules" to prompts. For persistent behavior, create a `.cursorrules` file in the project root
+
+## Expert Tips
+
+**Time-savings data**: In real-world measurements, Cursor inline editing reduces common refactoring tasks (rename, extract method, syntax conversion) from 2-3 minutes to 20-30 seconds. Tab completion saves approximately 200-400 keystrokes per day, about 30 minutes of typing.
+
+**Best practices**:
+- **Master the @ symbol**: Always reference specific code with `@file`, `@func`, or `@sym`. Accuracy jumps from roughly 40% (no context) to 85%+ (with precise @ references)
+- **Write project `.cursorrules`**: Create a `.cursorrules` file at the project root declaring your tech stack (React + TypeScript + Tailwind), code style (functional components, naming conventions), and key libraries. AI responses will align much better with your conventions
+- **Select before acting**: Whether using `Ctrl+L` for chat or `Ctrl+K` for editing, select the relevant code first. The AI's context awareness is significantly better when it can see highlighted code
+- **Break complex tasks into steps**: Instead of "Build a complete user management system", try (1) "Create the User entity" (2) "Add CRUD routes" (3) "Write unit tests". Step-by-step execution yields much higher accuracy
+- **Commit before AI surgery**: Before asking the AI to make large multi-file changes, run `git commit` to save current progress. Rolling back mistaken AI edits becomes instant and risk-free
+
+**Common pitfalls**:
+- **Network dependency**: All AI features require an active internet connection. Code snippets are sent to cloud models. Check your company policy before using with sensitive/proprietary code
+- **Verify imports**: AI-generated import/require statements are frequently wrong — wrong path, wrong named-export syntax. Always double-check them after applying
+- **Long-context degradation**: After about 20 rounds in a single chat, the AI's effective context utilization degrades. Start a fresh chat and re-reference key files for complex follow-ups
+
+## Summary
+
+You have covered Cursor's five core AI features: AI Chat for code understanding, Inline Editing for quick transformations, Tab Completion for predictive typing, AI Error Fixing for instant debugging, and Composer for cross-file operations. Combining these features can boost your daily coding efficiency by 2-3x.
+
+**Next steps**:
+- Learn [Cursor Codebase Q&A](../codebase-qa/) for searching and understanding large projects with AI
+- Explore Cursor's Agent mode — autonomous execution of multi-step development tasks
+- Apply these features to your own project: start with Tab Completion, then graduate to Inline Editing and Composer
+
+---
+
+> This article is part of the Cursor tutorial series. Check out [more Cursor tutorials](../) for the full guide collection.

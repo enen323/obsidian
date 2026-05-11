@@ -1,0 +1,235 @@
+---
+title: Cursor 代码库问答技巧
+description: 用 Cursor 的 @ 引用和 Agent 探索大型项目
+field: dev
+software: cursor
+level: intermediate
+language: zh
+slug: codebase-qa
+date: 2026-05-11
+readTime: 15
+affiliateLinks:
+  - name: Cursor Pro
+    url: https://www.cursor.com/pricing
+    description: Cursor 专业版无限 AI 使用
+    vendor: Cursor
+---
+
+> **适用版本**: Cursor 0.46+ | **难度**: ★★☆☆☆ | **预估用时**: 30-40 分钟
+
+## 在几千个文件中找到那一个函数
+
+你接手的项目有 200 个模块、5000 个文件。一个 Bug 的根因可能藏在 6 层 import 之间的某个 util 函数里。你用 `Ctrl+Shift+F` 搜关键词，返回 40 个结果，挨个点开看。一个下午过去，你只确定了 Bug「不在哪里」。传统的全文搜索只能做文本匹配——它不知道类继承关系，不理解函数调用链，更看不懂数据流走向。
+
+**Cursor 的代码库问答（Codebase Q&A）** 解决的不只是「搜索速度」问题——它构建了完整的项目语义索引，让你可以用自然语言向代码库提问。不是搜字符串，而是问架构：「用户登录的完整数据流是什么？」。本教程将带你从基础索引配置到高级 Agent 用法，全面掌握在大型项目中用 AI 导航的技术。
+
+## 准备工作
+
+| 项目 | 要求 |
+|------|------|
+| Cursor 版本 | 0.46 或更高 |
+| 项目规模 | 建议 50 个文件以上的真实项目（本教程效果与项目规模正相关） |
+| 索引权限 | 确保磁盘有足够的索引缓存空间（约项目体积的 20%） |
+| 网络 | 稳定的互联网连接（索引后需与云端模型通信） |
+
+**前期检查**：
+1. 打开项目后，观察底部状态栏右侧的索引图标。如果显示 "Indexing..."，等待完成后再开始
+2. 在命令面板（`Ctrl+Shift+P`）中运行 "Cursor: Rescan Index"，强制刷新索引
+3. 确认项目根目录没有误将关键源码排除在 `.cursorignore` 之外
+
+## 核心操作流程
+
+### 1. 配置索引 —— 让 AI 认识你的整个项目
+
+索引是 Cursor 理解项目的基础。它扫描文件结构、符号定义、跨文件引用关系，构建一个语义化的项目知识图谱。
+
+```
+操作步骤：
+① 打开项目根目录，检查是否存在 .cursorignore 文件
+② 如果不存在，创建 .cursorignore，语法与 .gitignore 完全相同
+③ 在 .cursorignore 中排除不需要索引的目录：
+   node_modules/
+   dist/
+   build/
+   *.min.js
+   __pycache__/
+④ 打开命令面板（Ctrl+Shift+P），输入并运行 "Cursor: Rescan Index"
+⑤ 观察状态栏索引图标，确认索引完成（图标从 "Indexing..." 变为 "✓"）
+```
+
+**为什么需要配置 `.cursorignore`？** 默认情况下 Cursor 会索引项目中所有文件。大型项目的 `node_modules` 或 `dist` 目录可能包含数万个文件，拉低索引速度和问答准确率。通过 `.cursorignore` 排除这些目录，索引更快、搜索结果更精确。
+
+**预期输出**：状态栏索引图标显示 "✓ Indexed" 和索引的文件数量（如 "✓ Indexed 1,234 files"）。
+
+**停止条件**：索引完成后即可开始 Q&A 操作。如果需要重新索引（例如新增了大量文件），随时运行 "Rescan Index"。
+
+### 2. 使用 @ 符号精确引用上下文
+
+`@` 符号是 Cursor Q&A 中最关键的操作。它让你在对话中引用具体的文件、函数、类或符号，而不是让 AI 在一片模糊中猜测。
+
+```
+操作步骤：
+① 按 Ctrl+L 打开 AI 对话面板
+② 在输入框中输入 @，出现上下文选择器菜单
+③ 选择引用类型：
+   - @file：引用整个文件（最常用），输入文件名后按 Enter
+   - @func：引用一个函数或方法，输入函数名后按 Enter
+   - @sym：引用任意符号（类型、接口、变量），输入符号名
+   - @folder：引用整个目录，输入目录路径
+④ 输入完整问题，例如：
+   "解释 @func validateToken 的调用链路，从入口到数据库"
+⑤ 按 Enter 发送
+```
+
+**为什么用 @ 而不是粘贴代码？** 当你用 `@file` 引用一个文件时，Cursor 传给 AI 的是该文件的最新索引数据（包括 AST 解析后的符号信息），而不是纯文本。AI 能理解导出的接口、类继承关系和类型定义，这是纯文本粘贴做不到的。
+
+**预期输出**：AI 准确识别引用的代码元素，给出包含跨文件调用链、类型流向和潜在问题的分析。
+
+**停止条件**：如果 AI 仍然引用了错误的文件或函数，返回重新输入 `@`，仔细检查选择器中的路径是否正确。确认文件路径后重新发送。
+
+### 3. 高级代码搜索与导航
+
+除了对话中的 @ 引用，Cursor 还提供专门的代码搜索面板用于快速定位。
+
+```
+操作步骤：
+① 按 Ctrl+Shift+P 打开命令面板
+② 输入 "> Code Search" 或直接输入 "> 代码搜索"
+③ 选择 "Cursor: Code Search" 打开搜索面板
+④ 在搜索框中输入：
+   - 符号名：直接输入函数/类名进行语义搜索
+   - 关键词：按描述搜索，如 "payment processing"
+   - 正则：使用 JavaScript 正则表达式，如 "function\s+handle[A-Z]"
+⑤ 搜索结果按相关度排序，点击条目跳转到定义位置
+```
+
+**为什么比 Ctrl+Shift+F 好？** 传统搜索只能做字符串匹配——搜 "getUser" 不会找到 "fetchUserProfile"。Cursor 的语义搜索理解代码意图，即使命名不同也能关联相关符号。
+
+**预期输出**：结果列表包含相关度评分和代码预览片段。最匹配的结果排在顶部。
+
+**停止条件**：点击需要的条目跳转到对应行即可。
+
+### 4. Agent 模式 —— 让 AI 自主执行多步任务
+
+Agent 模式是 Cursor 的进阶功能——AI 不再只是回答问题，而是可以自主阅读文件、修改代码、运行终端命令。
+
+```
+操作步骤：
+① 按 Ctrl+Shift+I 打开全屏 AI 面板
+② 在面板右下角切换模式：将 "Chat" 切换为 "Agent"
+③ 在输入框中输入一个需要多步完成的任务，例如：
+   "找到 src/services 下所有使用了已弃用 API 的文件，为它们添加 @deprecated 注释，并创建迁移指南文件"
+④ 按 Enter 或 Ctrl+Enter 发送
+⑤ Agent 开始工作：读取文件 → 分析代码 → 修改文件 → 创建新文件
+⑥ 每一步完成后，Agent 会请求确认（Enable 或 Disable 自动确认模式）
+⑦ 审查所有修改：Agent 完成后列出所有变更文件列表
+```
+
+**为什么用 Agent 而不是手动改？** Agent 可以连续执行 10-20 步操作而不需要你反复干预。对于批量重构、代码迁移、技术债务清理等任务，Agent 将数小时的工作压缩到几分钟。
+
+**预期输出**：Agent 面板显示操作日志，包括它读过的文件、做的修改和终端输出。底部显示变更摘要。
+
+**停止条件**：
+- 随时点击 "Stop" 按钮终止 Agent
+- 如果 Agent 走错了方向，可以在对话中纠正它
+- 完成后审查每个文件的 diff，使用 Accept All 或逐个 Accept
+
+**关键参数**：
+- 开启 "Auto Confirm"：Agent 自动执行所有步骤不询问（适合有 Git 保障的场景）
+- 关闭 "Auto Confirm"：Agent 每步执行前询问确认（适合不确定的场景）
+- 上下文 Token 预算：在 Agent 设置中可以控制单次操作使用的 Token 上限
+
+### 5. 自定义规则（.cursorrules）—— 控制 AI 行为
+
+`.cursorrules` 文件让你为项目定制 AI 的回复风格、技术约束和行为规则。
+
+```
+操作步骤：
+① 在项目根目录创建 .cursorrules 文件
+② 写入规则内容，例如：
+
+   You are an expert in TypeScript, React, and NestJS.
+   - Use functional components with hooks, never class components
+   - Use Tailwind CSS for styling, never inline styles
+   - Use `zod` for validation, never `joi` or `yup`
+   - Prefer `Promise.all` over sequential awaits for independent calls
+   - Generate unit tests using Vitest, not Jest
+   - Always include error boundaries for new React components
+   - Follow the existing folder structure: feature-based modules
+
+③ 保存文件，Cursor 自动生效，无需重启
+④ 打开 AI 对话验证效果：向 AI 询问 "新建一个用户列表组件应该用哪种模式？"
+```
+
+**为什么需要 `.cursorrules`？** 没有规则时，AI 会基于通用知识回答——可能推荐 class 组件（如果你的项目用的是函数组件），或者推荐 Mocha（而团队在用 Vitest）。规则让 AI 的输出与项目实际保持一致。
+
+**预期输出**：AI 的回答将遵循 `.cursorrules` 中定义的约束。例如问 "如何添加一个 API 端点" 时，AI 会按照你的技术栈输出对应的 NestJS Controller 代码。
+
+**迭代方式**：如果发现 AI 持续在某类问题上跑偏，在 `.cursorrules` 中追加对应规则即可。建议与团队将 `.cursorrules` 纳入版本控制。
+
+## 命令速查表
+
+| 操作 | 快捷键/命令 | 说明 |
+|------|-------------|------|
+| AI 对话 | `Ctrl+L` / `Cmd+L` | 打开或聚焦 AI 对话面板 |
+| 全屏 AI 面板 | `Ctrl+Shift+I` / `Cmd+Shift+I` | 切换 Chat/Agent 模式 |
+| Agent 模式 | 在全屏面板右下角切换 | 允许 AI 自主执行多步操作 |
+| 引用文件 | `@file <路径>` | 在对话中引用特定文件 |
+| 引用函数 | `@func <函数名>` | 在对话中引用特定函数 |
+| 引用符号 | `@sym <符号名>` | 引用类型、接口或变量 |
+| 引用目录 | `@folder <路径>` | 引用整个目录 |
+| 命令面板 | `Ctrl+Shift+P` | 运行 Rescan Index 等命令 |
+| Code Search | 命令面板 → "Code Search" | 语义化代码搜索 |
+| 重新索引 | 命令面板 → "Rescan Index" | 强制重建项目索引 |
+| 切换自动确认 | Agent 面板中的 Auto Confirm | Agent 每步是否需确认 |
+
+## 常见问题排查
+
+**问题 1：@ 引用菜单不出现，或在输入 @ 后没有建议**
+- **原因**：项目索引尚未完成，或索引因错误中断
+- **解决**：检查状态栏索引图标。如果显示 "Indexing..."，等待完成。如果显示 "Error"，运行 "Cursor: Rescan Index" 重建索引。检查 `.cursorignore` 是否错误地排除了包含关键源文件的目录
+
+**问题 2：Agent 模式卡住不动，或者反复执行同一操作**
+- **原因**：Agent 陷入了循环（例如尝试读取一个不存在的文件后重试），或 Token 预算耗尽
+- **解决**：点击 "Stop" 终止 Agent。在对话中明确指出「不要重试，跳过那个步骤」。增加 Token 预算限制（设置 → AI → Max Tokens）。如果频繁卡住，关闭 "Auto Confirm" 让 Agent 每步等待确认
+
+**问题 3：AI 回答质量差，明明有 .cursorrules 但不遵循**
+- **原因**：.cursorrules 文件内容冲突（例如同时要求使用 Vue 和 React），或规则过于模糊
+- **解决**：保持规则具体且无矛盾。不要写 "Write good code"，而写 "Use TypeScript strict mode, no `any` type"。检查规则文件的编码为 UTF-8。保存后重启 Cursor 确保规则被加载
+
+**问题 4：Code Search 返回大量无关结果**
+- **原因**：搜索词太短或太通用；索引包含了测试文件或第三方代码
+- **解决**：使用更具体的搜索词——"payment" 替换为 "processRefund"。在搜索过滤器中排除 `test/` 和 `spec/` 目录。确认 `.cursorignore` 排除了 `node_modules` 和 `vendor`
+
+**问题 5：回答中经常出现「根据项目结构……但我看不到具体的……」**
+- **原因**：AI 需要引用具体文件，但你只给了一个模糊的问题
+- **解决**：使用 `@file` 引用相关文件。例如与其问 "用户认证系统怎么实现的"，不如问 "@file src/auth/auth.service.ts 这个文件的认证流程是什么，并 @file src/auth/auth.module.ts 串联模块关系"
+
+## 专家建议
+
+**性能数据**：在包含 10,000 个文件的项目中，Cursor 索引耗时约 3-5 分钟（SSD + 16GB 内存）。索引后的语义搜索响应时间通常在 500ms-2s 之间，远快于全文搜索。
+
+**最佳实践**：
+- **用 `.cursorignore` 精确定义边界**：默认排除 `node_modules`、`build`、`dist`、`.git`。如项目包含 `proto` 或 `generated` 目录也建议排除。索引越精简，问答越准确
+- **@ 的优先级规则**：`@func` > `@file` > `@folder`。单个函数引用最精确，文件引用其次。只在需要全局上下文时使用 `@folder`
+- **Agent 任务拆解原则**：每个 Agent 任务应有明确的输入和输出边界。例如「将 utils 中的所有纯函数迁移到独立的 `@shared/utils` 包」就比「重构 utils 目录」要好得多
+- **.cursorrules 模板化**：在团队内维护一个 `.cursorrules` 模板仓库，新项目直接拷贝。常见的规则包括：语言/框架版本、测试框架、命名规范、导入顺序、错误处理策略
+- **多人协作时的规则管理**：将 `.cursorrules` 提交到 Git 仓库中，所有团队成员共享相同的 AI 行为配置。代码审查时也审查规则本身的修改
+
+**常见陷阱**：
+- **不要索引生成代码**：`prisma/client`、`proto` 生成的代码、`graphql-codegen` 的输出——这些文件会使索引膨胀且不提供有用的语义信息
+- **Agent 不是万能的**：Agent 在处理需要人类判断的操作（如 UX 决策、API 设计评审）时表现不佳。适合 Agent 的任务：批量重构、代码迁移、模板生成、文档编写
+- **长 Agent 会话的问题**：Agent 运行超过 50 步后，上下文窗口压力增大，可能开始出现「遗忘」早期指令的情况。此时点击 "New Session" 重新开始
+
+## 总结
+
+你已经掌握了 Cursor 代码库问答的核心技能：索引配置、@ 符号引用、语义搜索、Agent 模式和 .cursorrules 规则定制。这些技术让你在面对大型项目时不再恐惧——不再是逐文件翻阅，而是向代码库直接提问。
+
+**下一步**：
+- 在你的实际项目中配置 `.cursorignore` 后重新索引，用 `@func` 找到之前找不到的函数定义
+- 尝试 Agent 模式处理一个小型重构任务（例如重命名一个跨多文件的接口）
+- 与团队成员同步 `.cursorrules`，确保 AI 输出风格一致
+
+---
+
+> 本文为 Cursor 教程系列的一部分。查看 [Cursor 更多教程](../) 了解完整的工具使用指南。

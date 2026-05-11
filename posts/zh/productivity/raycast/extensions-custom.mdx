@@ -1,0 +1,303 @@
+---
+title: Raycast 扩展开发入门
+description: 从脚手架到商店发布，手把手开发自定义 Raycast 扩展
+field: productivity
+software: raycast
+level: intermediate
+language: zh
+slug: extensions-custom
+date: 2026-05-11
+readTime: 15
+affiliateLinks:
+  - name: Raycast Pro
+    url: https://www.raycast.com/pro
+    description: Raycast 高级版，解锁 AI 功能、云端同步
+    vendor: Raycast
+  - name: VSCode
+    url: https://code.visualstudio.com
+    description: 推荐编辑器，Raycast 扩展开发首选
+    vendor: Microsoft
+---
+
+> **适用版本**：Raycast 1.80+（需安装 Node.js 18+ 和 VS Code 或任意编辑器）
+> **难度等级**：★★★☆☆（需基本 JavaScript/TypeScript 编程经验）
+> **预计耗时**：首个扩展 60–90 分钟，后续扩展 20–30 分钟
+
+## 为什么你要自己写一个 Raycast 扩展
+
+Raycast 的扩展商店里已经有上千个社区扩展——但这往往不够。你可能需要查询公司内部 API、发送特定的 HTTP 请求组合、或者把一个内部工具的工作流整合到 Raycast 中。通用扩展解决不了你的具体问题。
+
+另一种常见但不推荐的做法是"用脚本凑合用"——写一个 Shell 脚本或 AppleScript，放在 Raycast 的 Script Commands 目录下。问题在于：没有 UI（不能输入参数、不能选择列表）、没有 Loading 状态、出错时没有友好的错误提示。这不是工具，这是补丁。
+
+Raycast 扩展 API 是解决这个问题的正确方式。它让你用 React + TypeScript 写出带原生 UI、偏好设置、快捷键绑定和错误处理的专业级扩展。一次编写，发布到商店后可以供团队或社区使用。
+
+本教程将构建一个真实的扩展作为示例——一个"GitHub PR Dashboard"，用来查询和显示你分配的 Pull Request 状态。
+
+## 准备工作
+
+- **Node.js 18+**：从 [nodejs.org](https://nodejs.org) 下载 LTS 版本，或通过 `brew install node`（macOS）安装。
+- **VS Code**（推荐）：从 [code.visualstudio.com](https://code.visualstudio.com) 下载。Raycast 扩展模板默认包含 VS Code 的调试配置。
+- **Raycast 账号**：免费注册 [raycast.com](https://www.raycast.com)（用于发布扩展）。
+- **npm 或 yarn**：Node.js 安装后自动包含 npm。本教程使用 npm。
+- **GitHub 账号和 Personal Access Token**：在 GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens 中创建，选择 `repo` 权限。
+
+## 核心工作流
+
+### 第一步：初始化扩展脚手架
+
+Raycast 提供了官方脚手架 `create-raycast-extension` 来生成项目模板。
+
+1. 打开终端，运行：
+   ```bash
+   npx create-raycast-extension my-pr-dashboard
+   ```
+2. 交互式配置：
+   - 选择：`Extension`
+   - 输入标题：`PR Dashboard`
+   - 描述：`View your GitHub pull requests at a glance`
+   - 作者：你的 GitHub 用户名
+3. 进入项目目录：`cd my-pr-dashboard`
+4. 查看生成的文件结构：
+   ```
+   my-pr-dashboard/
+   ├── package.json
+   ├── tsconfig.json
+   ├── src/
+   │   ├── index.tsx       # 扩展主入口
+   ├── assets/
+   │   └── icon.png        # 扩展图标（默认 512x512）
+   └── .eslintrc.json
+   ```
+5. **预期结果**：项目目录成功生成，`npm run dev` 可以本地运行（按 `Cmd+Shift+R` 重新加载 Raycast 窗口看到新扩展）。
+6. **为什么这么做**：脚手架处理了所有繁琐的构建配置——TypeScript、ESLint、React、React DOM 都已预配置。你不需要自己配置 Webpack 或 Babel。
+7. **停止条件**：你能在 Raycast 中看到"PR Dashboard"扩展，运行后显示 "Hello World"。
+
+### 第二步：定义命令和偏好设置
+
+扩展可以包含多个命令，每个命令对应 Raycast 搜索栏中的一个入口。我们创建两个命令：一个列出 PR，一个配置 Token。
+
+1. 编辑 `package.json`，在 `commands` 数组中添加两个命令：
+   ```json
+   {
+     "commands": [
+       {
+         "name": "list-prs",
+         "title": "List Pull Requests",
+         "description": "Show your assigned GitHub PRs",
+         "mode": "view"
+       },
+       {
+         "name": "configure-token",
+         "title": "Configure GitHub Token",
+         "description": "Set your GitHub personal access token",
+         "mode": "view"
+       }
+     ],
+     "preferences": [
+       {
+         "name": "githubToken",
+         "title": "GitHub Token",
+         "description": "Your GitHub personal access token",
+         "type": "password",
+         "required": true
+       },
+       {
+         "name": "githubUsername",
+         "title": "GitHub Username",
+         "description": "Your GitHub username for filtering PRs",
+         "type": "textfield",
+         "required": true
+       }
+     ]
+   }
+   ```
+2. **为什么这么做**：`preferences` 字段自动为你的扩展生成偏好设置页面。用户无需手动编辑配置文件——在扩展设置界面中输入即可。`mode: "view"` 表示这是一个带 UI 的视图命令（与其他 shell 或 no-view 命令不同）。
+3. **预期结果**：在 Raycast 设置 → Extensions → PR Dashboard 中能看到"GitHub Token"和"GitHub Username"两个输入框。
+4. **停止条件**：你可以在扩展的偏好设置中看到并填写这两个字段。
+
+### 第三步：创建主列表 UI
+
+现在编写展示 PR 列表的 React 组件。
+
+1. 在 `src/` 目录下创建 `list-prs.tsx`：
+   ```tsx
+   import { List, ActionPanel, Action, Icon, Color } from "@raycast/api";
+   import { useEffect, useState } from "react";
+   
+   interface PullRequest {
+     title: string;
+     url: string;
+     state: string;
+     repository: string;
+     createdAt: string;
+   }
+   
+   export default function Command() {
+     const [prs, setPrs] = useState<PullRequest[]>([]);
+     const [isLoading, setIsLoading] = useState(true);
+   
+     useEffect(() => {
+       fetchPRs().then(setPrs).finally(() => setIsLoading(false));
+     }, []);
+   
+     return (
+       <List isLoading={isLoading} searchBarPlaceholder="Filter PRs...">
+         {prs.map((pr, index) => (
+           <List.Item
+             key={index}
+             icon={pr.state === "open" ? Icon.Circle : Icon.Checkmark}
+             title={pr.title}
+             subtitle={pr.repository}
+             accessories={[
+               { text: new Date(pr.createdAt).toLocaleDateString() },
+               { icon: pr.state === "open" ? Icon.Dot : undefined },
+             ]}
+             actions={
+               <ActionPanel>
+                 <Action.OpenInBrowser url={pr.url} />
+               </ActionPanel>
+             }
+           />
+         ))}
+       </List>
+     );
+   }
+   
+   async function fetchPRs(): Promise<PullRequest[]> {
+     const { preferences } = require("@raycast/api");
+     const token = preferences.githubToken.value;
+     const username = preferences.githubUsername.value;
+   
+     const response = await fetch(
+       `https://api.github.com/search/issues?q=is:pr+assignee:${username}+is:open`,
+       {
+         headers: { Authorization: `Bearer ${token}` },
+       }
+     );
+     const data = await response.json();
+     return data.items.map((item: any) => ({
+       title: item.title,
+       url: item.html_url,
+       state: item.state,
+       repository: item.repository_url.split("/").pop(),
+       createdAt: item.created_at,
+     }));
+   }
+   ```
+2. **预期结果**：运行扩展后，显示一个列表，列出你所有的 GitHub PR（按标题、仓库、日期排列）。
+3. **为什么这么做**：`List` 组件是 Raycast 扩展中最常用的 UI 组件。它原生支持搜索过滤（`searchBarPlaceholder`）、加载状态（`isLoading`）、侧边栏分类、以及通过 `ActionPanel` 实现的操作（打开浏览器、复制文本、运行脚本等）。
+4. **停止条件**：你看到一个可交互的 PR 列表，每行显示标题、仓库名和创建日期。
+
+### 第四步：处理错误和空状态
+
+生产环境的扩展需要处理 API 错误、网络异常和无数据的情况。
+
+1. 为 `fetchPRs` 添加错误处理：
+   ```tsx
+   async function fetchPRs(): Promise<PullRequest[]> {
+     try {
+       const { preferences } = require("@raycast/api");
+       const token = preferences.githubToken.value;
+       const username = preferences.githubUsername.value;
+   
+       const response = await fetch(
+         `https://api.github.com/search/issues?q=is:pr+assignee:${username}`,
+         {
+           headers: { Authorization: `Bearer ${token}` },
+         }
+       );
+   
+       if (!response.ok) {
+         throw new Error(`GitHub API error: ${response.status}`);
+       }
+   
+       const data = await response.json();
+       return data.items.map((item: any) => ({
+         title: item.title,
+         url: item.html_url,
+         state: item.state,
+         repository: item.repository_url.split("/").pop(),
+         createdAt: item.created_at,
+       }));
+     } catch (error) {
+       throw new Error(`Failed to fetch PRs: ${error.message}`);
+     }
+   }
+   ```
+2. 在主命令中添加空状态提示：
+   ```tsx
+   return (
+     <List isLoading={isLoading} searchBarPlaceholder="Filter PRs...">
+       {prs.length === 0 && !isLoading ? (
+         <List.EmptyView
+           icon={Icon.GitPullRequest}
+           title="No pull requests found"
+           description="You have no open PRs assigned to you. Time to create one!"
+         />
+       ) : (
+         prs.map((pr, index) => ( /* ... */ ))
+       )}
+     </List>
+   );
+   ```
+3. **为什么这么做**：未处理的 API 错误会导致扩展静默失败，用户看到空白列表却不知道为什么。专用错误提示和 `EmptyView`（空状态视图）将用户体验从"扩展坏了"提升为"我知道发生了什么"。
+4. **停止条件**：运行扩展时，如果网络断开你能看到错误提示，如果没有 PR 你能看到空状态文字。
+
+### 第五步：本地测试
+
+1. 在项目目录中运行 `npm run dev`。
+2. 在 Raycast 中按 `Cmd+Shift+R` 重新加载扩展（或重启 Raycast）。
+3. 测试所有功能：输入关键词搜索 PR；点击 PR 跳转到浏览器；在偏好设置中修改 Token 并确认保存。
+4. **为什么这么做**：Dev 模式让修改后按 `Cmd+Shift+R` 立即生效，无需重新构建或重新安装。
+5. **停止条件**：扩展在 Raycast 中正常运行，所有功能按预期工作。
+
+### 第六步：发布到 Raycast Store
+
+1. 确保你的扩展在 Raycast 中运行正常。
+2. 将扩展上传到 GitHub 公共仓库。
+3. 打开 https://www.raycast.com/store 点击 "Publish Extension"，登录你的 Raycast 账号。
+4. 填写：
+   - GitHub 仓库 URL
+   - 扩展图标（512x512 PNG）
+   - 截图（至少一张，建议 3 张展示不同功能）
+   - 分类（选择 "Developer Tools"）
+5. 提交审核。Raycast 团队通常会在 2–5 个工作日内审核。
+6. **为什么这么做**：发布到商店后，其他用户（或你的团队）可以直接在 Raycast 中搜索并安装你的扩展。
+7. **停止条件**：你的扩展在 Raycast Store 中可被搜索和安装。
+
+## 关键 API 与组件参考
+
+| API/组件 | 用途 | 示例 |
+|----------|------|------|
+| List | 可搜索列表 | `List searchBarPlaceholder="搜索..."` |
+| ActionPanel | 操作菜单 | `Action.OpenInBrowser`、`Action.CopyToClipboard` |
+| Form | 输入表单 | `Form.TextField`、`Form.Dropdown` |
+| Detail | Markdown 详情 | `Detail markdown={content}` |
+| preferences | 偏好设置 | `preferences.githubToken` |
+| showToast | Toast 通知 | `showToast({ title: "完成", message: "同步成功" })` |
+| Cache | 本地缓存 | `cache.set("key", data)`，减少 API 调用 |
+
+## 常见问题排查
+
+1. **症状：`npm run dev` 提示 "Command not found"** → **根源**：npx 自动安装的 create-raycast-extension 版本过旧或 Node.js 版本过低。**解决**：确保 Node.js >= 18（运行 `node --version` 检查）。运行 `npm update -g create-raycast-extension` 更新脚手架工具。
+
+2. **症状：扩展运行后显示空白列表** → **根源**：偏好设置中的 GitHub Token 未填写或 Token 权限不足。**解决**：在扩展设置中检查 Token 是否已填写。在 GitHub Token 设置中确保已勾选 `repo` 权限范围。
+
+3. **症状：GitHub API 返回 403 Forbidden** → **根源**：未认证的 API 请求有速率限制（每小时 60 次）。**解决**：在偏好设置中填写 GitHub Token 后，速率限制提升到每小时 5000 次。如果仍然出现，检查 Token 是否过期。
+
+4. **症状：修改代码后 Raycast 中没有变化** → **根源**：Dev 模式未正确启动。**解决**：在项目目录中确认 `npm run dev` 在运行中。按 `Cmd+Shift+R` 重新加载 Raycast。如果仍然不生效，完全重启 Raycast。
+
+5. **症状：发布到商店被拒绝** → **根源**：常见原因包括缺少截图、图标尺寸不对、或扩展功能太简单。**解决**：确保图标为 512x512 PNG；提供至少一张清晰截图；在 README 中说明扩展的使用场景和配置方法。
+
+## 专家技巧
+
+- **使用 Cache API 减少网络请求**：Raycast 提供了内置的 Cache API，可以将 API 响应缓存 5–15 分钟。在 `fetch` 前先检查缓存，如果缓存命中则直接返回，避免不必要的网络请求和 API 速率限制消耗。对于 GitHub API，这可以将每日使用量减少 60–70%。
+- **Form 组件的高级用法**：`Form` 组件支持表单验证（`validation` 属性）、下拉选择（`Form.Dropdown`）、文件选择（`FilePicker`）和日期选择器（`DatePicker`）。对于需要复杂配置的扩展，使用 Form 替代多个 `preferences` 字段可以获得更好的用户体验。
+- **多命令协作**：一个扩展可以有多个命令共享同一个 `package.json` 中的 `preferences`。利用这一点，你可以构建"主命令 + 辅助命令"的扩展架构——例如一个命令用于查询，另一个用于配置。
+- **调试技巧**：在开发过程中，使用 `console.log` 输出的内容可以在 Raycast 的开发者工具中查看。打开方法：在 Raycast 中按 `Cmd+Shift+I`（就像在浏览器中打开 DevTools 一样）。这在调试 API 响应时非常有用。
+
+## 总结
+
+你从零构建了一个完整的 Raycast 扩展——一个能查询和展示 GitHub Pull Request 的仪表板。你掌握了：项目脚手架初始化、命令与偏好配置、React List 组件开发、错误与空状态处理、本地测试与商店发布流程。
+
+这个扩展只是一个开始。Raycast 扩展 API 支持的范围远不止于此——你可以构建系统工具、时间追踪器、笔记集成、或者任何你日常工作流中需要的东西。访问 [developers.raycast.com](https://developers.raycast.com) 查阅完整的 API 文档。

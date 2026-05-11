@@ -1,0 +1,416 @@
+---
+title: Git Rebase 高级用法
+description: 交互式 rebase、cherry-pick 与 bisect 实战
+field: dev
+software: git
+level: advanced
+language: zh
+slug: advanced-rebase
+date: 2026-05-11
+readTime: 20
+affiliateLinks: []
+---
+
+> **版本**: Git 2.30+（2024年后推荐 Git 2.40+）
+> **难度**: ★★★★☆（需熟悉基本 Git 提交流程）
+> **用时**: 30-40 分钟
+
+## 混乱的提交历史正在拖垮团队协作
+
+团队协作中，最常见的场景是：每个人在自己的分支上开发，提交信息五花八门——"fix"、"update"、"wip"、"aaa"。合并到主分支后，历史变成了一团浆糊：`Merge branch 'feature/login' into main` 来回穿插，`fix typo` 和 `add new feature` 的提交混在一起，想要回滚某个功能却不知道哪些提交属于它。
+
+很多人以为 Git 历史就是这样——乱才是常态。但实际上，Git 提供了 **rebase**、**cherry-pick**、**bisect** 等一系列工具，可以让你在合并前重写、整理、筛选提交历史，让主分支的提交记录像一本书的目录一样清晰。
+
+本教程假设你已经熟悉 `git add`、`git commit`、`git push`、`git pull`、`git merge` 等基础操作。
+
+## 准备工作
+
+- **Git** 2.30+ 版本（推荐 2.40+）
+- 一个包含 **至少 5 个提交** 的测试仓库
+- 终端基础操作能力
+- 建议先在测试仓库练习，不要在正式项目上练手
+
+创建一个测试仓库：
+
+```bash
+mkdir rebase-test && cd rebase-test
+git init
+echo "line 1" > file.txt && git add . && git commit -m "初始提交"
+echo "line 2" >> file.txt && git add . && git commit -m "添加第二行"
+echo "line 3" >> file.txt && git add . && git commit -m "添加第三行"
+echo "line 4" >> file.txt && git add . && git commit -m "添加第四行"
+echo "line 5" >> file.txt && git add . && git commit -m "添加第五行"
+```
+
+此时你有一个包含 5 个线性提交的仓库。
+
+## 核心操作分步讲解
+
+### 1. 交互式 Rebase（`git rebase -i`）
+
+交互式 rebase 允许你修改、合并、重排、删除提交。是整理提交历史的核心工具。
+
+#### 第一步：选择基准
+
+```bash
+# 修改最近 3 个提交
+git rebase -i HEAD~3
+```
+
+这会打开一个编辑器，显示最近 3 个提交的列表：
+
+```
+pick abc1234 添加第三行
+pick def5678 添加第四行
+pick ghi9012 添加第五行
+
+# Commands:
+# p, pick = 保留此提交
+# r, reword = 保留内容但修改提交信息
+# s, squash = 合并到上一个提交（保留提交信息）
+# f, fixup = 合并到上一个提交（丢弃提交信息）
+# d, drop = 删除此提交
+# e, edit = 暂停以修改此提交
+# x, exec = 运行 shell 命令
+# b, break = 在此处停止
+```
+
+#### 第二步：执行操作
+
+**场景 A — 合并最近两个提交（squash）**：
+
+将第二个提交的 `pick` 改为 `squash` 或 `s`：
+
+```
+pick def5678 添加第四行
+squash ghi9012 添加第五行
+```
+
+保存退出后，Git 会询问新的合并提交信息。默认将两条信息合并，你可以修改为一句：`添加第四行和第五行`。
+
+**为什么用 squash**：开发过程中的"微调"、"修复小错误"等提交，不应出现在最终历史中。squash 将它们合并为一个逻辑完整的提交。
+
+**场景 B — 修改提交信息（reword）**：
+
+```
+pick abc1234 添加第三行
+reword def5678 添加第四行
+pick ghi9012 添加第五行
+```
+
+保存退出后，Git 会打开另一个编辑器让你修改 `def5678` 的提交信息。
+
+**场景 C — 删除提交（drop）**：
+
+如果某次提交引入了错误的代码：
+
+```
+pick abc1234 添加第三行
+drop def5678 添加第四行     # 此提交将被移除
+pick ghi9012 添加第五行
+```
+
+#### 第三步：处理冲突
+
+如果在 rebase 过程中发生冲突，Git 会暂停并提示：
+
+```
+Auto-merging file.txt
+CONFLICT (content): Merge conflict in file.txt
+error: could not apply def5678... 添加第四行
+hint: Resolve all conflicts manually, mark them as resolved with
+hint: "git add/rm <conflicted_files>", then run "git rebase --continue".
+```
+
+**处理流程**：
+
+1. 打开冲突文件，搜索 `<<<<<<<`、`=======`、`>>>>>>>` 标记
+2. 手动编辑保留所需内容，删除冲突标记
+3. `git add file.txt`
+4. `git rebase --continue`
+
+如果需要放弃本次 rebase：
+
+```bash
+git rebase --abort
+```
+
+#### 停止条件
+
+当所有提交被处理完毕，Git 输出 `Successfully rebased and updated refs/heads/main.`。
+
+### 2. Cherry-Pick（`git cherry-pick`）
+
+Cherry-pick 可以将某个分支上的特定提交应用到当前分支，而不必合并整个分支。
+
+**场景**：你在 `feature` 分支上开发了功能 A 和功能 B，但功能 B 需要紧急发布，功能 A 还没准备好。
+
+```bash
+# 在 main 分支上
+git checkout main
+
+# 查看 feature 分支的提交历史
+git log feature --oneline
+# 输出:
+# a1b2c3d 功能 B 的提交
+# e4f5g6h 功能 A 的提交
+
+# 只将功能 B 的提交引入 main
+git cherry-pick a1b2c3d
+```
+
+**常用选项**：
+
+| 选项 | 作用 |
+|------|------|
+| `-n` / `--no-commit` | 暂存更改但不自动提交（适合手动合并多个 cherry-pick） |
+| `-x` | 在提交信息中追加来源提交哈希（便于追踪） |
+| `-e` / `--edit` | 编辑提交信息 |
+| `-m 1` | cherry-pick 合并提交时，用 `-m` 指定父提交编号 |
+
+**批量 cherry-pick**：
+
+```bash
+# cherry-pick 连续的多个提交
+git cherry-pick a1b2c3d..e4f5g6h   # 范围：不包含 a1b2c3d，包含 e4f5g6h
+
+# cherry-pick 不连续的多个提交
+git cherry-pick a1b2c3d e4f5g6h i7j8k9l
+```
+
+**停止条件**：成功应用所有提交后输出 `[main abc1234] 功能 B 的提交`。
+
+### 3. Stash 高级用法（`git stash`）
+
+Stash 用于暂存未提交的修改，腾出干净的工作区。
+
+**场景**：你在开发新功能时，突然需要切换到另一个分支修复紧急 Bug。
+
+```bash
+# 查看当前状态——有未提交的修改
+git status
+
+# 临时保存所有修改
+git stash push -m "WIP: 登录功能开发中"
+
+# 确认工作区干净
+git status
+
+# 切换到其他分支修复 Bug
+git checkout hotfix
+
+# 修复完成后回到原分支
+git checkout feature/login
+
+# 恢复暂存的修改
+git stash pop   # 恢复并删除 stash
+# 或
+git stash apply  # 恢复但不删除 stash
+```
+
+**高级 stash 操作**：
+
+```bash
+# 查看所有 stash 列表
+git stash list
+# stash@{0}: On feature/login: WIP: 登录功能开发中
+# stash@{1}: On feature/login: 修改样式
+
+# 恢复指定的 stash
+git stash apply stash@{1}
+
+# 只 stash 未暂存的文件，保留已暂存的文件
+git stash push --staged -m "只暂存已暂存的内容"
+
+# 创建一个分支从 stash 恢复
+git stash branch new-feature stash@{0}
+# 这会在当前 git 状态创建一个新分支，并应用 stash
+```
+
+### 4. Bisect 调试（`git bisect`）
+
+当发现一个 Bug 但不知道是哪个提交引入的，且提交历史有几十个甚至上百个时，bisect 通过二分法定位到引入 Bug 的提交。
+
+```bash
+# 开始 bisect
+git bisect start
+
+# 标记当前版本为"坏"
+git bisect bad
+
+# 标记一个已知的"好"版本（比如一周前的提交）
+git bisect good HEAD~100
+```
+
+Git 会检出一个中间的提交，你测试这个版本：
+
+```bash
+# 如果这个版本没有 Bug
+git bisect good
+
+# 如果这个版本有 Bug
+git bisect bad
+```
+
+重复 7 次左右（对于 100 个提交范围），bisect 就能精确定位到引入 Bug 的提交：
+
+```
+def5678 is the first bad commit
+commit def5678...
+Author: ...
+Date: ...
+    修改了登录验证逻辑
+```
+
+**自动化 bisect**：
+
+```bash
+# 写一个测试脚本 test.sh（返回 0 表示 good，非 0 表示 bad）
+git bisect run npm test
+```
+
+### 5. Reset 策略（`git reset`）
+
+了解 reset 的三种模式，避免误操作。
+
+| 模式 | 工作区 | 暂存区（Index） | 仓库 | 适用场景 |
+|------|--------|----------------|------|----------|
+| `--soft` | 不变 | 不变 | 重置 | 撤销 commit 但保留更改继续修改 |
+| `--mixed`（默认） | 不变 | 重置 | 重置 | 撤销 commit 和暂存，保留工作区更改 |
+| `--hard` | 重置 | 重置 | 重置 | 彻底丢弃所有更改 |
+
+**示例**：
+
+```bash
+# 最近一次提交忘记包含某个文件
+git commit -m "添加用户注册功能"
+# 发现忘记加 register.js
+
+# --soft: 撤销 commit，更改回到暂存区
+git reset --soft HEAD~1
+git add register.js
+git commit -m "添加用户注册功能"
+
+# --hard 危险操作：彻底回到 3 个提交前
+git reset --hard HEAD~3
+```
+
+## 命令速查表
+
+| 命令 | 参数 | 作用 | 危险等级 |
+|------|------|------|----------|
+| `git rebase -i HEAD~N` | `N` 为提交数量 | 交互式编辑最近 N 个提交 | ⚠️ 中等 |
+| `git rebase -i <commit-hash>` | 基准提交哈希 | 从指定提交开始编辑 | ⚠️ 中等 |
+| `git rebase --continue` | 无 | 冲突解决后继续 rebase | — |
+| `git rebase --abort` | 无 | 放弃当前 rebase | — |
+| `git cherry-pick <hash>` | 提交哈希 | 应用指定提交到当前分支 | ✅ 安全 |
+| `git cherry-pick -x <hash>` | 提交哈希 | 同上，追加来源记录 | ✅ 安全 |
+| `git stash push -m "msg"` | 描述信息 | 保存当前修改 | ✅ 安全 |
+| `git stash pop` | 无 | 恢复最近 stash 并删除 | ✅ 安全 |
+| `git stash list` | 无 | 列出所有 stash | ✅ 安全 |
+| `git stash drop stash@{N}` | stash 编号 | 删除指定 stash | ⚠️ 低 |
+| `git bisect start/bad/good` | 提交标记 | 二分法查找 Bug | ✅ 安全 |
+| `git bisect run <script>` | 脚本路径 | 自动 bisect | ✅ 安全 |
+| `git bisect reset` | 无 | 结束 bisect 回到原分支 | ✅ 安全 |
+| `git reset --soft HEAD~N` | 回退步数 | 撤销 N 个提交，保留更改 | ✅ 安全 |
+| `git reset --hard HEAD~N` | 回退步数 | 彻底丢弃 N 个提交 | 🔴 危险 |
+| `git reflog` | 无 | 查看所有 HEAD 操作记录 | ✅ 安全 |
+
+## 常见问题
+
+### 问题 1：Rebase 过程中发生冲突，解决后无法继续
+
+**症状**：`git rebase --continue` 后提示 "No changes - did you forget to use 'git add'?"，退出后又回到原来的分支，提交历史被破坏了一半。
+
+**原因**：冲突解决后，文件内容与 rebase 应用前的提交内容一致——即没有实际更改。Git 认为这个提交是"空的"。
+
+**解决**：
+
+```bash
+# 如果你确认这个提交确实不需要了
+git rebase --skip
+
+# 如果想回到安全状态重新来
+git rebase --abort
+git rebase -i HEAD~3
+```
+
+**预防**：rebase 前先用 `git stash` 确保工作区干净。
+
+### 问题 2：Cherry-pick 了合并提交（merge commit）报错
+
+**症状**：`git cherry-pick <merge-commit-hash>` 输出 "fatal: Commit xxx is a merge but no -m option was given."
+
+**原因**：合并提交有多个父提交，Git 不知道你想应用哪个父分支的更改。
+
+**解决**：
+
+```bash
+# -m 1 通常表示"保留合并时的主要分支"的更改
+git cherry-pick -m 1 <merge-commit-hash>
+```
+
+### 问题 3：`git reset --hard` 后丢失了提交
+
+**症状**：想回退提交，用了 `git reset --hard HEAD~5`，然后发现后悔了，丢失的提交里有重要代码。
+
+**原因**：`--hard` 直接丢弃了提交。但 Git 的垃圾回收不会立即执行。
+
+**解决**：
+
+```bash
+# 用 reflog 查看所有历史操作
+git reflog
+# 输出类似:
+# a1b2c3d HEAD@{0}: reset: moving to HEAD~5
+# e4f5g6h HEAD@{1}: commit: 重要功能的提交
+# ...
+
+# 恢复到丢失的提交
+git reset --hard e4f5g6h
+```
+
+**关键**：`reflog` 记录的是本地的 HEAD 移动历史，而不是仓库的提交历史。只要没有运行 `git gc`，大多数误操作都可以通过 reflog 恢复。
+
+### 问题 4：Bisect 标记错误导致定位不准确
+
+**症状**：bisect 结束后定位到的提交本身没有 Bug，Bug 实际上在更早的提交中。
+
+**原因**：在 bisect 过程中，错误地将一个"坏"版本标记为了"good"。
+
+**解决**：
+
+```bash
+# 结束当前 bisect
+git bisect reset
+
+# 重新开始，这次更仔细
+git bisect start
+git bisect bad HEAD~5  # 明确坏版本
+git bisect good HEAD~50  # 明确好版本
+```
+
+每次测试时，输出一个简单的脚本或手动记录每个测试版本的状态。
+
+## 专家建议
+
+- **Rebase 而非 Merge 到主分支**：在将功能分支合并到 `main` 之前，先用 `git rebase main` 将分支变基到最新主分支，再使用 `--no-ff` 进行合并。这样主分支历史是一条干净的直线，没有"章鱼合并"的混乱拓扑。
+- **每次 PR 前必做交互式 rebase**：将 WIP 提交 squash 为 1-3 个逻辑清晰的有意义提交。代码审查者不需要看到你在开发过程中的所有"微调"和"修复小问题"。
+- **绝对不要在公共分支上 rebase**：基本原则——如果你已经 `git push` 过的提交，其他人可能已经拉取了，就不要对这个分支执行 rebase。rebase 会改写提交哈希，导致协作者的仓库出现重复提交。只在你的个人分支上使用 rebase。
+- **Cherry-pick 记录来源**：使用 `-x` 参数，这样提交信息中会包含原始提交的哈希，方便追溯。"cherry-pick from a1b2c3d" 的信息在未来排查问题时非常有帮助。
+- **Alias 加速常用操作**：在 `~/.gitconfig` 中添加别名：
+
+```ini
+[alias]
+  rb = rebase -i
+  cp = cherry-pick
+  ss = stash push -m
+  sl = stash list
+  l = log --oneline --graph --all --decorate
+```
+
+## 总结
+
+本教程讲解了 Git 的五个高级操作：交互式 rebase 整理提交历史、cherry-pick 选择性合并、stash 灵活切换上下文、bisect 二分法排查 Bug、reset 安全回退。每个操作都配了具体业务场景、命令参数和冲突处理方式。
+
+下一步可以学习 [Git 分支策略最佳实践](/zh/dev/git/branch-strategy)，将 rebase 和 cherry-pick 应用到日常的分支管理工作流中。

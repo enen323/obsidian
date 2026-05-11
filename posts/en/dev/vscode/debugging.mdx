@@ -1,0 +1,268 @@
+---
+title: VSCode Debugging Configuration
+description: From launch.json to breakpoints — debug like a pro
+field: dev
+software: vscode
+level: intermediate
+language: en
+slug: debugging
+date: 2026-05-11
+readTime: 17
+translationOf: /zh/dev/vscode/debugging
+affiliateLinks:
+  - name: GitHub Copilot
+    url: https://github.com/features/copilot
+    description: AI code assistant
+    vendor: GitHub
+---
+
+> **Version**: VSCode 1.90+ (May 2024 update)
+> **Difficulty**: ★★★☆☆ (needs understanding of processes and ports)
+> **Time**: 25-35 min
+
+## The Problem with console.log Debugging
+
+When hunting a bug, the reflex for many developers is to sprinkle `console.log('here1')`, `console.log('here2', variable)` throughout the code, reload, and check the console output. This approach has fundamental problems:
+
+- **It modifies source code**: Every log statement requires a restart. Forgotten logs get committed to the repository.
+- **It is incomplete**: You only see snapshots at discrete points, not the full trajectory of variable changes.
+- **It affects performance**: High-frequency `console.log` calls can slow down your application and even alter async timing.
+
+VSCodes built-in debugger lets you **pause execution** at any line, inspect all variables, examine the call stack, and evaluate expressions — all without modifying a single line of code.
+
+## Prerequisites
+
+- **VSCode** 1.90+
+- **Node.js** 18+ (this guide uses a Node.js/JavaScript project)
+- A runnable JS project (or create one with `npm init -y` and an `index.js`)
+- Basic understanding of running processes
+
+## Core Debugging Workflow (Six Steps)
+
+### Step 1: Create a launch.json Configuration
+
+The debugger needs to know how to start your application. Click the **Run and Debug** icon on the left (`Ctrl+Shift+D`), then click **create a launch.json file** and select **Node.js**.
+
+VSCode generates `.vscode/launch.json`:
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Program",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/index.js"
+    }
+  ]
+}
+```
+
+**Key fields explained**:
+- `type`: Debugger type (`node`, `chrome`, `python`, etc.)
+- `request`: `launch` (start a new process) or `attach` (connect to an existing process)
+- `program`: Entry file path. `${workspaceFolder}` is a variable for the project root
+- `skipFiles`: Skip Node.js internal modules to avoid getting lost in `node_modules`
+
+**Verify**: Write `function add(a, b) { return a + b; } console.log(add(1, 2));` in `index.js`. Press `F5` and confirm the debugger prints `3` to the console.
+
+### Step 2: Set a Basic Breakpoint
+
+Click to the left of a line number in the editor. A red dot appears — this is a breakpoint. When execution reaches this line, the program **pauses** instead of running straight through.
+
+**Exercise**: Set a breakpoint on the `console.log(add(1, 2))` line, then press `F5` to start debugging.
+
+**Expected result**: The editor stops at the breakpoint line, highlighted in yellow. A debug toolbar appears at the top of the screen.
+
+### Step 3: Master the Debug Toolbar
+
+The debug toolbar controls execution flow — five buttons from left to right:
+
+| Button | Shortcut | Action |
+|--------|----------|--------|
+| Continue | `F5` | Resume execution until the next breakpoint |
+| Step Over | `F10` | Execute current line, do not enter functions |
+| Step Into | `F11` | Enter the function called on the current line |
+| Step Out | `Shift+F11` | Finish the current function, return to caller |
+| Restart | `Ctrl+Shift+F5` | Terminate and restart the debug session |
+| Stop | `Shift+F5` | Terminate the debug session |
+
+### Step 4: Watch Variables
+
+While paused, the **Variables** panel on the left shows all variables in the current scope (local, closure, global).
+
+Even more powerful is the **Watch** panel:
+
+1. Click the **+** icon in the Watch section
+2. Enter any JavaScript expression: `a + b`, `arr.length`, `user.name.toUpperCase()`
+3. Every time you step, watched expressions are re-evaluated automatically
+
+**Exercise**: Set a breakpoint at the `return` statement inside the `add` function. In the Watch panel, add `a + b`. Observe how the value changes as you step through.
+
+### Step 5: Conditional Breakpoints and Logpoints
+
+Right-click the gutter (line number area) to access two advanced breakpoint types:
+
+**Conditional Breakpoint**:
+
+Pause only when a specific condition is met. Right-click a line number and select **Conditional Breakpoint**:
+
+- **Expression**: Enter `a > 100`. Execution pauses only when `a` exceeds 100.
+- **Hit Count**: Enter `>= 5`. Pauses on the 5th time this line is hit. Useful for debugging loops without stepping through every iteration.
+
+**Logpoint**:
+
+A better alternative to `console.log`. Right-click a line number and select **Logpoint**:
+
+- In the "Message" field, enter: `The value of a is: {a}`
+- Execution does NOT pause, but the message appears in the Debug Console
+- Since Logpoints dont modify source code, they wont be accidentally committed
+
+### Step 6: Call Stack Analysis
+
+When the program is paused, the **Call Stack** panel shows the chain of function calls that led to the current position.
+
+**Real-world scenario**: Youre reading an unfamiliar codebase and a utility function is being called from somewhere unknown. Set a breakpoint in the utility function. When it pauses, look at the Call Stack — from top to bottom: current function -> caller -> callers caller -> ... -> global entry.
+
+Double-click any stack frame, and the editor jumps to that source location, while the **Variables panel automatically switches to that frames scope**.
+
+## launch.json Configuration Reference
+
+| Property | Type | Description | Example |
+|----------|------|-------------|---------|
+| `type` | string | Debugger type | `node`, `chrome`, `python` |
+| `request` | string | Launch or attach | `launch`, `attach` |
+| `name` | string | Config name in the dropdown | `Launch Program` |
+| `program` | string | Entry file path | `${workspaceFolder}/index.js` |
+| `args` | string[] | CLI arguments for the program | `["--port", "3000"]` |
+| `env` | object | Environment variables | `{ "NODE_ENV": "development" }` |
+| `cwd` | string | Current working directory | `${workspaceFolder}` |
+| `skipFiles` | string[] | Files to skip while stepping | `["<node_internals>/**", "**/node_modules/**"]` |
+| `runtimeExecutable` | string | Runtime path | `npm`, `yarn`, `ts-node` |
+| `runtimeArgs` | string[] | Runtime arguments | `["run", "dev"]` |
+| `restart` | boolean | Auto-restart after termination | `true` |
+| `sourceMaps` | boolean | Enable Source Map support | `true` |
+| `outFiles` | string[] | Source Map output location | `["${workspaceFolder}/dist/**/*.js"]` |
+
+## Troubleshooting
+
+### Issue 1: Breakpoints show as hollow circles (unbound)
+
+**Symptom**: Breakpoints appear as unfilled circles. The program runs without stopping.
+
+**Root cause**:
+
+- For TypeScript projects, Source Maps are disabled, so the debugger cannot map `.ts` files to compiled `.js` positions
+- The file being debugged is not the file where the breakpoint was set (e.g., debugging `dist/index.js` but the breakpoint is in `src/index.ts`)
+
+**Fix**:
+
+```json
+{
+  "type": "node",
+  "request": "launch",
+  "name": "Debug TS",
+  "program": "${workspaceFolder}/src/index.ts",
+  "runtimeExecutable": "ts-node",
+  "runtimeArgs": ["--transpile-only"],
+  "sourceMaps": true,
+  "outFiles": ["${workspaceFolder}/dist/**/*.js"]
+}
+```
+
+Ensure `sourceMaps: true` and `outFiles` points to the compiled output directory.
+
+### Issue 2: Attach mode fails (Address already in use)
+
+**Symptom**: Using `attach` mode reports that the port is in use or the connection is refused.
+
+**Root cause**: Node.js does not expose a debug port by default, or the debug port number is confused with the application port.
+
+**Fix**:
+
+1. Start the Node process with `--inspect`:
+
+```bash
+node --inspect=9229 index.js
+```
+
+2. Create an `attach` configuration:
+
+```json
+{
+  "type": "node",
+  "request": "attach",
+  "name": "Attach to Process",
+  "port": 9229,
+  "restart": true
+}
+```
+
+3. Port distinction: `--inspect=9229` is the debug protocol port (VSCode connects here). The application port (e.g., `3000` for a web server) is separate and unrelated.
+
+### Issue 3: React project breakpoints dont work
+
+**Symptom**: Using Create React App or Vite, breakpoints set in React components never trigger in the browser.
+
+**Root cause**: VSCodes Node.js debugger works only for backend code. Frontend code runs in the browser and needs the Chrome debugger with proper URL mapping.
+
+**Fix**:
+
+1. Install the JavaScript Debugger (built-in for VSCode 1.90+)
+2. Configure launch.json:
+
+```json
+{
+  "type": "chrome",
+  "request": "launch",
+  "name": "Debug React",
+  "url": "http://localhost:3000",
+  "webRoot": "${workspaceFolder}/src",
+  "sourceMapPathOverrides": {
+    "webpack:///src/*": "${webRoot}/*"
+  }
+}
+```
+
+3. Start `npm start` first, then press `F5`.
+
+### Issue 4: Debug Console shows garbled values
+
+**Symptom**: Variable values appear as gibberish or `undefined` when they clearly have values in the code.
+
+**Root cause**: Incorrect Source Map mapping means the debugger sees different variable names than the actual source. Alternatively, `skipFiles` may have jumped past the relevant stack frame.
+
+**Fix**: In the Watch panel, type the full global expression (e.g., `globalThis`) to confirm which context the debugger is in. Temporarily comment out all `skipFiles` entries to determine whether the issue is Source Map configuration or skipFiles filtering.
+
+## Expert Tips
+
+- **Use Logpoints instead of console.log**: When debugging in production, you need to confirm whether a specific code path is hit. Set a Logpoint (which does not modify source code) on critical paths before deployment. Remove all Logpoints after debugging — no more "forgot to remove the debug log" commits.
+- **Debug npm scripts directly**: In launch.json, set `runtimeExecutable: "npm"` and `runtimeArgs: ["run", "dev"]` instead of using `program`. This lets you debug any npm script without adding `--inspect` to your `package.json`.
+- **Conditional breakpoint performance**: Each time execution passes a conditional breakpoint, the condition is evaluated. On hot paths (thousands of executions per second), this can cause severe slowdowns. Use a Logpoint first to count executions, then add a conditional breakpoint only if necessary.
+- **Multi-target debugging**: For full-stack apps (frontend + backend), use the `compounds` feature:
+
+```json
+{
+  "compounds": [
+    {
+      "name": "Frontend + Backend",
+      "configurations": ["Debug React", "Launch Program"]
+    }
+  ]
+}
+```
+
+Select "Frontend + Backend" from the launch dropdown and press `F5` to start both debug sessions simultaneously.
+
+## Summary
+
+This guide covered VSCode debugging from launch.json basics through conditional breakpoints, Logpoints, and Source Map debugging. The core methodology is the "pause-inspect-step" cycle that replaces traditional `console.log` debugging.
+
+Next, explore [VSCode Shortcuts & Productivity](/en/dev/vscode/shortcuts-productivity) to replace repetitive debug workflow actions with keyboard shortcuts.
+
+### Related Articles
+
+- [Essential VSCode Extensions Guide](/en/dev/vscode/extensions-guide)
+- [VSCode Shortcuts & Productivity](/en/dev/vscode/shortcuts-productivity)

@@ -1,0 +1,496 @@
+---
+title: Docker Containerization Intro
+description: Master images, containers, and build your first app
+field: dev
+software: docker
+level: beginner
+language: en
+slug: container-basics
+date: 2026-05-11
+readTime: 20
+translationOf: /zh/dev/docker/container-basics
+affiliateLinks: []
+---
+
+> **Version**: Docker Desktop 4.x / Docker Engine 24+
+> **Difficulty**: ★★☆☆☆ (basic command-line experience needed)
+> **Time**: 30-45 min
+
+## "It Works on My Machine" — The Environment Nightmare
+
+Few things are more frustrating than code that runs perfectly on your development machine but fails on the server with mysterious errors. Wrong Python version, different Node.js runtime, missing system libraries, unset environment variables — every new machine means reconfiguring the environment from scratch.
+
+The root cause is **environment inconsistency**: your dev machine runs macOS, the CI server runs Ubuntu 22.04, and production runs CentOS 7. Each has different operating systems, system libraries, and runtime versions.
+
+Docker solves this by packaging your application and its dependencies into a standardized unit called a **container**. Containers offer three key benefits:
+
+1. **Build once, run anywhere** — runs identically on any machine with Docker installed
+2. **Isolation** — processes inside one container do not affect other containers
+3. **Lightweight** — unlike virtual machines, containers share the host OS kernel, no full OS emulation needed
+
+This guide takes you from zero: installing Docker, pulling images, running containers, writing a Dockerfile, and using Docker Compose for multi-service apps.
+
+## Prerequisites
+
+- **OS**: Windows 10/11 (with WSL2), macOS 12+, or Linux (Ubuntu 22.04+ recommended)
+- **Docker Desktop** (Windows/macOS) or **Docker Engine** (Linux)
+- Basic terminal skills: `cd`, `ls`, file editing
+- A text editor (VSCode recommended for Dockerfile syntax highlighting)
+- **At least 2GB free disk space** (for downloading images)
+
+**Windows note**: Docker Desktop for Windows requires the WSL2 backend. Before installing Docker Desktop, open PowerShell (as Administrator) and run:
+
+```powershell
+wsl --install -d Ubuntu
+```
+
+Reboot your machine, then install Docker Desktop.
+
+## Core Workflow
+
+### 1. Verify Installation
+
+Open a terminal and run:
+
+```bash
+docker --version
+# Example output: Docker version 24.0.7, build afdd53b
+
+docker run hello-world
+```
+
+**Expected result**: Docker pulls the `hello-world` image and prints a welcome message ending with `This message shows that your installation appears to be working correctly.`
+
+**Troubleshooting**: If you see `docker: command not found`, Docker is not properly installed. If you see `Cannot connect to the Docker daemon`, make sure Docker Desktop is running.
+
+### 2. Images vs. Containers
+
+Two core concepts before diving in:
+
+- **Image**: A read-only template containing the OS base layer, runtime, application code, and configuration. Think of it as a "class."
+- **Container**: A running instance of an image that can be started, stopped, and deleted. Think of it as an "object." One image can start many containers.
+
+**Command relationships**:
+
+```bash
+# List local images
+docker images
+
+# List running containers
+docker ps
+
+# List all containers (including stopped)
+docker ps -a
+```
+
+### 3. Pull and Run an Nginx Image
+
+```bash
+# Pull the Nginx image from Docker Hub
+docker pull nginx:alpine
+```
+
+**Why `nginx:alpine` instead of `nginx:latest`**: The Alpine variant is based on Alpine Linux (~5MB), while `latest` is based on Debian (~140MB). The Alpine version is about 28x smaller in base image size.
+
+```bash
+# View image info
+docker images nginx
+# REPOSITORY   TAG       IMAGE ID       CREATED       SIZE
+# nginx        alpine    xxxxxxxx       2 weeks ago   23.5MB
+```
+
+**Run a container**:
+
+```bash
+docker run -d --name my-nginx -p 8080:80 nginx:alpine
+```
+
+- `-d`: Run in the background (detached mode)
+- `--name my-nginx`: Assign a name to the container
+- `-p 8080:80`: Port mapping. Maps host port 8080 to container port 80. Format is `host-port:container-port`
+- `nginx:alpine`: The image name and tag
+
+**Verify**: Open your browser to `http://localhost:8080`. You should see the Nginx welcome page.
+
+**Stop and remove the container**:
+
+```bash
+# Stop the container
+docker stop my-nginx
+
+# Remove the container (must be stopped first)
+docker rm my-nginx
+
+# Force-remove a running container
+docker rm -f my-nginx
+```
+
+### 4. Writing a Dockerfile — Containerize a Node.js App
+
+Lets containerize a real web application. First, create a project structure:
+
+```bash
+mkdir my-docker-app && cd my-docker-app
+```
+
+Create `package.json`:
+
+```json
+{
+  "name": "my-docker-app",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0"
+  }
+}
+```
+
+Create `server.js`:
+
+```javascript
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+  res.send('Hello from Docker!');
+});
+
+app.listen(port, () => {
+  console.log(`App running on port ${port}`);
+});
+```
+
+Create a `Dockerfile` (no extension) in the project root:
+
+```dockerfile
+# Use the official Node.js image as the base
+FROM node:18-alpine
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy package.json first to leverage layer caching
+COPY package.json .
+
+# Install production dependencies
+RUN npm install --production
+
+# Copy the rest of the application code
+COPY . .
+
+# Document the port the container listens on
+EXPOSE 3000
+
+# Command to run when the container starts
+CMD ["node", "server.js"]
+```
+
+**Line-by-line explanation**:
+
+- `FROM node:18-alpine`: Base image. Alpine is much smaller than the full Debian-based image
+- `WORKDIR /app`: Working directory inside the container; all subsequent commands run here
+- `COPY package.json .`: Copy only the dependency manifest first. Docker creates a cache layer for each `RUN`/`COPY` instruction. By keeping `package.json` and `npm install` before the source code copy, changes to source code alone do NOT invalidate the dependency cache
+- `RUN npm install --production`: Install only production dependencies, skipping devDependencies
+- `COPY . .`: Copy the remaining source code
+- `EXPOSE 3000`: Documentation — tells users the container listens on port 3000. Actual mapping still needs `-p`
+- `CMD ["node", "server.js"]`: The startup command. Must be in JSON array (exec) form, not string form
+
+**Build and run**:
+
+```bash
+# Build the image (the trailing dot is the build context)
+docker build -t my-docker-app .
+
+# Check image size
+docker images my-docker-app
+
+# Run the container
+docker run -d --name my-app -p 3000:3000 my-docker-app
+
+# Verify
+curl http://localhost:3000
+# Output: Hello from Docker!
+```
+
+**Why copy `package.json` before source code**: Docker build cache — if `package.json` has not changed, the `RUN npm install` layer is reused from cache. If source code were copied first, any code change would re-trigger `npm install`. In a large project this saves 60-80% of build time.
+
+### 5. Docker Compose — Multi-Service Orchestration
+
+Real projects rarely consist of a single service. Frontend, backend, database, and cache all need to start together and communicate. Docker Compose defines multi-container apps in a YAML file.
+
+Create `docker-compose.yml`:
+
+```yaml
+version: "3.8"
+
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DB_HOST=db
+    depends_on:
+      - db
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: myapp
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  pgdata:
+```
+
+**Key configuration explained**:
+
+- `services.web.build: .`: Build from the Dockerfile in the current directory
+- `services.web.depends_on: - db`: Ensure the db service starts before web (but does NOT wait for the database to be ready)
+- `services.db.volumes: - pgdata:/var/lib/postgresql/data`: Data persistence. `pgdata` is a Docker-managed volume — data survives container deletion
+- `services.db.image: postgres:16-alpine`: Use the official image directly, no Dockerfile needed
+
+**Start and stop**:
+
+```bash
+# Start all services
+docker compose up -d
+
+# List running services
+docker compose ps
+
+# Follow logs
+docker compose logs -f
+
+# Stop all services
+docker compose down
+
+# Stop and delete volumes (WARNING: destroys database data)
+docker compose down -v
+```
+
+### 6. Volumes — Persistent Data
+
+A containers filesystem disappears when the container is deleted. Volumes are Dockets recommended persistence mechanism.
+
+```bash
+# Create a volume
+docker volume create my-data
+
+# Run a container with the volume mounted
+docker run -d --name data-demo -v my-data:/app/data nginx:alpine
+```
+
+**Three data mount methods**:
+
+| Method | Syntax | Use Case | Managed By |
+|--------|--------|----------|------------|
+| Volume | `-v vol-name:/path` | Persistent data (databases) | Docker |
+| Bind Mount | `-v /host/path:/path` | Hot-reload during development | User |
+| tmpfs Mount | `--tmpfs /path` | Temporary files (not persisted) | Memory |
+
+**Development bind mount**: Mount your local code directory into the container so code changes take effect without rebuilding:
+
+```bash
+docker run -d -p 3000:3000 -v $(pwd):/app my-docker-app
+```
+
+### 7. Network Configuration
+
+Docker automatically creates a network for `docker compose` services. The service name acts as the hostname, and services can communicate using it.
+
+**Manual network operations**:
+
+```bash
+# Create a custom network
+docker network create my-network
+
+# Run a container on the custom network
+docker run -d --name nginx1 --network my-network nginx:alpine
+
+# Inspect network members
+docker network inspect my-network
+
+# Test inter-container communication
+docker run --rm --network my-network alpine ping nginx1
+```
+
+## Command Reference Table
+
+| Command | Purpose | Common Options |
+|---------|---------|----------------|
+| `docker pull <image>` | Pull an image | |
+| `docker images` | List local images | |
+| `docker rmi <image>` | Remove an image | `-f` force |
+| `docker run <image>` | Run a container | `-d` detach, `--name` name, `-p` port map, `-v` volume, `-e` env |
+| `docker ps` | List running containers | `-a` include stopped |
+| `docker stop <container>` | Stop a container | |
+| `docker start <container>` | Start a stopped container | |
+| `docker rm <container>` | Delete a container | `-f` force |
+| `docker logs <container>` | View container logs | `-f` follow |
+| `docker exec -it <container> sh` | Enter a container | `-it` interactive terminal |
+| `docker build -t <name> .` | Build an image | `-t` tag |
+| `docker compose up` | Start multi-service app | `-d` detach, `--build` rebuild |
+| `docker compose down` | Stop multi-service app | `-v` remove volumes |
+| `docker volume ls` | List volumes | |
+| `docker network ls` | List networks | |
+
+## Troubleshooting
+
+### Issue 1: Port conflict (port already allocated)
+
+**Symptom**: `docker run -p 8080:80 nginx` outputs:
+```
+docker: Error response from daemon: driver failed programming external connectivity on endpoint my-nginx: Bind for 0.0.0.0:8080 failed: port is already allocated.
+```
+
+**Root cause**: Port 8080 on the host is already in use by another process or container.
+
+**Fix**:
+
+```bash
+# Check which process is using the port
+# Linux/macOS
+lsof -i :8080
+
+# Windows (administrator PowerShell)
+netstat -ano | findstr :8080
+
+# Option 1: Use a different port
+docker run -d -p 8081:80 --name my-nginx nginx:alpine
+
+# Option 2: Stop the process using the port
+docker stop <the-offending-container>
+
+# Option 3: Let Docker assign a random port
+docker run -d -p 80 --name my-nginx nginx:alpine
+docker port my-nginx  # Check which port was assigned
+```
+
+### Issue 2: Docker daemon is not running
+
+**Symptom**: Every docker command outputs:
+```
+Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+```
+
+**Root cause**:
+- Windows/macOS: Docker Desktop is not started
+- Linux: The docker daemon service is not running
+
+**Fix**:
+
+```bash
+# Windows/macOS: Start Docker Desktop from the Start menu / Applications
+# Check the whale icon in the system tray / menu bar
+
+# Linux:
+sudo systemctl start docker
+sudo systemctl enable docker   # Auto-start on boot
+```
+
+### Issue 3: Permission denied inside the container
+
+**Symptom**: Container logs show `Permission denied` or the application cannot write to mounted volumes.
+
+**Root cause**: The container process runs as root by default, but bind-mounted host directories may have restrictive host permissions. Some security-hardened containers run as non-root users.
+
+**Fix**:
+
+```bash
+# Option 1: Specify the user in the Dockerfile
+FROM node:18-alpine
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+USER appuser
+
+# Option 2: Specify the user at runtime
+docker run --user 1000:1000 -v $(pwd):/app my-docker-app
+```
+
+### Issue 4: Docker build is slow
+
+**Symptom**: Every `docker build` takes a long time even for small code changes.
+
+**Root cause**: Layer caching is not being leveraged effectively. If `COPY . .` comes before `RUN npm install`, every code change triggers a full dependency reinstall.
+
+**Fix**: Order Dockerfile instructions from least-frequently-changing to most-frequently-changing:
+
+```dockerfile
+FROM node:18-alpine
+WORKDIR /app
+
+# 1. Least changing: system dependencies
+RUN apk add --no-cache curl
+
+# 2. Less changing: dependency manifests
+COPY package.json package-lock.json ./
+RUN npm ci --production
+
+# 3. Most changing: source code
+COPY . .
+
+CMD ["node", "server.js"]
+```
+
+Use `npm ci` instead of `npm install`: `npm ci` reads from `package-lock.json` exactly, is 2-3x faster, and produces reproducible builds.
+
+### Issue 5: Wrong timezone inside the container
+
+**Symptom**: Container logs show UTC timestamps instead of local time.
+
+**Root cause**: Alpine base images default to UTC and do not include timezone data.
+
+**Fix**:
+
+```dockerfile
+FROM node:18-alpine
+RUN apk add --no-cache tzdata
+ENV TZ=America/New_York
+```
+
+## Expert Tips
+
+- **.dockerignore file**: Create `.dockerignore` in your project root to avoid sending unnecessary files to the Docker daemon:
+
+```
+node_modules
+.git
+*.log
+.env
+.gitignore
+Dockerfile
+docker-compose.yml
+```
+
+This reduces the build context size and prevents `node_modules` from overwriting the containers own node_modules.
+
+- **Tag management**: Never use the `latest` tag for production deployments. Use semantic versioning or git commit hashes:
+
+```bash
+docker build -t my-app:1.0.0 .
+docker build -t my-app:$(git rev-parse --short HEAD) .
+```
+
+- **Prefer Alpine images**: `node:18-alpine` (~120MB) is nearly 3x smaller than `node:18` (~350MB), reducing pull and storage costs. However, note that Alpine uses musl libc instead of glibc — some native modules may need extra compilation.
+
+- **Resource limits**: In production, always limit container resources to prevent one container from starving others:
+
+```bash
+docker run -d --memory="512m" --cpus="1.0" my-docker-app
+```
+
+## Summary
+
+This guide covered Docker fundamentals from the ground up: verifying installation, running an Nginx container, writing a Dockerfile for a Node.js app, orchestrating multi-service apps with Docker Compose, persisting data with volumes, and configuring networks. Each step included specific commands, expected outputs, and troubleshooting for common failures.
+
+Next, explore [Docker Multi-Stage Build Optimization](/en/dev/docker/multi-stage) to shrink your image sizes, speed up builds, and integrate Docker into CI/CD pipelines.

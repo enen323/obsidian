@@ -1,0 +1,207 @@
+---
+title: Midjourney Professional Workflow
+description: Commercial-grade image generation and post-processing
+field: ai
+software: midjourney
+level: intermediate
+language: en
+slug: professional-workflow
+date: 2026-05-11
+readTime: 13
+translationOf: /zh/ai/midjourney/professional-workflow
+affiliateLinks:
+  - name: Midjourney Standard Plan
+    url: https://midjourney.com
+    description: AI image generation subscription
+    vendor: Midjourney
+---
+
+> **Version**: Midjourney V6 / 2026-05 | **Difficulty**: ★★★★☆ | **Read time**: 13 min
+
+## Generating One Image at a Time Is Too Slow?
+
+You generated a nice image in Midjourney. Then you wanted variations — three prompt changes, six generations later, you have a set. But character styles don't match, so you start over. Half a morning gone for one client proposal.
+
+This is the single-person, single-image workflow. Commercial projects demand a repeatable, batchable, controllable pipeline — **batch generate → select → upscale → post-process → output as a set**.
+
+This guide covers professional Midjourney workflows: batch generation strategies, image-to-image, character consistency, post-processing pipelines, and commercial use considerations.
+
+## Preparation
+
+- [Midjourney Standard or Pro subscription](https://midjourney.com) ($30/month+, batch work needs quota)
+- Photoshop or free alternatives (GIMP / Photopea) for post-processing
+- Optional: Topaz Gigapixel AI or similar for upscaling
+- Optional: Multi-angle reference photos of characters/objects
+
+## Core Workflow: From Single Images to Batch Production
+
+### Step 1: Batch Generation Strategy
+
+Professional batch generation uses **controlled variable testing**, not random prompt tweaking.
+
+**Strategy A — Seed Variation**
+
+Fix the prompt, vary the seed for different compositions:
+
+```
+/imagine product shot of a perfume bottle, dramatic lighting, dark background, glass reflections --ar 4:3 --v 6 --seed 1001
+/imagine product shot of a perfume bottle, dramatic lighting, dark background, glass reflections --ar 4:3 --v 6 --seed 2002
+/imagine product shot of a perfume bottle, dramatic lighting, dark background, glass reflections --ar 4:3 --v 6 --seed 3003
+```
+
+Generate 3-4 sets (12-16 images) and pick the best compositions.
+
+**Strategy B — Keyword Variation**
+
+Fix a good seed, vary style keywords:
+
+```
+// Fixed seed, change material/style
+/imagine product shot of a perfume bottle, frosted glass texture --ar 4:3 --v 6 --seed 5005
+/imagine product shot of a perfume bottle, crystal clear glass, rainbow refraction --ar 4:3 --v 6 --seed 5005
+/imagine product shot of a perfume bottle, matte black ceramic finish --ar 4:3 --v 6 --seed 5005
+```
+
+With a fixed seed, composition stays stable while style changes. Great for rapid visual direction exploration.
+
+**Why it works**: Controlled variable testing tells you exactly which change caused which effect — no random guessing.
+
+### Step 2: Image-to-Image Workflow
+
+Use existing images as a starting point. Much more controllable than text-only prompts.
+
+**Basic use**: Paste an image URL followed by your description:
+
+```
+/imagine [reference image URL] similar composition, but change the style to watercolor painting, loose brush strokes, paper texture --v 6 --iw 1.2
+```
+
+**Professional technique — Layered Iteration**:
+
+```
+Phase 1: Image prompt to lock composition
+/imagine [sketch URL] a modern living room, similar layout and perspective --v 6 --iw 2
+
+Phase 2: Refine style
+(Using phase 1 result)
+/imagine [phase1 result URL] mid-century modern furniture, warm lighting, wooden floors --v 6 --iw 0.8
+
+Phase 3: Add details
+(Using phase 2 result)
+/imagine [phase2 result URL] adding: indoor plants, decorative cushions, abstract wall art --v 6 --iw 0.5
+```
+
+Each phase reduces `--iw`, giving the AI more creative freedom. Phase 1 strictly follows the reference; phase 3 gives maximum room for interpretation.
+
+**Expected result**: Starting from a rough sketch or site photo, after 3 iterations you get a professional-grade image with a completely different style but preserved original composition.
+
+### Step 3: Character Consistency
+
+This is the biggest challenge in commercial Midjourney use. These methods yield the best results:
+
+**Method A — Seed + Description Lock**
+
+Generate the first character portrait, get its seed. Use the same seed + description for all subsequent images:
+
+```
+// First character image
+/imagine a young female character with freckles, short auburn hair, green eyes, wearing a leather jacket, cinematic portrait --ar 2:3 --v 6 --seed 7777
+
+// Same character, different scene
+/imagine a young female character with freckles, short auburn hair, green eyes, wearing a leather jacket, walking in a rainy city street at night --ar 16:9 --v 6 --seed 7777
+```
+
+**Limitation**: Same seed + same description across different scenes achieves about 60-70% consistency. Fully consistent cross-scene characters still require manual post-processing or dedicated tools (Stable Diffusion + ControlNet).
+
+**Method B — Multi-Image Prompt**
+
+Upload 2-3 reference images of the same character:
+
+```
+/imagine [img1 URL] [img2 URL] [img3 URL] the same character as in the reference images, sitting in a coffee shop, reading a book --ar 16:9 --v 6 --iw 1.5
+```
+
+### Step 4: Post-Processing Workflow (Midjourney + Editor)
+
+Midjourney output is rarely production-ready. The professional workflow:
+
+1. **Selection**: Pick 3-5 candidates from your batch
+2. **Upscale**: Click Upscale to Max (or enable Remix Mode in `/settings`)
+3. **Editor corrections** (Photoshop or equivalent):
+   - Fix fingers/distorted anatomy (Generative Fill or clone tool)
+   - Adjust color balance and contrast
+   - Remove unwanted elements (watermarks, extra objects)
+   - Composite: combine the best parts of multiple Midjourney outputs into one image
+4. **Final upscale**: Use Topaz Gigapixel or similar AI upscaler to reach commercial print resolution (300 DPI)
+5. **Sharpening**: Apply smart sharpening to compensate for the slight softness inherent in AI-generated images
+
+**Why post-processing is essential**: Midjourney images have three consistent issues: detail errors (fingers, text), limited resolution (1024x1024 initial), and unwanted elements. Post-processing is mandatory for commercial quality.
+
+### Step 5: Remix Mode for Fine Iteration
+
+Enable **Remix Mode** in `/settings`. When you click Vary (Variation) on an existing image, you can modify the prompt — powerful for iterative refinement.
+
+```
+Original prompt: a cozy cabin in snowy forest --ar 16:9 --v 6
+→ Click Vary, Remix activates, modify to:
+a cozy cabin in snowy forest, chimney smoke, warm window light glowing --ar 16:9 --v 6
+```
+
+Result: an improved version based on the same composition, not a brand new generation.
+
+**Stop condition**: When 3-5 final batch images all meet commercial standards in composition, style, resolution, and detail (ready for client proposals or design mockups), the workflow is complete.
+
+## Reference Table: Professional Techniques
+
+| Technique | Use Case | Key Parameters | Notes |
+|-----------|----------|---------------|-------|
+| **Seed variation** | Batch different compositions | Vary `--seed` by 1000+ | Some seeds fail — this is normal |
+| **Keyword variation** | Rapid visual iteration | Fix `--seed`, vary style words | Effect varies by prompt length |
+| **Layered iteration** | Sketch to final image | Reduce `--iw` each round | Pick the best at each stage |
+| **Character lock** | Maintain character identity | `--seed` + precise description | 60-70% consistency, not perfect |
+| **Remix mode** | Fine-tune existing composition | Enable in `/settings` | Only triggers on Vary operations |
+| **Post-production** | Commercial final output | Photoshop + Topaz Gigapixel | Mandatory, never skip |
+
+## Troubleshooting
+
+### Q1: Same seed and description produce inconsistent character appearance
+
+**Root cause**: Seed controls random noise initialization, not semantic identity. Midjourney has no "character memory."
+**Fix**: Accept 60-70% consistency. For precise identity (brand IP characters), use Stable Diffusion + DreamBooth or LoRA to train a dedicated model. Or do face-swapping/compositing in Photoshop.
+
+### Q2: Batch images have inconsistent style across the set
+
+**Root cause**: No style constraints shared across the batch. Individual images may look fine but clash as a set.
+**Fix**: Create a "style template" suffix shared across all batch prompts: `--ar 16:9 --v 6 --s 200 --style raw`. Swap only the subject/scene description in the front half. Or use the same set of reference image prompts.
+
+### Q3: Upscale to Max is still not sharp enough
+
+**Root cause**: Midjourney's built-in upscaler has limited capability. When initial resolution is too low, upscaled details stay blurry.
+**Fix**: Use third-party AI upscalers: Topaz Gigapixel AI (best), or free Upscayl. Also try Midjourney's Enhance feature (added to V6).
+
+### Q4: Copyright concerns for commercial use
+
+**Root cause**: Midjourney's commercial use terms vary by subscription tier.
+**Fix**: Paid Midjourney subscribers own commercial rights to generated images (including sales and publishing). Free trial images are not for commercial use. If generating for third-party clients, ensure your subscription plan covers commercial use.
+
+## Expert Tips
+
+- **Batch naming system**: Create a numbering system for every batch job (e.g., `20260511_Perfume_GroupA_seed1001-1010`), recording prompts and seed values. A week later, you will not remember "that nice perfume image's" seed.
+- **Need more than 4 variations? Use --c**: `--c 60` makes the 4 images from one prompt more different from each other — effectively 4x visual coverage. Increase chaos when you need more options.
+- **Pan feature**: V6 supports panning in four directions on the generated canvas. Great for ultra-wide panoramas or extending existing compositions.
+- **Asset compositing**: Use Midjourney outputs as layers in Photoshop, compositing with other assets (real photos, 3D renders) rather than using AI images standalone. This is far more controllable.
+- **Internal testing vs client delivery**: During internal testing, raise `--s` to 600+ to explore creative boundaries. Before client delivery, lower `--s` to 50-200 for more controlled, cleaner results.
+
+## Summary
+
+You now have a professional Midjourney workflow:
+
+- **Batch generation**: Controlled variable testing with seed and keyword variation
+- **Image-to-image**: Layered iteration from sketch to final image
+- **Character consistency**: Seed locking and multi-image prompting
+- **Post-processing**: Select → upscale → Photoshop corrections → final upscale → sharpen
+- **Remix mode**: Fine-tune existing compositions
+
+Remember: Midjourney is part of a creative pipeline, not the endpoint. Commercial output = 20% generation + 80% selection, post-processing, and compositing.
+
+Next: Interested in how AI prompt engineering translates across tools? Check the [ChatGPT Prompt Engineering guide](../../chatgpt/prompt-engineering) — many techniques (role-setting, few-shot, iterative refinement) apply to image generation as well.

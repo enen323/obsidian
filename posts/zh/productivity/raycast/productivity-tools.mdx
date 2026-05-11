@@ -1,0 +1,150 @@
+---
+title: Raycast 效率工具指南
+description: 用 Raycast 替代 Spotlight，掌握窗口管理、剪贴板和 Snippet
+field: productivity
+software: raycast
+level: beginner
+language: zh
+slug: productivity-tools
+date: 2026-05-11
+readTime: 10
+affiliateLinks:
+  - name: Raycast Pro
+    url: https://www.raycast.com/pro
+    description: Raycast 高级版，解锁 AI 功能、云端同步和自定义主题
+    vendor: Raycast
+---
+
+> **适用版本**：Raycast 1.80+（macOS 12+ Intel/Apple Silicon）
+> **难度等级**：★☆☆☆☆（无需任何特殊技能）
+> **预计耗时**：15 分钟上手，一周内形成肌肉记忆
+
+## 为什么 Spotlight 已经不够用了
+
+macOS 的 Spotlight（`Cmd+Space`）能搜索文件、启动应用、做简单计算——但也就这些了。你每次打开电脑要重复几十次的操作：调整窗口布局、查找之前复制的内容、输入常用地址和邮箱、在几个剪贴片段之间切换——Spotlight 一个都帮不了。
+
+Raycast 不是"又一个启动器"——它把你的整个操作系统的交互方式从"鼠标点击"变成了"键盘指挥"。安装 Raycast 后，你可能只需要五分之一的时间就能完成日常操作。
+
+本教程带你快速掌握 Raycast 最核心的四个内置工具——窗口管理、剪贴板历史、Snippet 扩展和计算器——这些不需要安装任何扩展即可使用。
+
+## 准备工作
+
+- **软件**：从 [raycast.com](https://www.raycast.com) 下载 Raycast（免费）。仅支持 macOS 12+（Monterey 及以上）。
+- **安装**：下载后拖入 Applications 文件夹，首次启动时授予辅助功能权限（系统提示 → 打开系统设置 → 隐私与安全性 → 辅助功能 → 勾选 Raycast）。
+- **基础设置**：启动后按 `Cmd+Space`（或你设置的快捷键）打开 Raycast 搜索栏。建议将 Raycast 的快捷键设为 `Cmd+Space`（取代 Spotlight），Spotlight 则改用 `Option+Space`。
+- **可选**：将 Raycast 设为登录项（Raycast 设置 → General → "Launch Raycast at login"），这样开机后自动启动。
+
+## 核心工作流
+
+### 第一步：窗口管理——告别鼠标拖拽
+
+Raycast 内置的窗口管理不需要安装任何第三方工具（如 Magnet、Rectangle）。它将 macOS 的窗口操作映射到键盘快捷键。
+
+1. 打开 Raycast 设置 → Extensions → Window Management，查看所有可用命令。
+2. 最常用的操作：
+   - 左半屏：按 `Cmd+Option+Enter`（Mac 默认快捷键与 Raycast 不冲突，无需额外配置）
+   - 右半屏：按 `Cmd+Option+Right`（可在设置中自定义）
+   - 最大化：按 `Cmd+Option+M`
+   - 居中：按 `Cmd+Option+C`
+   - 移动到下一个显示器：按 `Cmd+Option+Down`
+3. **预期结果**：当前窗口立即重排到对应位置。窗口位置切换几乎没有延迟。
+4. **为什么这么做**：手动拖拽窗口到屏幕边缘是低效的——你需要从键盘移到触摸板/鼠标，拖拽，再移回来。这个过程平均需要 2–3 秒。使用 Raycast 快捷键只需 0.3 秒，且不需要手离开键盘。
+5. **停止条件**：你能不假思索地用快捷键将窗口排列到左半屏、右半屏和居中。
+
+### 第二步：剪贴板历史——找回你复制过的一切
+
+Raycast 的剪贴板历史记录你所有复制的内容（文本、图片、文件链接），支持搜索和固定常用条目。
+
+1. 按 `Cmd+Shift+V` 打开剪贴板历史（首次使用会提示启用该功能）。
+2. 在 Raycast 设置 → Extensions → Clipboard History 中配置：
+   - "Store history" 开启
+   - "Keep history for" 建议设为 7 天
+   - "Primary" 设为最近 10 条
+   - "Maximum pinned items" 设为 20
+3. **操作方式**：
+   - 搜索：打开剪贴板历史，直接输入关键词过滤历史记录。
+   - 粘贴最新条目：连按两次 `Cmd+V`（需要开启 "Paste to frontmost app" 选项）。
+   - 固定常用条目：在条目上按 `Cmd+P` 固定，固定条目始终显示在最前面。
+4. **为什么这么做**：人的工作记忆容量有限（7±2 个信息块）。剪贴板历史消除了"复制→粘贴→又需要→但已经复制了新内容"的挫败感。在实际工作中，每天平均有 15–20 次需要找回之前复制的内容。
+5. **停止条件**：你能熟练地搜索历史剪贴板内容，并固定了 3–5 个常用条目（如邮箱地址、常用代码片段）。
+
+### 第三步：Snippet——快速输入模板文本
+
+Snippet 是一劳永逸的文本扩展工具。设置一次，每次输入缩写后自动替换为完整文本。
+
+1. 打开 Raycast，输入 "Create Snippet" 然后回车。
+2. 创建一个签名 snippet：
+   - **Name**: 个人签名
+   - **Keyword**: `;sig`
+   - **Snippet**: `张三 | 高级产品经理 | zhang.san@example.com | 微信: zhangsan123`
+3. 再创建一个日历链接 snippet：
+   - **Name**: 会议邀请链接
+   - **Keyword**: `;meet`
+   - **Snippet**: `https://meet.google.com/abc-defg-hij`
+4. **使用方式**：在任何文本输入框中输入 `;sig`，Raycast 会自动将其替换为完整签名。不需要复制粘贴。
+5. 在 Raycast 设置中，可以为 Snippet 设置独立的快捷键（Settings → Extensions → Snippets → "Search Snippets"），默认为 `Cmd+Shift+S`，可以搜索并直接粘贴所有 snippet。
+6. **为什么这么做**：输入 ";sig" 比打开邮箱复制签名快 10 倍。一个典型的知识工作者每天输入地址、邮箱、标准回复等固定文本 5–10 次——snippet 每月可以省下 30–60 分钟。
+7. **停止条件**：你创建了至少 5 个常用 snippet（邮箱、地址、常用回复语、代码片段、会议链接），并能流畅地用它们。
+
+### 第四步：快速计算——无需启动计算器
+
+Raycast 的计算器是内置的，不需要任何扩展或额外配置。
+
+1. 按 `Cmd+Space` 打开 Raycast 搜索栏。
+2. 直接输入数学表达式，例如：
+   - `128 * 2.5`
+   - `sqrt(144)`
+   - `(15000 * 0.13) + 15000`
+   - `25 USD to CNY`（货币转换，需要联网）
+3. 按 `Cmd+Shift+C` 直接复制计算结果。
+4. **为什么这么做**：在需要计算的地方——写周报算百分比、做预算算汇率——不用切换到计算器应用再回来。计算器打断工作流约 8–10 秒，Raycast 只需 1 秒。
+5. **停止条件**：你能在 Raycast 搜索栏完成日常工作中 90% 的简单计算。
+
+### 第五步：快速搜索——不只是启动应用
+
+1. 按 `Cmd+Space`，输入应用名的一部分（如 "chr" → "Chrome"），回车启动。
+2. 在 Raycast 中按 `Tab` 进入文件搜索模式，输入文件名即可在系统范围内搜索文件。
+3. 输入 `> ` 可以将 Raycast 搜索栏变为"逃逸命令"——`> shutdown` 可直接关机，`> sleep` 进入睡眠模式。
+4. 按 `Cmd+Shift+Space` 打开 Emoji 选择器（是的，Raycast 内置了这个功能）。
+5. **为什么这么做**：在 Raycast 中完成搜索、启动、关机等操作，比在 macOS 中分散到多个工具（Spotlight、Finder、系统菜单）更高效。
+6. **停止条件**：你不再用 Launchpad 启动应用，所有应用启动和文件搜索都在 Raycast 中完成。
+
+## 快捷键参考
+
+| 功能 | 快捷键 | 说明 |
+|------|--------|------|
+| 打开 Raycast | Cmd+Space | 全局搜索栏 |
+| 窗口左半屏 | Cmd+Option+Enter | 无需额外软件 |
+| 窗口右半屏 | Cmd+Option+Right | 自定义快捷键 |
+| 窗口最大化 | Cmd+Option+M | 切换最大/还原 |
+| 窗口居中 | Cmd+Option+C | 小窗口置中 |
+| 剪贴板历史 | Cmd+Shift+V | 搜索所有剪贴内容 |
+| 搜索 Snippet | Cmd+Shift+S | 浏览和管理 snippet |
+| 计算器 | 直接在搜索栏输入 | 支持货币换算 |
+| Emoji 选择 | Cmd+Shift+Space | 搜索 Emoji |
+| 文件搜索 | Tab 进入文件模式 | 系统级文件搜索 |
+
+## 常见问题排查
+
+1. **症状：Raycast 无法启动或快捷键无响应** → **根源**：系统辅助功能权限未正确授予。**解决**：macOS 系统设置 → 隐私与安全性 → 辅助功能 → 确认 Raycast 已被勾选。取消勾选后重新勾选一次。
+
+2. **症状：剪贴板历史为空"** → **根源**：剪贴板历史功能尚未开启，或 Raycast 被从辅助功能权限列表中移除。**解决**：Raycast 设置 → Extensions → Clipboard History → 确保 "Store history" 已开启。检查辅助功能权限。
+
+3. **症状：Snippet 快捷键没有自动展开** → **根源**：Snippet 的 "Keyword" 触发了其他应用的快捷键，或在特定的安全输入框（如密码框）中无法工作。**解决**：在 snippet 关键字前加分号（如 `;email`）避免冲突。Snippet 在密码框中默认不展开，这是安全设计。
+
+4. **症状：窗口管理快捷键与其他应用冲突** → **根源**：某些应用（如 VS Code、Terminal）占用了同样的快捷键。**解决**：在 Raycast 设置 → Extensions → Window Management 中为每个操作自定义快捷键，或在该应用的设置中解除快捷键冲突。
+
+5. **症状：货币转换返回错误"** → **根源**：需要网络连接访问汇率 API。**解决**：确认网络连接正常。如果在中国大陆，可能需要切换 DNS 或使用代理。
+
+## 专家技巧
+
+- **Fallback 命令**：在 Raycast 设置 → General → Fallback commands 中，可以设置在搜索无结果时自动搜索特定扩展（如 Google Search、GitHub 或翻译）。这意味着你在搜索栏输入任何内容，即使不是应用或文件，也能得到有用的结果。每天节省的搜索时间约 5–10 分钟。
+- **Quicklinks**：输入 `Cmd+Space` → "Create Quicklink"，可以将经常访问的网页（如公司 Jira 面板、Gmail 搜索）设为 Raycast 命令。例如创建 `jira {query}` 快速链接，在搜索栏输入 `jira OPS-123` 直接跳转到对应工单。
+- **Snippet 分组管理**：在 Snippet 设置中使用文件夹来组织 snippet（如 "工作"、"个人"、"开发"）。可以用不同的关键字前缀区分：`;w-` 代表工作，`;p-` 代表个人。
+- **热键与别名**：为最常用的应用设置热键（如 `Ctrl+Shift+C` 打开 Chrome），然后使用 Raycast 的 "Alias" 功能为扩展设置别名——例如将 Chrome 的别名设为 "c"，输入 `c` 回车即可启动。
+
+## 总结
+
+你现在已经掌握了 Raycast 最核心的四个内置工具：窗口管理、剪贴板历史、Snippet 扩展和计算器。这些工具不需要安装任何扩展，在安装 Raycast 后就立即可用。
+
+接下来，你可以通过安装扩展来进一步扩展 Raycast 的能力。推荐阅读 [Raycast 扩展开发入门](/zh/productivity/raycast/extensions-custom) 了解如何安装和配置社区扩展，或者自己编写一个扩展。

@@ -1,0 +1,151 @@
+---
+title: Raycast Productivity Tools Guide
+description: Replace Spotlight with Raycast for window management, clipboard, and snippets
+field: productivity
+software: raycast
+level: beginner
+language: en
+slug: productivity-tools
+date: 2026-05-11
+readTime: 10
+translationOf: /zh/productivity/raycast/productivity-tools
+affiliateLinks:
+  - name: Raycast Pro
+    url: https://www.raycast.com/pro
+    description: Raycast Pro unlocks AI features, cloud sync, and custom themes
+    vendor: Raycast
+---
+
+> **Version**: Raycast 1.80+ (macOS 12+ Intel/Apple Silicon)
+> **Difficulty**: ★☆☆☆☆ (no special skills required)
+> **Time**: 15 min to learn, one week to build muscle memory
+
+## Why Spotlight Is No Longer Enough
+
+macOS Spotlight (`Cmd+Space`) can search files, launch apps, and do basic math — and that is about it. Consider all the repetitive actions you take in a day: resizing windows, recalling something you copied an hour ago, typing your address into a form, switching between pieces of text. Spotlight cannot help with any of these.
+
+Raycast is not "just another launcher." It transforms how you interact with your operating system — from mouse clicks to keyboard commands. After installing Raycast, you can expect to complete routine operations in about one-fifth the time.
+
+This tutorial covers Raycast's four most impactful built-in tools — window management, clipboard history, snippets, and calculator — all available without installing any extensions.
+
+## Preparation
+
+- **Software**: Download Raycast (free) from [raycast.com](https://www.raycast.com). macOS 12+ (Monterey or later) required.
+- **Installation**: Drag to Applications folder. On first launch, grant Accessibility permissions when prompted (System Settings → Privacy & Security → Accessibility → enable Raycast).
+- **Setup**: Press the hotkey you assigned (default: `Cmd+Space`) to open Raycast's search bar. It is recommended to set Raycast to `Cmd+Space` (replacing Spotlight), and move Spotlight to `Option+Space` (Raycast Settings → General → Hotkey).
+- **Optional**: Enable "Launch Raycast at login" in Raycast Settings → General for auto-start on boot.
+
+## Core Workflow
+
+### Step 1: Window Management — No More Mouse Dragging
+
+Raycast's built-in window management works without any third-party tools (Magnet, Rectangle, etc.). It maps common window operations to keyboard shortcuts.
+
+1. Open Raycast Settings → Extensions → Window Management to see all available commands.
+2. Most useful operations:
+   - Left half: `Cmd+Option+Enter`
+   - Right half: `Cmd+Option+Right`
+   - Maximize: `Cmd+Option+M`
+   - Center: `Cmd+Option+C`
+   - Next display: `Cmd+Option+Down`
+3. **Expected result**: The active window instantly snaps to the target position with no perceptible delay.
+4. **Why**: Dragging a window to the screen edge requires moving your hand from keyboard to trackpad/mouse, dragging, and moving back — roughly 2–3 seconds. A Raycast shortcut takes 0.3 seconds without leaving the keyboard.
+5. **Stop when**: You can snap windows left, right, and center without thinking.
+
+### Step 2: Clipboard History — Never Lose a Copy Again
+
+Raycast's clipboard history remembers everything you copy — text, images, file paths — and lets you search and pin items.
+
+1. Press `Cmd+Shift+V` to open clipboard history (first use prompts you to enable the feature).
+2. Configure in Settings → Extensions → Clipboard History:
+   - Enable "Store history"
+   - Set "Keep history for" to 7 days
+   - Set "Primary" to 10 recent items
+   - Set "Maximum pinned items" to 20
+3. **Usage**:
+   - Search: Open clipboard history and type keywords to filter.
+   - Quick paste: Enable "Paste to frontmost app" to paste the most recent item by double-tapping `Cmd+V`.
+   - Pin items: Select an item and press `Cmd+P` to pin it — pinned items stay at the top permanently.
+4. **Why**: Human working memory holds roughly 7±2 chunks of information. Clipboard history eliminates the "copy → paste → need it again → but already copied something else" frustration. In practice, people retrieve 15–20 previously copied items per day.
+5. **Stop when**: You can search clipboard history fluently and have pinned 3–5 items (email address, code snippet, etc.).
+
+### Step 3: Snippets — Expand Abbreviations into Full Text
+
+Snippets are a set-and-forget text expansion tool. Define each one once; the abbreviation expands automatically whenever you type it.
+
+1. Open Raycast, type "Create Snippet," and press Enter.
+2. Create a signature snippet:
+   - **Name**: Email Signature
+   - **Keyword**: `;sig`
+   - **Snippet**: `John Doe | Senior Product Manager | john@example.com | @johndoe`
+3. Create a meeting link snippet:
+   - **Name**: Meeting Link
+   - **Keyword**: `;meet`
+   - **Snippet**: `https://meet.google.com/abc-defg-hij`
+4. **Usage**: Type `;sig` in any text field — Raycast auto-replaces it with your full signature. No pasting needed.
+5. You can also set Snippets to a dedicated hotkey (Settings → Extensions → Snippets → "Search Snippets"), default `Cmd+Shift+S`, to search and paste any snippet on demand.
+6. **Why**: Typing `;sig` is 10x faster than opening your mail app to copy a signature. A typical knowledge worker types fixed text (addresses, emails, standard replies) 5–10 times daily — snippets save 30–60 minutes per month.
+7. **Stop when**: You have created at least 5 snippets (email, address, reply templates, code fragments, meeting links) and use them fluently.
+
+### Step 4: Quick Calculation — No Calculator App Needed
+
+Raycast's built-in calculator works from the search bar — no extensions or configuration required.
+
+1. Press `Cmd+Space` to open Raycast.
+2. Type a math expression directly, for example:
+   - `128 * 2.5`
+   - `sqrt(144)`
+   - `(15000 * 0.13) + 15000`
+   - `25 USD to EUR` (currency conversion, requires internet)
+3. Press `Cmd+Shift+C` to copy the result directly.
+4. **Why**: Switching to a calculator app breaks your flow for 8–10 seconds. Raycast handles 90% of daily calculations in 1 second — percentages in reports, quick unit conversions, budget estimates.
+5. **Stop when**: You handle 90% of your daily calculations directly from the Raycast search bar.
+
+### Step 5: Quick Search — Beyond App Launching
+
+1. Press `Cmd+Space`, type part of an app name (e.g., "chr" → "Chrome"), press Enter to launch.
+2. Press `Tab` in Raycast to switch to file search mode — type a filename to search your entire system.
+3. Type `> ` to enter the escape command mode — `> shutdown` shuts down your Mac, `> sleep` puts it to sleep.
+4. Press `Cmd+Shift+Space` to open the Emoji picker (Raycast has this built in).
+5. **Why**: Completing search, launch, system control, and emoji picker from one interface is far more efficient than scattering these actions across multiple macOS tools.
+6. **Stop when**: You no longer use Launchpad. All app launches and file searches happen through Raycast.
+
+## Shortcut Reference
+
+| Function | Shortcut | Notes |
+|----------|----------|-------|
+| Open Raycast | Cmd+Space | Global search bar |
+| Window left half | Cmd+Option+Enter | No extra software needed |
+| Window right half | Cmd+Option+Right | Customizable |
+| Window maximize | Cmd+Option+M | Toggle maximize/restore |
+| Window center | Cmd+Option+C | Centers floating windows |
+| Clipboard history | Cmd+Shift+V | Search all clips |
+| Search snippets | Cmd+Shift+S | Browse and paste snippets |
+| Calculator | Type in search bar | Supports currency conv. |
+| Emoji picker | Cmd+Shift+Space | Searchable emoji |
+| File search | Tab for file mode | System-wide file search |
+
+## Troubleshooting
+
+1. **Symptom: "Raycast does not launch or hotkeys do not respond"** → **Root cause**: Accessibility permissions were not granted or were revoked. **Fix**: Go to System Settings → Privacy & Security → Accessibility → ensure Raycast is checked. Uncheck and re-check if needed.
+
+2. **Symptom: "Clipboard history is empty"** → **Root cause**: Clipboard history is disabled, or Raycast was removed from Accessibility permissions. **Fix**: Enable "Store history" in Settings → Extensions → Clipboard History. Then verify Accessibility permissions.
+
+3. **Symptom: "Snippets do not auto-expand"** → **Root cause**: The snippet keyword conflicts with another app's shortcut, or you are typing in a secure input field (like a password box). **Fix**: Prefix keywords with `;` (e.g., `;email`) to avoid conflicts. Snippets intentionally do not expand in password fields for security.
+
+4. **Symptom: "Window management shortcuts conflict with other apps"** → **Root cause**: Apps like VS Code or Terminal use the same key combinations. **Fix**: In Raycast Settings → Extensions → Window Management, customize shortcuts per command, or change the conflicting app's keybindings.
+
+5. **Symptom: "Currency conversion returns an error"** → **Root cause**: Network access to the exchange rate API is blocked. **Fix**: Check your internet connection and DNS settings. If behind a corporate firewall, the API endpoint may need to be whitelisted.
+
+## Expert Tips
+
+- **Fallback commands**: In Raycast Settings → General → Fallback commands, configure what happens when your search does not match an app or file. Set fallbacks like "Google Search," "GitHub," or "Translate." This turns Raycast into your universal entry point — daily search time savings of 5–10 minutes.
+- **Quicklinks**: Press `Cmd+Space` → "Create Quicklink" to turn frequently visited URLs into Raycast commands. Example: create a Quicklink with URL `https://your-company.atlassian.net/browse/{query}` (template `{query}` captures what you type). Type `jira OPS-123` in Raycast to jump directly to that ticket.
+- **Snippet folder organization**: Use folders in Snippet settings to group snippets (e.g., "Work," "Personal," "Dev"). Use keyword prefixes for clarity: `;w-` for work, `;p-` for personal, `;d-` for development.
+- **App hotkeys + aliases**: Set dedicated hotkeys for your most-used apps (Settings → Extensions → search app → set hotkey). Use the "Alias" feature for quick launch by abbreviation — set Chrome's alias to "c" so typing `c` + Enter opens it.
+
+## Summary
+
+You have mastered Raycast's four most impactful built-in tools: window management, clipboard history, snippets, and calculator. All work immediately after installation — no extensions needed.
+
+Next, expand Raycast's capabilities by exploring the extension store. Read [Raycast Extension Development](/en/productivity/raycast/extensions-custom) to learn how to install community extensions and build your own.

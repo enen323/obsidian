@@ -1,0 +1,356 @@
+---
+title: Postman Automation & CI
+description: Automate API tests with Newman, data-driven testing, and CI/CD pipelines
+field: dev
+software: postman
+level: advanced
+language: en
+slug: automation
+date: 2026-05-11
+readTime: 18
+translationOf: /zh/dev/postman/automation
+affiliateLinks:
+  - name: Postman Enterprise
+    url: https://www.postman.com/pricing
+    description: Postman Enterprise with advanced security and governance
+    vendor: Postman
+---
+
+> **Version**: Newman v6+ / Postman v11+ | **Difficulty**: ★★★☆☆ | **Time**: 40-50 min
+
+## Manually Testing 50 Endpoints Before Every Release?
+
+Your team maintains 50 API endpoints. Before each release, someone has to regression-test every one: open Postman, click through the collection, visually inspect each response, confirm it passes. Repeat 50 times. A full manual pass takes 30-40 minutes — and endpoints still get missed. Worst of all, there is no automated check in your CI pipeline. A broken API can go live and stay broken for hours before anyone notices.
+
+**Newman** is Postman's command-line collection runner. It turns your Postman collections into automated test scripts that run in a terminal, generate reports, and integrate with any CI/CD tool — GitHub Actions, Jenkins, GitLab CI, and more. This tutorial walks from basic Newman usage to a complete CI-integrated API testing pipeline.
+
+## Preparation
+
+| Item | Requirement |
+|------|-------------|
+| Node.js | v18 or higher (Newman runs on Node.js) |
+| Postman account | Free tier is sufficient (for exporting collections and environments) |
+| Newman | Installed globally via npm |
+| Test collection | The JSONPlaceholder collection from the previous tutorial (or your own) |
+| Git repository | For the CI integration demo |
+
+**Setup steps**:
+1. Verify Node.js: `node --version` (must be v18+)
+2. Install Newman globally: `npm install -g newman`
+3. Verify installation: `newman --version` (expected: v6.x)
+4. Optional — install the HTML reporter: `npm install -g newman-reporter-htmlextra`
+5. Export your collection from the Postman desktop app:
+   - Right-click collection → "Export" → Select Collection v2.1 format → Save as `API-Tests.postman_collection.json`
+
+## Core Workflow
+
+### 1. Newman CLI Basics
+
+Run a Postman collection from the terminal with Newman.
+
+```
+Steps:
+① Open a terminal and navigate to the directory containing the collection JSON
+② Run the basic command:
+
+   newman run API-Tests.postman_collection.json
+
+③ Observe the terminal output
+④ Run with an environment file:
+
+   newman run API-Tests.postman_collection.json \
+     --environment API-Tests.postman_environment.json
+```
+
+**Why Newman instead of running inside Postman?** Newman requires no GUI and integrates into any CI/CD pipeline. Every run is a clean environment — no local cache pollution. More importantly, Newman makes tests part of code review: collection JSON files are committed to Git, and every PR triggers automated test runs.
+
+**Expected output**:
+```
+┌─────────────────────────┬──────────┬──────────┐
+│          │ executed  │   failed  │
+│ iterations              │         1│         0│
+│ requests                │         5│         0│
+│ test-scripts            │         5│         0│
+│ prerequest-scripts      │         4│         0│
+│ assertions              │        20│         0│
+│ total run duration: 3.2s
+│ total data received: 12.5kB (approx)
+│ average response time: 312ms
+┌─────────────────────────┬──────────┬──────────┐
+│ #  ████████████████████ 100%
+```
+
+**Stop condition**: If any request fails, Newman exits with a non-zero code by default (useful for CI). Use `--suppress-exit-code` to force exit code 0 (reporting unaffected).
+
+### 2. Request Chaining with Variable Passing
+
+Real-world API testing involves dependent requests — login to get a token, then use that token to access protected resources. Postman's test scripts handle this chaining.
+
+```
+Steps:
+① In Postman desktop, create a new collection called "Auth Flow"
+② Create the first request "Login" — POST to https://jsonplaceholder.typicode.com/posts (simulating login)
+③ In the "Tests" tab, write:
+
+   // Extract values from the response
+   const jsonData = pm.response.json();
+   pm.collectionVariables.set("auth_token", jsonData.id.toString());
+   pm.collectionVariables.set("user_id", jsonData.userId.toString());
+
+   // Assertions
+   pm.test("Login successful - status 201", () => {
+       pm.response.to.have.status(201);
+   });
+
+④ Create a second request "Get User Profile"
+   URL: https://jsonplaceholder.typicode.com/posts/{{user_id}}
+
+⑤ In the "Tests" tab:
+
+   pm.test("Profile returned for authenticated user", () => {
+       const data = pm.response.json();
+       pm.expect(data.id).to.eql(parseInt(pm.collectionVariables.get("user_id")));
+   });
+
+⑥ Save, export the collection, and run with Newman:
+
+   newman run AuthFlow.postman_collection.json \
+     --reporters cli,htmlextra
+```
+
+**Why `pm.collectionVariables` instead of `pm.environment`?** Collection variables are scoped to the collection — they do not pollute global or other collection environments. When exported to JSON, collection variable values are included, so Newman picks them up automatically.
+
+**Expected output**: Newman executes requests sequentially. The Login request sets `auth_token` and `user_id`; the Get User Profile request reads them. All assertions pass — terminal shows 0 failed.
+
+**Stop condition**: If Login fails, Get User Profile also fails (404 or assertion failure). Newman reports both failures. Make sure your Login test provides clear error messages for authentication failures.
+
+### 3. Data-Driven Testing
+
+The same endpoint needs testing with multiple data sets — valid data, edge cases, and invalid inputs. Data-driven testing uses CSV or JSON files to drive test data.
+
+```
+Steps:
+① Create a CSV file test-data.csv:
+
+   title,body,userId,expectedStatus
+   Test Title,Test Body,1,201
+   Empty Title,,1,201
+   ,Body only,2,201
+   Long title with special chars: üñíçödé téßt,Unicode body,1,201
+
+② Create a Postman collection "DataDrivenTest" with a POST to {{base_url}}/posts
+③ In the Body tab (raw JSON), use variables:
+
+   {
+     "title": "{{title}}",
+     "body": "{{body}}",
+     "userId": {{userId}}
+   }
+
+④ In the Tests tab:
+
+   pm.test("Status is " + pm.iterationData.get("expectedStatus"), () => {
+       pm.response.to.have.status(parseInt(pm.iterationData.get("expectedStatus")));
+   });
+
+   pm.test("Response has id field", () => {
+       pm.expect(pm.response.json()).to.have.property("id");
+   });
+
+⑤ Export and run with Newman:
+
+   newman run DataDrivenTest.postman_collection.json \
+     --iteration-count 4 \
+     --iteration-data test-data.csv \
+     --reporters cli,htmlextra
+```
+
+**Why data-driven?** Without data-driven testing, covering 4 test cases requires 4 nearly identical requests — high maintenance cost and error-prone. Data-driven testing separates logic from data: 1 request + 1 CSV file = full coverage.
+
+**Expected output**: Newman executes 4 iterations, each using one row from the CSV. Terminal shows:
+```
+┌─────────────────────────┬──────────┬──────────┐
+│          │ executed  │   failed  │
+│ iterations              │         4│         0│
+│ requests                │         4│         0│
+│ assertions              │         8│         0│
+```
+
+**Stop condition**: If an iteration's assertion fails, Newman continues with the remaining iterations (default behavior). Use `--stop-on-error` to halt on the first failure.
+
+### 4. HTML Test Report Generation
+
+CLI output works for developers, but teams and management need visual reports. `newman-reporter-htmlextra` generates rich HTML reports with charts and detailed results.
+
+```
+Steps:
+① Ensure the htmlextra reporter is installed:
+
+   npm install -g newman-reporter-htmlextra
+
+② Run Newman with HTML output:
+
+   newman run API-Tests.postman_collection.json \
+     --environment API-Tests.postman_environment.json \
+     --reporters cli,htmlextra \
+     --reporter-htmlextra-export ./reports/api-test-report.html
+
+③ Open the generated HTML file in a browser
+```
+
+**Why HTML reports?** CLI output cannot be shared with non-technical stakeholders and is not preserved in CI build artifacts. HTML reports include success-rate charts, response-time distributions, and detailed failure snapshots — suitable for release approval artifacts.
+
+**Expected output**:
+- An `api-test-report.html` file generated in `./reports/`
+- The report contains:
+  - **Summary**: total assertions, passes, failures, pass rate
+  - **Timeline**: response-time distribution per request
+  - **Detailed results**: Headers, Body, and test results per request
+  - **Failure details**: failed assertions with response data snapshots
+
+**Stop condition**: If the report directory does not exist, Newman creates it automatically. Ensure write permission on the `--reporter-htmlextra-export` path.
+
+### 5. CI/CD Integration (GitHub Actions)
+
+Integrate Newman into GitHub Actions so every code push or PR triggers automated API tests.
+
+```
+Steps:
+① Create .github/workflows/api-tests.yml in your project root
+② Write the following:
+
+   name: API Tests
+   on:
+     push:
+       branches: [main, develop]
+     pull_request:
+       branches: [main]
+
+   jobs:
+     api-test:
+       runs-on: ubuntu-latest
+       steps:
+         - name: Checkout code
+           uses: actions/checkout@v4
+
+         - name: Setup Node.js
+           uses: actions/setup-node@v4
+           with:
+             node-version: 20
+
+         - name: Install Newman
+           run: npm install -g newman newman-reporter-htmlextra
+
+         - name: Run API Tests
+           run: |
+             newman run tests/collections/API-Tests.postman_collection.json \
+               --environment tests/environments/CI.postman_environment.json \
+               --reporters cli,htmlextra,junit \
+               --reporter-htmlextra-export reports/api-report.html \
+               --reporter-junit-export reports/junit-report.xml
+
+         - name: Upload test report
+           if: always()
+           uses: actions/upload-artifact@v4
+           with:
+             name: api-test-reports
+             path: reports/
+
+③ Commit the collection and environment JSON files under tests/ in your repo
+④ Push the workflow file and watch GitHub Actions run it
+```
+
+**Why GitHub Actions over other CI tools?** GitHub Actions integrates natively with GitHub repositories — PR pages show test status directly, and failed tests block merges. The same approach works with Jenkins (`newman run` in a shell step), GitLab CI (`image: node:20` base image), or any CI that supports shell commands.
+
+**Expected output**: The Actions tab in your GitHub repository shows the workflow run. Each PR's Checks section displays "API Tests" ✔ or ✘. Clicking Details shows Newman's full output and downloadable HTML reports.
+
+**Stop condition**: If Newman exits with a non-zero code (test failures), GitHub Actions marks the workflow as failed. The PR page shows "Some checks were not successful".
+
+**Key parameters explained**:
+- `--reporters junit`: Generates JUnit XML output that GitHub Actions parses to display a test result matrix in the UI
+- `if: always()`: Ensures reports are uploaded even when tests fail, so you can analyze what broke
+- `actions/upload-artifact@v4`: Persists reports as build artifacts, downloadable from the Actions page
+
+## Newman Command Reference
+
+| Command / Flag | Example | Description |
+|----------------|---------|-------------|
+| `newman run <collection>` | `newman run collection.json` | Run a Postman collection |
+| `--environment <file>` | `--environment env.json` | Specify environment variables file |
+| `--iteration-count <n>` | `--iteration-count 5` | Number of iterations (data-driven) |
+| `--iteration-data <file>` | `--iteration-data data.csv` | Data file for iteration (CSV/JSON) |
+| `--reporters <list>` | `--reporters cli,htmlextra` | Enable reporter plugins |
+| `--reporter-htmlextra-export` | `--reporter-htmlextra-export ./report.html` | HTML report output path |
+| `--reporter-junit-export` | `--reporter-junit-export ./junit.xml` | JUnit XML report output path |
+| `--delay-request <ms>` | `--delay-request 100` | Delay between requests (ms) |
+| `--timeout-request <ms>` | `--timeout-request 5000` | Per-request timeout (ms) |
+| `--suppress-exit-code` | `--suppress-exit-code` | Always exit with code 0 |
+| `--stop-on-error` | `--stop-on-error` | Halt on first failure |
+| `--color <value>` | `--color off` | Color output (on/off/auto) |
+| `--export-globals <file>` | `--export-globals globals.json` | Export global variables after run |
+| `--export-collection <file>` | `--export-collection out.json` | Export collection after run |
+| `-d <file>` | `-d data.csv` | Shorthand for iteration data file |
+
+## Troubleshooting
+
+**Issue 1: `Error: Cannot find module 'newman-reporter-htmlextra'`**
+- **Root cause**: The reporter is not installed, or it is installed under a different Node.js version
+- **Fix**: Run `npm install -g newman-reporter-htmlextra`. In CI, verify the install step includes this package. Check both Newman and the reporter are installed under the same Node version with `npm ls -g newman` and `npm ls -g newman-reporter-htmlextra`
+
+**Issue 2: Collection variables do not resolve in Newman but work in Postman desktop**
+- **Root cause**: The Initial Value was not set in Postman (only Current Value was set). Current Values are not included when exporting to JSON
+- **Fix**: Edit the collection variables in Postman and fill in the "Initial Value" field. Current Value is for local overrides only. Export using "Collection v2.1" format (which includes variable definitions). Re-export and replace the JSON file in your CI repository
+
+**Issue 3: CSV column names are not recognized as variables in data-driven tests**
+- **Root cause**: BOM encoding in the CSV file, or leading/trailing whitespace in column headers
+- **Fix**: Save the CSV with UTF-8 without BOM encoding. Check for whitespace in column names — `"title "` and `"title"` are different variables. Verify with `head -1 test-data.csv | cat -A` in the terminal. Use VS Code or Sublime Text to save the file
+
+**Issue 4: `ERR_CONNECTION_REFUSED` when running Newman in CI**
+- **Root cause**: The CI environment cannot reach the API server (internal API, localhost service not running, or network policy restrictions)
+- **Fix**: If the API runs on localhost, ensure the CI job starts the API service first (use `services` or container-based jobs). For internal APIs, configure CI network proxy or VPN. Use a public API like JSONPlaceholder for initial validation to rule out environment issues
+
+**Issue 5: HTML report shows all assertions passed, but CI marks the job as failed**
+- **Root cause**: Newman's exit code includes non-assertion errors (DNS failures, connection timeouts), which CLI reports as errors separate from test failures
+- **Fix**: Distinguish between infrastructure errors and test failures. Use `--suppress-exit-code` so Newman always exits with code 0, then parse the JUnit XML report in a subsequent step to determine actual pass/fail status. Alternatively, check Newman's verbose output to identify error types
+
+## Expert Tips
+
+**Performance data**: A collection with 50 requests runs in approximately 45-90 seconds on GitHub Actions (ubuntu-latest), depending on API response times. Compared to end-to-end browser tests (5-10 minutes), Newman API tests are extremely efficient.
+
+**Best practices**:
+- **Version-control your collections**: Commit `.postman_collection.json` and `.postman_environment.json` to Git alongside your code. Store them in `tests/postman/` for consistency
+- **Inject secrets via CI environment variables**: Never hardcode API keys or passwords in JSON files. Use Newman's `--env-var` flag with CI secrets:
+  ```
+  newman run collection.json --env-var "token=${{ secrets.API_TOKEN }}"
+  ```
+- **Layered test strategy**: Set up multiple Newman stages in CI: quick health checks (5 core endpoints, every commit) → full regression (all endpoints, daily) → load tests (pre-release only)
+- **Set request timeouts**: Newman's default request timeout is 0 (no timeout), which can hang your CI pipeline. Always set `--timeout-request 10000` (10 seconds) to prevent network issues from blocking the entire job
+- **Cover core assertions, not everything**: Do not assert every field (too much maintenance). Prioritize: status codes, key field existence, response structure matches schema, response time within threshold. Use `ajv` via Postman for schema validation
+
+**Common pitfalls**:
+- **Missing Initial Value**: Postman's Current Value is local-only and is not exported. Only Initial Value is included in the JSON export. Every variable used by Newman must have its Initial Value set
+- **Self-signed certificates**: CI system certificates may not include your self-signed CA. Add `--insecure` to Newman for CI-only use if your API uses self-signed certs
+- **Pinning Newman version**: Instead of global `npm install -g` in CI, add Newman as a devDependency in package.json for version consistency:
+  ```json
+  {
+    "devDependencies": {
+      "newman": "^6.0.0",
+      "newman-reporter-htmlextra": "^1.0.0"
+    }
+  }
+  ```
+  Then run with `npx newman run ...`
+
+## Summary
+
+You have covered the full Postman automation stack: Newman CLI basics, request chaining with variable passing, data-driven testing, HTML report generation, and CI/CD integration with GitHub Actions. This system transforms API testing from manual clicking into an automated, repeatable, code-synced pipeline.
+
+**Next steps**:
+- Create a Postman collection for your project and set up a GitHub Actions pipeline
+- Explore more Newman flags: `--delay-request`, `--bail`, `--folder` (run specific collection folders only)
+- Use Postman Collection Format v2.1 to write scripts that generate collections programmatically
+- Learn about Postman Mock Server for decoupling frontend development from backend API readiness
+
+---
+
+> This article is part of the Postman tutorial series. Check out [more Postman tutorials](../) for additional guides.

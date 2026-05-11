@@ -1,0 +1,204 @@
+---
+title: Todoist GTD Workflow Setup
+description: Implement GTD methodology in Todoist with labels, filters, and weekly review
+field: productivity
+software: todoist
+level: intermediate
+language: en
+slug: gtd-workflow
+date: 2026-05-11
+readTime: 12
+translationOf: /zh/productivity/todoist/gtd-workflow
+affiliateLinks:
+  - name: Todoist Pro
+    url: https://todoist.com/pricing
+    description: Todoist Pro unlocks labels, filters, and reminders
+    vendor: Doist
+  - name: Todoist Business
+    url: https://todoist.com/pricing
+    description: Team collaboration with shared projects and task assignment
+    vendor: Doist
+---
+
+> **Version**: Todoist 2026 (Pro subscription required for labels and filters, which are critical for GTD)
+> **Difficulty**: ★★☆☆☆ (familiarity with Todoist basics; read [Task Management Basics](/en/productivity/todoist/task-management) first)
+> **Time**: Initial setup 45 min, daily inbox processing 5 min, weekly review 15 min
+
+## Why "Getting Things Done" Is So Hard
+
+You have probably read David Allen's book. The five-step workflow — Capture, Clarify, Organize, Reflect, Engage — makes perfect logical sense. You drew the workflow diagram in a notebook. You built a GTD database in Notion. Then what? Two weeks later, you were back to your old state: brain full of to-dos, making "tomorrow's list" before bed every night, drowning in new inputs by noon the next day.
+
+The breakdown point is never the GTD methodology itself. The problem is that GTD's "weekly review" and "inbox processing" steps require good tools to keep the operational cost low. Doing GTD on paper means writing a card, sticking a label, filing it away — 45 seconds per item. Doing GTD in Todoist means typing one line and adding a label — 10 seconds.
+
+This tutorial teaches you to implement the complete GTD five-step workflow in Todoist, including project structure, label system, filter configuration, and weekly review template.
+
+## Preparation
+
+- **Todoist Pro subscription**: GTD relies on labels, filters, and reminders — Pro features at $4/month.
+- **Prerequisite**: Read [Todoist Task Management Basics](/en/productivity/todoist/task-management) first. You should be comfortable with task creation, projects, labels, and priorities.
+- **Time budget**: 45 min initial setup (one-time), then 5 min daily inbox processing + 15 min weekly review.
+- **Optional reading**: David Allen's *Getting Things Done* — understanding the methodology's principles helps you make sound decisions at edge cases.
+
+## Core Workflow
+
+### Step 1: Set Up GTD Project Structure
+
+GTD categorizes tasks into specific types. You need matching projects.
+
+1. Create these projects in Todoist:
+   ```
+   📁 Inbox           — GTD's "Capture bucket." Everything goes here first.
+   📁 Next Actions    — All clarified single-step actions.
+   📁 Waiting For     — Tasks blocked on someone else.
+   📁 Someday/Maybe   — Want to do, but not now.
+   📁 Reference       — No action needed, but worth keeping.
+   📁 Projects        — Multi-step outcomes requiring a project plan.
+   ```
+2. Under "Projects," add sections for your active projects:
+   ```
+   📁 Projects
+       ├── Website Redesign
+       ├── Annual Report
+       └── Kitchen Renovation
+   ```
+3. Rename the default "Inbox" to match GTD's "Capture" concept — the first stop for every incoming item.
+4. **Why**: GTD's core principle is "the brain should not store tasks; it should execute them." These 6 projects correspond to GTD's 6 categories — every task in your system belongs to exactly one of them. No "I do not know where this goes" gray zone.
+5. **Stop when**: Your Todoist sidebar shows these 6 GTD projects and you understand each one's purpose.
+
+### Step 2: Build the GTD Label System
+
+GTD's "context" concept — the situation in which you perform a task — maps directly to Todoist labels.
+
+1. Create context labels in Settings → Labels:
+   ```
+   @computer     — Must be done at a computer
+   @errands      — Requires going out (bank, post office, etc.)
+   @calls        — Requires a phone call
+   @meetings     — Requires face-to-face interaction
+   @thinking     — Requires deep thought and planning
+   ```
+2. Create energy labels:
+   ```
+   @high-energy  — Requires focus and concentration
+   @low-energy   — Quick 5-15 min tasks
+   ```
+3. Create time-estimate labels:
+   ```
+   @<15min       — Quick tasks
+   @15-30min     — Medium tasks
+   @>30min       — Deep-work chunks
+   ```
+4. **Why**: Traditional GTD context labels (@computer, @errands) answer "what can I do in this situation?" Energy and time labels optimize further — when you have 15 minutes between meetings, you want to see "low-energy AND under 15 minutes," not the entire Next Actions list.
+5. **Stop when**: You have created at least 3 context labels and 2 energy labels.
+
+### Step 3: Inbox Zero — The Capture-to-Clarify Pipeline
+
+This is the most critical and most neglected GTD step.
+
+1. **Capture (all day)**: Any new task, idea, or commitment — enter it into Inbox immediately. Do not judge whether it is important or which project it belongs to. Just capture. Use shortcut `Q` for quick add.
+2. **Clarify (5 min every morning)**:
+   - Open the "Inbox" project.
+   - Ask two questions for each item:
+     - **"Is this actionable?"**
+       - No → Move to "Reference" (might be valuable later), "Someday/Maybe" (want to do later), or delete.
+       - Yes → Proceed to next question.
+     - **"How many steps does it take?"**
+       - One step → Add context label, time label, set date if needed, move to "Next Actions."
+       - Multiple steps → Create a new project under "Projects," put the first step in "Next Actions."
+3. **Why**: The inbox is the "front door" of GTD — its state directly affects your trust in the system. Process it once daily (not in real-time), because real-time processing constantly interrupts your current workflow.
+4. **Stop when**: Your inbox ends each day with fewer than 5 unprocessed items.
+
+### Step 4: Set Up GTD Filters
+
+Filters let you view tasks by context without flipping through the entire project list.
+
+1. Create these filters:
+   ```
+   📋 At Computer    : @computer & !p4
+   📋 Errands        : @errands & !today
+   📋 Phone Calls    : @calls & !p4
+   📋 Quick Tasks    : @<15min & (@high-energy | @low-energy)
+   📋 Waiting Check  : #Waiting For
+   📋 Someday/Maybe  : #Someday/Maybe
+   ```
+2. Filter syntax reference:
+   - `@labelname` — Match by label
+   - `#projectname` — Match by project (note: `#` not `@`)
+   - `&` — AND condition
+   - `|` — OR condition
+   - `!` — Exclude
+   - `p1/p2/p3/p4` — Priority
+   - `today / !today` — Date conditions
+3. **Why**: Filters are GTD's core engine. The "At Computer" filter lets you sit down at your desk and immediately see everything computer-related, without first thinking "which project am I working on?"
+4. **Stop when**: You have created at least 4 filters and can see task lists organized by context.
+
+### Step 5: Weekly Review — GTD's Metronome
+
+The weekly review is the one GTD step you cannot skip. It keeps the system trustworthy.
+
+1. **Schedule**: Every Friday at 4:00 PM (set as a recurring Todoist task: `every Friday at 4:00 PM`, p2).
+2. **Review checklist**:
+   - [ ] Inbox zero (process to fewer than 3 items)
+   - [ ] Check "Someday/Maybe" — anything ready to promote?
+   - [ ] Check "Projects" — does each project have a next action?
+   - [ ] Check "Waiting For" — follow up on overdue items
+   - [ ] Check "Next Actions" — any tasks untouched for 2+ weeks?
+   - [ ] Archive "Reference" items no longer needed
+3. Save this checklist as a Todoist template, or keep it as a task list inside the "Projects" project.
+4. **Why**: Without the weekly review, a GTD system collapses in 2–3 weeks. Waiting For items get forgotten. Someday/Maybe piles up. Next Actions accumulates zombie tasks. Fifteen minutes per week is the fixed investment that keeps the system trustworthy.
+5. **Stop when**: You have completed 3 consecutive weekly reviews (you are building the habit).
+
+### Step 6: Automation Rules (Pro Advanced Feature)
+
+Todoist Pro supports automation rules that handle repetitive task management operations.
+
+1. Open Settings → Rules and create these automations:
+   - **Rule 1: Daily task prep**
+     - Trigger: Daily at 08:00
+     - Action: Move all Inbox tasks tagged `@today` to "Next Actions"
+   - **Rule 2: Overdue flag**
+     - Trigger: Task reaches due date
+     - Action: Auto-set priority to p2
+   - **Rule 3: Weekly review reminder**
+     - Trigger: Every Friday at 15:45
+     - Action: Create task "Run weekly review" (p1, in Inbox)
+2. **Why**: Automation rules handle the operations you perform every time but often forget. The most valuable is "Daily task prep" — you do not need to manually sort inbox tasks into Next Actions each morning.
+3. **Stop when**: You have created at least 2 automation rules and observed them execute correctly.
+
+## GTD Filters Reference
+
+| Filter Name | Query Syntax | Purpose |
+|-------------|-------------|---------|
+| At Computer | `@computer & !p4` | Tasks done at desk |
+| Errands | `@errands & !today` | Check before going out |
+| Quick Tasks | `@<15min & !p4` | Fill short breaks |
+| Waiting Check | `#Waiting For & p1,p2` | Follow up on blockers |
+| Phone Calls | `@calls & !today` | Batch phone tasks |
+| Low Energy | `@low-energy & !p4` | Tasks for tired moments |
+
+## Troubleshooting
+
+1. **Symptom: "Inbox has over 50 tasks and I do not want to touch it"** → **Root cause**: Daily processing slipped to weekly/monthly, causing overwhelming buildup. **Fix**: Do a 15-minute "blitz clean" — do not process each item carefully. Bulk-archive anything untouched for 30+ days (right-click → Archive). Process the remaining items at 10 per day over 3 days.
+
+2. **Symptom: "I have no idea what is in Someday/Maybe"** → **Root cause**: No periodic review of the Someday/Maybe project. **Fix**: Add "Someday/Maybe audit" to your weekly review checklist. Delete any item untouched for 3+ months — if it was truly important, recreating it later is more productive than staring at stale entries.
+
+3. **Symptom: "Projects have no next action"** → **Root cause**: Violation of the fundamental GTD rule — every project must have a next action. **Fix**: During weekly review, verify that every item in "Projects" has a corresponding entry in "Next Actions." If a project has no next action, ask: "Am I still doing this project?" If no, move to Someday/Maybe or Archive.
+
+4. **Symptom: "Filters return unexpected results"** → **Root cause**: Syntax error, or label/project names contain spaces or special characters. **Fix**: Verify syntax — projects use `#` not `@`; conditions use `&`. If project names contain spaces, use quotes: `#"My Project"`. Test filters incrementally by adding one condition at a time.
+
+5. **Symptom: "Automation rules did not fire"** → **Root cause**: Trigger conditions are misconfigured, or the Todoist client version does not support automation. **Fix**: Confirm the time format in rules (24-hour). Automation requires Todoist v1060+ (2026 version). Rules run on Web and desktop clients; mobile support is limited.
+
+## Expert Tips
+
+- **Next Actions health metric**: In a healthy GTD system, the "Next Actions" project should contain 20–40 tasks. Below 20 means your backlog is too clean (you are likely missing items). Above 40 means you are collecting more than you execute — reduce capture or increase execution time.
+- **Incoming task routing**: When someone assigns you a task via chat or email — forward it to Todoist immediately. On macOS/iOS, use the system share sheet → Todoist. Alternatively, forward emails to your Todoist inbox (`add@todoist.com`). The goal is to make Todoist your single inbox, not spread across Slack, email, Teams, and WhatsApp.
+- **Quarterly Someday/Maybe purge**: Every quarter (March/June/September/December), schedule a 30-min Someday/Maybe review. Items untouched for a full quarter should be either promoted to Next Actions or deleted. This quarterly cadence sits above the weekly review and ensures your "dream list" does not become a "forgotten list."
+- **GTD + Pomodoro integration**: Use filters to select today's p1 and p2 tasks, then execute with Pomodoro. When a 25-minute Pomodoro starts, pick one task from the filter output and focus. The filter guarantees you do not need to make a "what next" decision during the Pomodoro.
+
+## Summary
+
+You have built a complete GTD workflow inside Todoist: 6 GTD projects (Inbox, Next Actions, Waiting For, Someday/Maybe, Reference, Projects), a three-layer label system (context + energy + time), context-based filters, daily 5-minute inbox processing, weekly 15-minute review, and automation rules.
+
+GTD's core is not the methodology itself — it is your trust in the system. Spend one month following this workflow strictly. By month two, you will find that "mind like water" feels better than you expected.
+
+To optimize daily execution further, read [Raycast Productivity Tools Guide](/en/productivity/raycast/productivity-tools) — use Raycast's quick search and snippet features to accelerate GTD capture and execution.

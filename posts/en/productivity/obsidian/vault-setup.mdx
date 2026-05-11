@@ -1,0 +1,144 @@
+---
+title: Obsidian Vault Setup Guide
+description: Build your personal knowledge management system from scratch
+field: productivity
+software: obsidian
+level: beginner
+language: en
+slug: vault-setup
+date: 2026-05-11
+readTime: 12
+translationOf: /zh/productivity/obsidian/vault-setup
+affiliateLinks:
+  - name: Obsidian Catalyst
+    url: https://obsidian.md/pricing
+    description: Support Obsidian development and get insider builds
+    vendor: Obsidian
+---
+
+> **Version**: Obsidian 1.8.x (desktop v1.8.0+, mobile v1.6.0+)
+> **Difficulty**: ★☆☆☆☆ (no programming or KM experience required)
+> **Time**: 30–45 min
+
+## Why You Don't Need Another Note App
+
+You have probably tried this before. A Notion workspace with databases you built but never used. Bear notes scattered across tags. Evernote full of clipped articles you have never read. Each time starts with "this time I will stay organized," and each time ends three months later with a chaotic folder structure you are afraid to touch.
+
+The problem is not you. The problem is that most tools force you to design a classification system before you understand how you actually think. Folder inside folder inside folder. By the time you realize the hierarchy is wrong, hundreds of notes are trapped inside it.
+
+Obsidian flips this approach: start with empty folders, write freely in Markdown, and let connections grow organically through `[[wikilinks]]` and tags. You do not design the vault — it grows itself through use. Six months from now, you will have a knowledge graph that mirrors how your brain actually works, not a folder hierarchy you designed on day one and outgrew by week two.
+
+This tutorial takes you from downloading Obsidian to building a sustainable, living knowledge management system.
+
+## Preparation
+
+- **Software**: Download Obsidian 1.8+ from [obsidian.md](https://obsidian.md). Windows 10+, macOS 12+, Linux (AppImage/Snap), iOS 16+, Android 10+.
+- **Account**: None required. All data is stored locally in plain `.md` files. Optional: create a free Obsidian account for future sync or publish features.
+- **Prerequisite skills**: Basic file management (creating folders, copy/paste).
+- **Prerequisite reading**: None. This tutorial starts from absolute zero.
+
+## Core Workflow
+
+### Step 1: Create a Vault
+
+1. Launch Obsidian. Click "Create new vault" on the launcher screen.
+2. Enter a vault name, e.g., "My Knowledge Base."
+3. Choose a location. It is strongly recommended to place the vault inside a cloud-sync folder (iCloud Drive, Dropbox, OneDrive) for cross-device access. Example: `~/iCloudDrive/Obsidian/`.
+4. Click "Create."
+5. **Expected result**: The editor opens with a blank note titled "Welcome to Obsidian." The file explorer is on the left, the editor on the right.
+6. **Why**: Each vault is a standalone folder. You can copy it to a USB drive, zip it for backup, or sync it via any cloud service. No vendor lock-in.
+
+### Step 2: Set Up the Folder Skeleton
+
+1. In the file explorer (left sidebar), right-click → "New folder."
+2. Create these five folders in order: `01-Inbox`, `02-Projects`, `03-Areas`, `04-Resources`, `05-Archive`.
+3. **Why**: This is a variant of the PARA method (Projects, Areas, Resources, Archive), which organizes by action state rather than topic. Topic-based folders (Work/School/Life) fail because a single note often belongs to multiple topics — a "Python web scraper" note is both "Programming" and "Work Project."
+4. **Expected result**: The file explorer shows five empty, numbered folders. Most notes will land in "Inbox" during the first few weeks.
+5. **Stop when**: You can see these five folders in the file explorer.
+
+### Step 3: Write Your First Note
+
+1. Click "New note" in the file explorer header, or press `Ctrl+N` (`Cmd+N` on Mac).
+2. Rename the title to "My First Note."
+3. Type the following to experience Markdown syntax:
+   ```
+   # My First Note
+
+   This is **bold text** and *italic text*.
+
+   ## Subheading
+
+   - List item one
+   - List item two
+   ```
+4. Press `Ctrl+E` to toggle between Edit and Live Preview mode to see the formatted result.
+5. **Why**: Obsidian stores notes as plain-text Markdown files — they will never suffer from format obsolescence or import/export corruption. Even if Obsidian stops existing ten years from now, any text editor can open these files.
+6. **Stop when**: You can see formatted headers, bold text, and bullet lists in Live Preview.
+
+### Step 4: Create Links Between Notes
+
+1. Select a phrase in your note, then press `[[`. A search box appears.
+2. Type the name of another note and press Enter. Obsidian creates `[[My First Note]]` syntax.
+3. Create 2–3 more notes and interlink them all.
+4. Open the Backlinks panel (right sidebar) by clicking the backlinks icon or pressing `Ctrl+Shift+8` — it lists every note that links to the current one.
+5. **Why**: Links are the foundation of Obsidian's knowledge graph. Each `[[wikilink]]` is a thought connection — it lets you jump naturally from one idea to a related one. Unlike folders, a single note can be referenced by any number of other notes.
+6. **Stop when**: You have at least 3 notes with 2+ bidirectional links each.
+
+### Step 5: Add Tags
+
+1. In any note, type `#` followed by a tag name, e.g., `#learning`, `#project-planning`.
+2. Tags auto-complete — type them once, then Obsidian suggests them thereafter.
+3. Open the Tags panel in the right sidebar (or press `Ctrl+Shift+7`) to see all tags aggregated.
+4. **Why**: Folders are hierarchical — a note lives in exactly one folder. Tags are networked — a note can have many tags. They complement each other: folders for coarse categorization, tags for fine-grained retrieval.
+5. **Stop when**: You have tagged 3 notes with 2–3 different tags, and they appear in the Tags panel.
+
+### Step 6: Explore the Graph View
+
+1. Click the Graph View icon in the left ribbon, or press `Ctrl+Shift+G` (`Cmd+Shift+G` on Mac).
+2. Each node is a note; each line is a link.
+3. Click and drag to rotate the 3D view. Scroll to zoom.
+4. Click any node — the graph highlights that node and all connected nodes.
+5. **Why**: The graph reveals knowledge clusters (densely connected notes) and orphans (isolated notes needing more links or archiving).
+6. **Stop when**: You see a visual web of at least 5 interconnected nodes.
+
+## Shortcut Reference
+
+| Function | Windows/Linux | macOS | Notes |
+|----------|---------------|-------|-------|
+| New note | Ctrl+N | Cmd+N | Creates in current folder |
+| Quick Switcher | Ctrl+O | Cmd+O | Fuzzy-search all notes |
+| Full-text search | Ctrl+Shift+F | Cmd+Shift+F | Searches all files |
+| Command palette | Ctrl+P | Cmd+P | Search all commands |
+| Graph View | Ctrl+Shift+G | Cmd+Shift+G | Knowledge graph |
+| Toggle edit/preview | Ctrl+E | Cmd+E | Live Preview mode |
+| Backlinks panel | Ctrl+Shift+8 | Cmd+Shift+8 | Shows linking notes |
+| Insert wikilink | [[ | [[ | Auto-completes note names |
+| Daily note | Ctrl+Shift+D | Cmd+Shift+D | Requires Daily Notes plugin |
+
+## Troubleshooting
+
+1. **Symptom: "I cannot find my notes on another device"** → **Root cause**: Obsidian stores data locally by default with no cloud sync. **Fix**: Place your vault folder inside iCloud, Dropbox, or OneDrive; or subscribe to Obsidian Sync for end-to-end encrypted sync.
+
+2. **Symptom: "My wikilinks show gray/unresolved"** → **Root cause**: The target note does not exist yet or was renamed. **Fix**: Click the unresolved link to create the target note automatically; or use `Ctrl+O` to find and rename the changed file.
+
+3. **Symptom: "Graph view shows a single dot"** → **Root cause**: No links between notes exist yet. **Fix**: Add `[[other note]]` references in your notes — the graph only renders connected nodes.
+
+4. **Symptom: "The editor shows raw Markdown code instead of formatted text"** → **Root cause**: You are in Source mode instead of Live Preview. **Fix**: Press `Ctrl+E` to toggle to Live Preview, or go to Settings → Editor → Default view mode.
+
+5. **Symptom: "File explorer shows .DS_Store or Thumbs.db files"** → **Root cause**: OS-generated hidden files. **Fix**: Go to Settings → Files & Links → Excluded files and add `.*` and `Thumbs.db`.
+
+## Expert Tips
+
+- **Atomic notes principle**: Keep each note focused on a single concept. If a note exceeds 300 words or covers multiple topics, split it. Shorter notes (50–100 words) search faster, link more precisely, and stay focused. In practice, atomic notes are 2–3x more likely to be referenced by other notes.
+- **PARA folder ratio**: After 3 months of daily use, roughly 40% of notes end up in Archive. This is healthy — "Archive" means "not currently active but still referenceable," not "trash." If your Archive is under 20%, you are probably avoiding cleanup, which dilutes the quality of your Projects and Areas folders.
+- **Daily notes as your inbox front-end**: Enable the Daily Notes core plugin (Settings → Core plugins → Daily Notes). Press `Ctrl+Shift+D` to open today's note. In practice, roughly 70% of quick thoughts get captured here first. Process them into permanent notes during a weekly review — this is far more efficient than stopping to organize every time an idea hits.
+- **Use aliases for synonyms**: When a concept has multiple names (e.g., "AI" and "Artificial Intelligence"), enable the Properties core plugin and add `aliases: [AI, Artificial Intelligence]` to the frontmatter of one canonical note. No matter which name you search or link from, Obsidian resolves it to the same note.
+
+## Summary
+
+You have built a working Obsidian vault with a sustainable folder structure, linked notes, tags, and a growing knowledge graph. These are the foundation of Obsidian — the skeleton your future notes will attach to.
+
+Next steps in your learning path:
+
+1. **[Obsidian Plugins & Workflow](/en/productivity/obsidian/plugins-workflow)**: Add Dataview queries, Templater templates, and Kanban boards to turn your vault into a productivity powerhouse.
+2. **[Obsidian Publish & Sharing](/en/productivity/obsidian/publish-sharing)**: Publish your notes as a website and share your knowledge with the world.

@@ -1,0 +1,187 @@
+---
+title: Obsidian Plugins & Workflow
+description: Curated community plugins to supercharge your Obsidian workflow
+field: productivity
+software: obsidian
+level: intermediate
+language: en
+slug: plugins-workflow
+date: 2026-05-11
+readTime: 15
+translationOf: /zh/productivity/obsidian/plugins-workflow
+affiliateLinks:
+  - name: Obsidian Commercial
+    url: https://obsidian.md/pricing
+    description: Commercial license and official sync service
+    vendor: Obsidian
+---
+
+> **Version**: Obsidian 1.8.x (community plugins feature required)
+> **Difficulty**: ★★☆☆☆ (familiarity with basic Obsidian operations)
+> **Time**: 20 min to install plugins, 40 min to learn Dataview query syntax
+
+## Why Vanilla Obsidian Is Not Enough
+
+If you are using Obsidian with only its built-in features, you are ahead of 90% of note-takers — but you are also leaving Obsidian's real power on the table.
+
+Obsidian's community plugin ecosystem is its true moat. Core plugins give you bidirectional links and graph view. Community plugins upgrade Obsidian from a "Markdown editor" to a "personal knowledge operating system." Using Obsidian without plugins is like owning an iPhone with only the stock apps — functional, but you have no idea what it can really do.
+
+The trap most people fall into: installing 30+ plugins on day one, getting overwhelmed by configuration screens, and abandoning the whole tool within a week. The right approach is different: understand **what problem you need to solve**, then **install only the plugin that solves it**.
+
+This tutorial selects four battle-tested plugins that deliver immediate productivity gains — Dataview (data queries), Templater (template engine), Kanban (project boards), and Calendar (date navigation) — and shows you how they work together in a real workflow.
+
+## Preparation
+
+- **Software**: Obsidian 1.8+ desktop (community plugin stability is best on v1.4.0+).
+- **Enable community plugins**: Settings → Third-party plugins → Turn off Restricted mode.
+- **Network**: First plugin download requires access to GitHub.
+- **Optional plugins** (mentioned but not required): Advanced Tables, Excalidraw, Obsidian Git.
+
+## Core Workflow
+
+### Step 1: Install Community Plugins
+
+1. Open Settings → Third-party plugins → Community plugins → Browse.
+2. Search for and install these four plugins: **Dataview**, **Templater**, **Kanban**, **Calendar**.
+3. After installation, click "Enable" on each plugin's detail page.
+4. Restart Obsidian to ensure all plugins load correctly.
+5. **Why**: Unlike core plugins, community plugins are disabled by default. They require explicit enabling, and some need a restart to register their commands.
+6. **Expected result**: Each plugin now has its own settings panel under Settings. The Calendar icon appears in the left ribbon.
+7. **Stop when**: All four plugins show green "Enabled" status in the Installed plugins list.
+
+### Step 2: Configure Dataview
+
+Dataview turns Obsidian into a queryable database. It uses a SQL-like syntax to filter, sort, and aggregate notes based on YAML frontmatter.
+
+1. Open Settings → Dataview.
+2. Keep "Enable JavaScript Queries" **off** unless you need advanced JS queries. Beginners should stick with the basic query syntax.
+3. Set "Dataview File Timezone Offset" to your timezone (e.g., `-05:00` for Eastern US).
+4. Create a new note and add YAML frontmatter:
+   ```yaml
+   ---
+   type: book
+   author: Andy Weir
+   rating: 9.0
+   status: reading
+   ---
+   ```
+5. In another note, enter this Dataview query:
+   ````markdown
+   ```dataview
+   TABLE author, rating, status
+   FROM ""
+   WHERE type = "book"
+   SORT rating DESC
+   ```
+   ````
+6. **Expected result**: The query renders as a table listing all notes with `type: book`, sorted by rating descending.
+7. **Why**: YAML frontmatter is the "metadata layer" of the Obsidian ecosystem. It adds structured fields to notes, and Dataview turns those fields into a queryable database, enabling dashboards, indexes, and reports that update automatically as your vault grows.
+8. **Stop when**: You have run a Dataview query and see a rendered data table.
+
+### Step 3: Configure Templater
+
+Templater is the most powerful template engine for Obsidian. It surpasses the built-in Templates core plugin by supporting dynamic variables, system prompts, file creation triggers, and cursor control.
+
+1. Open Settings → Templater.
+2. Set "Template folder location" to a dedicated folder, e.g., `_templates`. Create this folder if it does not exist.
+3. Inside the templates folder, create a new note called `Book Note Template.md`:
+   ```markdown
+   ---
+   type: book
+   author: <% tp.system.prompt("Author") %>
+   rating: <% tp.system.prompt("Rating (1-10)") %>
+   status: to-read
+   ---
+   
+   # <% tp.file.title %>
+   
+   ## Summary
+   
+   ## Key Insights
+   
+   ## Quotes
+   ```
+4. Enable "Trigger Templater on new file creation" in Templater settings.
+5. **Expected result**: When you create a new note, Templater prompts you to select a template, then inserts the content and pops up input dialogs for the variables.
+6. **Why**: Templater's `tp.system.prompt()` opens an input dialog during note creation — much more natural than filling in fields after the fact. It also supports `tp.date.now()` for auto-dates, `tp.file.rename()` for dynamic filenames, and `tp.system.exec()` for shell commands.
+7. **Stop when**: You can create a note with YAML frontmatter using a Templater template.
+
+### Step 4: Build a Kanban Board
+
+The Kanban plugin turns any Markdown note into a drag-and-drop project board, similar to Trello or Notion databases.
+
+1. Right-click in the file explorer → New note. Name it "Project Board."
+2. Change the note's code block identifier to `kanban`:
+   ````
+   ---
+   kanban-plugin: basic
+   ---
+   
+   ## To Do
+   
+   - [ ] Write project proposal
+   - [ ] Schedule team meeting
+   
+   ## In Progress
+   
+   - [ ] Design database schema
+   
+   ## Done
+   
+   - [x] Purchase domain name
+   ````
+3. Switch to Reading mode (`Ctrl+E`) — the note renders as a 3-column Kanban board.
+4. Drag and drop cards between columns.
+5. **Why**: The Kanban board is stored as plain Markdown — each column is an H2 heading, each card is a list item. This means board content remains searchable and linkable. It is not a closed tool; it is Markdown rendered differently.
+6. **Stop when**: You see a three-column board and can drag cards between columns.
+
+### Step 5: Integrate the Workflow — From Diary to Dashboard
+
+This is where the four plugins converge. The following daily workflow is battle-tested in production environments:
+
+1. **Daily capture**: Press `Ctrl+Shift+D` to open today's daily note. Dump all tasks, ideas, and links that come up during the day.
+2. **Task aggregation**: At the bottom of your daily note, add a Dataview query that lists all uncompleted tasks across the vault:
+   ````markdown
+   ```dataview
+   TASK FROM ""
+   WHERE !completed
+   ```
+   ````
+3. **Template-driven creation**: Create a "Meeting Notes" template via Templater. One click generates a note with pre-filled date, attendee list, and agenda sections.
+4. **Project board sync**: During your weekly review, drag tasks from daily notes into the appropriate Kanban board columns.
+
+## Plugin Reference
+
+| Plugin | Core Function | Install Source | Learning Curve |
+|--------|---------------|----------------|----------------|
+| Dataview | YAML field querying and aggregation | Community plugins → Dataview | ★★★☆☆ |
+| Templater | Dynamic template engine | Community plugins → Templater | ★★☆☆☆ |
+| Kanban | Markdown-based project board | Community plugins → Kanban | ★☆☆☆☆ |
+| Calendar | Calendar view for date navigation | Community plugins → Calendar | ★☆☆☆☆ |
+| Advanced Tables | Table formatting and navigation | Community plugins → Advanced Tables | ★☆☆☆☆ |
+| Obsidian Git | Auto-backup via Git | Community plugins → Obsidian Git | ★★☆☆☆ |
+
+## Troubleshooting
+
+1. **Symptom: "Installed plugins are not working"** → **Root cause**: Obsidian's Restricted mode blocks community plugins. **Fix**: Settings → Third-party plugins → Turn off Restricted mode. If still broken, restart Obsidian.
+
+2. **Symptom: "Dataview shows 'No results to display'"** → **Root cause**: The field names in your query do not match the YAML frontmatter, or the notes have no frontmatter at all. **Fix**: Verify that YAML formatting is correct (note the space after the colon: `rating: 9` not `rating:9`), and confirm field names are case-sensitive.
+
+3. **Symptom: "Templater tp.system.prompt() shows garbled characters"** → **Root cause**: Language encoding conflict between Obsidian's UI and your input method. **Fix**: Update Templater to v2.0.0+. Set Obsidian's interface language to match your system language to avoid encoding issues.
+
+4. **Symptom: "Kanban cards cannot be dragged"** → **Root cause**: You are in Editor mode; drag-and-drop only works in Reading mode. **Fix**: Press `Ctrl+E` to switch to Reading mode. If it still does not work, verify that the Kanban plugin is enabled in Settings.
+
+5. **Symptom: "Calendar plugin shows no notes"** → **Root cause**: Calendar requires the Daily Notes core plugin to display entries. **Fix**: Enable Daily Notes in Settings → Core plugins → Daily Notes, then configure the date format and folder location under Daily Notes settings.
+
+## Expert Tips
+
+- **Dataview query performance**: When your vault exceeds 1,000 notes, scope queries with `FROM "specific-folder"` instead of `FROM ""` (full scan). This yields 5–10x faster queries. Example: `FROM "02-Projects" WHERE status = "active"` instead of scanning every file.
+- **Templater + Git auto-commit**: Templater can execute shell commands. Add `<% tp.system.exec("git add -A && git commit -m 'auto backup'") %>` to your daily note template. Combined with Obsidian Git, this gives you one-click backup with a meaningful commit message.
+- **Kanban + Dataview inline fields**: Add inline Dataview fields in Kanban card descriptions using `[priority:: high]` syntax. Then create a dashboard note that aggregates all Kanban cards with high priority — "manage tasks in Kanban, analyze them in Dataview."
+- **Plugin count rule**: Based on Obsidian community surveys, installing more than 20 plugins increases cold-start time by 3–5 seconds and significantly raises the probability of plugin conflicts. Do a quarterly cleanup: disable any plugin you have not used in the past 30 days.
+
+## Summary
+
+You have installed and configured four core community plugins: Dataview (data queries), Templater (dynamic templates), Kanban (project boards), and Calendar (date navigation). More importantly, you understand how they work together — from capturing tasks in daily notes, managing them on a Kanban board, to aggregating them via Dataview queries.
+
+Next, learn how to share your notes with the world in [Obsidian Publish & Sharing](/en/productivity/obsidian/publish-sharing). If you want to push automation further, explore the QuickAdd and MetaEdit plugins.

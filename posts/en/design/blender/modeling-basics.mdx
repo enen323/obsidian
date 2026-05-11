@@ -1,0 +1,195 @@
+---
+title: Blender 3D Modeling Basics
+description: Learn Blender 3D modeling from scratch
+field: design
+software: blender
+level: beginner
+language: en
+slug: modeling-basics
+date: 2026-05-11
+readTime: 16
+translationOf: /zh/design/blender/modeling-basics
+affiliateLinks:
+  - name: Blender.org
+    url: https://www.blender.org/
+    description: Free and open-source 3D creation suite
+    vendor: Blender
+  - name: KitBash3D
+    url: https://kitbash3d.com/
+    description: High-quality 3D model kits
+    vendor: KitBash3D
+---
+
+> **Version**: Blender 4.0+ (Windows / macOS / Linux)
+> **Difficulty**: ★★☆☆☆ (general computer software proficiency)
+> **Time**: 25-30 min
+
+## That First Blender Screen Is Intimidating
+
+You open Blender for the first time. A dark gray interface. A cube. Three arrow gizmos. Dozens of buttons you've never seen. Three seconds in, you want to close it — "This is way too complicated."
+
+**You are not alone.** Blender is famous for its steep learning curve, but it's also the **most feature-complete and completely free** 3D creation suite available. According to Blender Foundation's 2023 data, Blender has over **14 million users** worldwide and has become a mainstream choice for indie game development and independent animation. This tutorial guides you through the critical "first 30 minutes" — from launching the software to completing your first modeled object.
+
+## Preparation
+
+- **Software**: Blender 4.0 or later, download free from [blender.org](https://www.blender.org/)
+- **Account**: None required — Blender works fully offline
+- **Files**: None needed — we start with the default scene (cube included)
+- **Prerequisites**: No 3D experience required. A 3-button mouse (left, right, scroll wheel) is essential
+
+## Core Workflow
+
+### Step 1: Navigate the 3D Viewport — "Three Gestures Are All You Need"
+
+Blender's 3D viewport navigation uses just three mouse operations:
+
+1. **Orbit (rotate view)**: Hold the middle mouse button (scroll wheel) and drag
+2. **Pan (move view)**: Hold `Shift` + middle mouse button and drag
+3. **Zoom**: Scroll the mouse wheel
+
+**Quick focus trick**: If you get lost, press the period key `.` on the numpad — the view instantly focuses on the selected object. No numpad? Enable "Emulate Numpad" in **Edit → Preferences → Input**.
+
+**Why?** These three operations cover every camera movement you need in 3D space. Don't use toolbar zoom buttons — the scroll wheel is orders of magnitude faster. With practice, you'll instinctively orbit around your model to inspect it from every angle.
+
+**Stop condition**: You can switch from top view to side view to perspective view in under 3 seconds — smooth and deliberate.
+
+### Step 2: Select and Transform — Move/Rotate/Scale Basics
+
+Now interact with that default cube:
+
+1. **Select the cube**: **Right-click** on it (Blender uses right-click to select by default). An orange outline appears around the selected object
+2. **Move (Grab)**: Press `G` to enter grab mode — move your mouse to drag the cube. Left-click to confirm, right-click to cancel
+3. **Constrain movement**: Press `G`, then `X` / `Y` / `Z` — the cube now moves along only that axis. This is the most frequently used modifier combo
+4. **Rotate**: Press `R`, then optionally `X` / `Y` / `Z` to constrain the rotation axis
+5. **Scale**: Press `S`, again optionally with `X` / `Y` / `Z`
+
+**Why?** `G` (Grab) / `R` (Rotate) / `S` (Scale) are the three most frequent operations in 3D modeling. Constraining to an axis (press `G` then `X`) ensures the object moves in one straight line — the same logic as holding `Shift` in 2D design to constrain angles.
+
+**Stop condition**: You've moved the cube 5 units on Z, rotated 45° on Y, and scaled 2x on X. The transform panel shows position (0, 0, 5), rotation (0°, 45°, 0°), scale (2, 1, 1).
+
+### Step 3: Edit Mode — The Leap from "Block" to "Object"
+
+The default cube is just a box. Real modeling begins in Edit Mode:
+
+1. Select the cube and press `Tab` to switch to **Edit Mode**
+2. You now see three levels: vertices (points), edges (lines), and faces (surfaces)
+3. Press `1` / `2` / `3` to toggle between vertex, edge, and face selection modes
+4. **Extrude a face**: Select a face, press `E` — drag outward to pull out new geometry. This is the core operation of "extrusion modeling"
+5. **Inset a face**: Select a face, press `I` — creates a smaller face inside, the precursor to making holes
+
+**Why?** Extrude (`E`) is the single most important modeling operation. Extruding from a cube makes a chair leg; from a sphere, an animal snout; from a plane, terrain geometry. Almost every 3D model involves extrusion.
+
+**Stop condition**: A single cube, after 3 extrusion operations, has become an L-shaped or T-shaped structure.
+
+### Step 4: Use Modifiers — Non-Destructive Power
+
+Modifiers are your most powerful modeling tools. They work like Photoshop adjustment layers — they don't alter the original geometry, and you can toggle or remove them anytime:
+
+1. Select your model, press `Tab` to return to Object Mode
+2. Click the **wrench icon** in the right-hand Properties panel (Modifiers tab)
+3. Click **Add Modifier** and try these three essential ones:
+
+**Subdivision Surface**:
+- Set Levels Viewport: 2
+- The cube instantly becomes a smooth sphere! But the edges are too round
+- In Edit Mode, select an edge → `Ctrl+E` → Mark Sharp — the edge stays crisp
+
+**Bevel**:
+- Set Width: 0.05m, Segments: 3
+- Turns sharp edges into smooth chamfers — the secret to "industrial design feel"
+
+**Mirror**:
+- Set Axis: X
+- Delete half of your cube and the modifier mirrors it — essential for characters and symmetrical objects
+
+**Why?** Subdivision Surface mathematically increases geometry detail — Level 1 quadruples the face count, Level 2 multiplies it by 16. But you can always "undo" the smoothing by deleting the modifier, because the original geometry remains untouched.
+
+**Stop condition**: Your cube has become a smooth sphere via the Subdivision Surface modifier, and you can restore its original box shape by toggling the modifier off.
+
+### Step 5: Build Your Own Model — A Simple Table
+
+Combine all your skills to build a table:
+
+1. Delete the default cube: press `A` to select all, press `X` → Delete
+2. Press `Shift+A` → **Mesh → Cube** to create a new cube
+3. Press `S` then `Z` and scale to 0.1 — this is a table leg
+4. Scale on Z to 1.5 (stretch it tall)
+5. **Make four legs**: position them at the four corners (X: ±0.9, Y: ±0.5)
+6. Press `Shift+A` to add another cube, scale to 2×0.05×1 — this is the tabletop. Position at Y: -0.5
+7. Select the tabletop, add a **Subdivision Surface** modifier (Level 1) — the edges become rounded
+8. Select all four legs and the tabletop, press `Ctrl+J` to merge into one object
+
+**Why?** This table exercise teaches multi-object modeling. The real workflow is "divide and conquer" — build each part separately, position it correctly, and merge at the end.
+
+**Stop condition**: A complete table made of four rectangular legs and one rectangular tabletop, with slightly beveled edges on the tabletop.
+
+### Step 6: Basic Materials — Color Your Model
+
+A gray model is lifeless. Give it simple materials:
+
+1. Select the table, click the **red sphere icon** in the Properties panel (Material Properties)
+2. Click **New** to create a material
+3. In the Shader Editor:
+   - **Base Color**: Click the color swatch, choose a wood brown `#8B6914`
+   - **Roughness**: Set to 0.4 (wood is semi-rough)
+   - **Metallic**: Set to 0 (wood is not metal)
+4. Create a separate material for the tabletop: in Edit Mode, select the tabletop face, click **+** in the Materials panel, create a new material, click **Assign**
+
+**Why these values?** Roughness 0.4 simulates the semi-matte feel of wood. Roughness 0 is fully mirror-like (glass), 1 is fully rough (sandpaper). Most natural materials fall between 0.2 and 0.8. This range lets you quickly approximate realistic surfaces.
+
+**Stop condition**: The legs show dark wood and the tabletop shows light wood (or different colors). View in render preview mode (press `Z` → select "Rendered").
+
+## Reference Table
+
+| Action | Shortcut | Notes |
+|--------|----------|-------|
+| Select all/Deselect | `A` | Toggle selection state |
+| Box select | `B` | Drag to select multiple |
+| Move (Grab) | `G` | Enter move mode |
+| Rotate | `R` | Enter rotation mode |
+| Scale | `S` | Enter scale mode |
+| Constrain axis | X / Y / Z (after G/R/S) | Lock transformation axis |
+| Extrude | `E` (in Edit Mode) | Pull new geometry from face/edge |
+| Inset | `I` (in Edit Mode) | Create smaller face inside selected face |
+| Loop Cut | `Ctrl+R` | Add edge loop ring |
+| Merge Vertices | `M` | Merge selected vertices |
+| Toggle Edit/Object Mode | `Tab` | Switch between the two core modes |
+| Add Object | `Shift+A` | Create object at 3D cursor |
+| Delete | `X` or `Delete` | Remove selected element |
+| Render Preview | `Z` → select mode | Toggle viewport display mode |
+
+## Troubleshooting
+
+### Object turns into a transparent wireframe in Edit Mode
+
+**Root cause**: You switched to Wireframe display mode, or accidentally hit `Z` and selected a different viewport option.
+**Fix**: Press `Z` to open the pie menu and select **Solid** (the second of four options in the top-left). Alternatively, press `Shift+Z` to toggle back.
+
+### New face separates from the original after extrusion
+
+**Root cause**: You didn't select the entire face before extruding — only selected some of its vertices, creating a floating disconnected face.
+**Fix**: Press `3` to switch to face selection mode. Make sure the entire face is highlighted (click its center) before pressing `E`. If this happens, `Ctrl+Z` and try again.
+
+### Blender becomes sluggish after applying Subdivision Surface
+
+**Root cause**: The Viewport Levels value is set too high. Level 3+ generates millions of faces that your GPU has to compute in real-time.
+**Fix**: Temporarily lower the modifier's Levels Viewport to 1. Bump it back up for rendering using the Levels Render value, which doesn't affect viewport performance.
+
+### Right-click to select doesn't highlight the object
+
+**Root cause**: Blender's default selection color is orange, which may be hard to see on some custom themes. Or the object is occluded by another.
+**Fix**: Go to **Edit → Preferences → Themes → 3D Viewport** and change the "Selection Highlight" color to a bright cyan or green. If the object is hidden behind another, press `Z` → "Wireframe" mode to see through.
+
+## Expert Tips
+
+- **Quick camera view**: Press numpad `0` to switch to camera view. Press `Ctrl+Alt+0` to set the current view as the camera position — 10x faster than manually adjusting the camera.
+- **Loop cuts and edge loops**: Press `Ctrl+R` to add a loop cut, scroll the mouse wheel to increase the cut count. `Alt`+click on an edge selects the entire edge loop — invaluable for complex model selection.
+- **Smooth shading**: Finished modeling but see too many flat faces? In Object Mode, right-click → **Shade Smooth**. If it looks too blurry, add an **Edge Split** modifier to keep sharp edges crisp.
+- **Snapping**: Hold `Ctrl` while moving objects to enable snapping (default: snap to grid). Essential for precise alignment. Change the snap type (Vertex, Edge, Face) in the toolbar.
+- **Blender's built-in asset library**: Press `Shift+A` → look under "Mesh" for "Scene Kit" and "Background Kit" — these are free Blender 4.0+ built-in asset packs with furniture, plants, and more.
+
+## Summary
+
+You've completed a full Blender modeling workflow: viewport navigation, object transforms, Edit Mode extrusion, modifiers, multi-part modeling, and basic materials. The key takeaway: **start from simple primitives, then use extrusion and modifiers to build complexity**.
+
+Next, explore texture mapping (UV Unwrapping), armature (rigging), or basic animation in Blender. The Blender documentation and YouTube's Blender Guru channel are excellent resources for going further.

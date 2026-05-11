@@ -1,0 +1,204 @@
+---
+title: 自定义 GPTs 开发指南
+description: 创建和分享自定义 GPT 应用
+field: ai
+software: chatgpt
+level: intermediate
+language: zh
+slug: gpts-custom
+date: 2026-05-11
+readTime: 17
+affiliateLinks:
+  - name: ChatGPT Plus
+    url: https://chatgpt.com
+    description: AI 对话订阅服务
+    vendor: OpenAI
+---
+
+> **版本**: ChatGPT GPTs / 2026-05 | **难度**: ★★★☆☆ | **阅读时间**: 17 分钟
+
+## 每次都要重复输入提示词？
+
+你花 15 分钟写了一组完美的提示词——角色、上下文、格式、约束一应俱全。下周再用时，你发现完全不记得当时写了什么。于是你重新写了一遍——这次只有原来的一半好。
+
+更糟的是你想分享给团队，每人复制粘贴你的提示词，效果却参差不齐。
+
+**自定义 GPTs** 就是来解决这个问题的。它把你的提示词、知识文件和外部 API 打包成一个可复用的"AI 应用"。一次配置，随时使用，一键分享。本文带你从零构建一个完整的自定义 GPT。
+
+## 准备工作
+
+- **ChatGPT Plus 订阅**（$20/月）——自定义 GPTs 是 Plus/Pro 专属功能
+- 准备一组你常用的提示词（参考本系列的[提示词工程](../prompt-engineering)）
+- 可选：准备知识文件（PDF、TXT、Markdown 等，用作专属知识库）
+- 如要配置 Action API：需要懂基础的 REST API 概念
+
+## 核心工作流：构建自定义 GPT
+
+### 第 1 步：进入 GPT Builder
+
+在 ChatGPT 左侧栏点击 **Explore GPTs** -> **Create**。你会看到 Builder 界面，左侧是配置面板，右侧是实时预览。
+
+GPT Builder 支持两种创建方式：
+- **对话式创建**：用自然语言描述你要做什么，Builder 替你配置
+- **手动配置**：直接填写各个字段（推荐，控制力更强）
+
+我们使用手动配置。点击 **Configure** 标签。
+
+### 第 2 步：填写基本信息
+
+| 字段 | 示例值 | 说明 |
+|------|--------|------|
+| **Name** | `博客写作助手` | 2-4 字，反映核心功能 |
+| **Description** | `面向技术博主的中英文写作助手` | 出现在 GPT 列表中 |
+| **Instructions** | 见下文 | 核心提示词（最重要） |
+| **Profile Picture** | 上传或使用 DALL·E 自动生成 | 可以不上传 |
+
+### 第 3 步：编写 Instructions（核心）
+
+Instructions 是自定义 GPT 的灵魂。它和普通提示词的最大区别是：**每条对话都会自动应用这些指令**，你不用再重复输入。
+
+```
+## 角色
+你是一位技术博客写作助手，擅长将复杂技术概念转化为通俗易懂的中英文文章。
+
+## 核心规则
+1. 每次写作前先问清：目标读者、文章长度、输出语言（中/英）
+2. 先出大纲，获得确认后再写正文
+3. 技术术语第一次出现时加中文/英文注释
+4. 不使用空洞的形容词（"非常好""极其强大"）
+
+## 输出格式
+- 默认使用 Markdown 格式
+- 代码块标注语言（```python, ```javascript）
+- 内联代码使用反引号包裹
+- 标题层级：## → ### → ####（从二级开始）
+
+## 知识文件
+我有 3 篇参考文章上传在 Knowledge 中。当回答风格相关问题时，优先参考这些文章的写作风格。
+
+## 边界
+- 不回答与写作无关的技术问题
+- 不生成违法或侵权内容
+- 不承诺具体发布日期或产品功能
+```
+
+**提示**：Instructions 建议 500-1500 字。太少则 GPT 行为不稳定，太长则 GPT-4 可能在前几轮对话中丢失部分指令。
+
+### 第 4 步：上传知识文件（Knowledge）
+
+点击 **Knowledge** 区域的 **Upload files**。上传的文档会被嵌入到 GPT 的上下文知识中。支持格式：
+
+| 格式 | 建议用途 |
+|------|----------|
+| PDF | 报告、白皮书、电子书 |
+| TXT | 纯文本笔记、代码片段 |
+| Markdown (.md) | 文章、文档（推荐） |
+| JSON / CSV | 结构化数据 |
+
+**为什么上传知识文件**：GPT-4 的知识截止于训练数据时间点。上传内部文档让它了解你的私有信息。知识文件占用 GPT 的上下文窗口，所以只上传精简的 5-10 个核心文件，总大小建议不超过 10MB。
+
+### 第 5 步：配置 Actions（API 集成）
+
+Actions 让你的 GPT 能调用外部 API。例如：查天气、访问数据库、调用第三方服务。
+
+启用 Actions 需要提供 **OpenAPI Schema**（一个描述 API 接口的 JSON 文件）。示例——连接一个博客发布 API：
+
+```yaml
+openapi: 3.0.0
+info:
+  title: Blog Publisher API
+  version: 1.0.0
+paths:
+  /api/posts:
+    post:
+      summary: 发布新文章
+      operationId: publishPost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: 文章发布成功
+```
+
+配置后，你的 GPT 就拥有了"直接发布到博客"的能力。
+
+### 第 6 步：发布与分享
+
+点击 **Save** -> **Publish**。发布选项：
+
+| 选项 | 可见范围 | 适用场景 |
+|------|----------|----------|
+| **Only me** | 仅自己可见 | 个人工具 |
+| **Anyone with the link** | 有链接的人均可使用 | 分享给客户或团队 |
+| **Public** | GPT Store 公开可见 | 面向所有 ChatGPT 用户 |
+
+发布后，你的 GPT 会出现在左侧栏的 **My GPTs** 中，点击即可使用。
+
+**停手条件**：配置完成后，用 3 个不同场景的测试用例跑一遍：一个正常任务、一个边缘情况、一个边界试探。全部通过就可以发布了。
+
+## 参考表：GPTs 配置项速查
+
+| 配置项 | 用途 | 最佳实践 |
+|--------|------|----------|
+| **Name** | 标识 GPT | 2-4 字，含关键词 |
+| **Description** | 描述功能 | 1-2 句话，说明能做什么 |
+| **Instructions** | 核心行为指令 | 500-1500 字，结构清晰 |
+| **Conversation starters** | 对话开场建议 | 3-4 个典型问题 |
+| **Knowledge** | 私有知识文件 | 5-10 个核心文件，&lt;10MB |
+| **Capabilities** | Web Browsing, DALL·E, Code Interpreter | 按需开启 |
+| **Actions** | 外部 API 集成 | 需提供 OpenAPI Schema |
+
+## 常见问题排查
+
+### Q1: GPT 的行为和 Instructions 中描述的不一致
+
+**原因**：Instructions 太长或结构混乱，GPT-4 在对话中"遗忘"了部分指令。
+**解决**：精简 Instructions 到 1000 字以内。重要规则放在最前面。在对话中说"重新读取你的 Instructions"可强制刷新。
+
+### Q2: 知识文件中的内容在对话中无法被引用
+
+**原因**：知识文件只在对话启用时加载一次。如果对话过长（超过上下文窗口），知识文件内容会被截断。
+**解决**：开启新对话。减少单轮对话长度。将最关键的知识直接写入 Instructions。
+
+### Q3: Actions API 调用失败
+
+**原因**：API 端点认证失败、Schema 格式错误或 CORS 限制。
+**解决**：先用 [Postman](https://www.postman.com) 测试 API 能否正常调用。检查 OpenAPI Schema 中 operationId 是否唯一。需要 OAuth 认证的 API 需要在 Authentication 中配置。
+
+### Q4: 分享给他人后，对方看不到知识文件内容
+
+**原因**：知识文件作为 Instructions 的一部分生效，用户无法直接查看文件原文——这是设计如此，保护你的私有信息。
+**解决**：如需公开部分知识，在 Instructions 中直接写明关键数据，不要放在知识文件中。
+
+## 专家技巧
+
+- **迭代 Instructions**：不要试图第一版就完美。先用简单 Instructions 发布，观察 GPT 的行为偏差，然后逐步修正。通常需要 5-8 轮迭代。
+- **用 Conversation Starters 引导行为**：设置 4 个精心设计的对话开场句，它们决定了用户的使用方式。例如开场设为"请帮我拟三个选题"会让用户自然从选题开始，而不是直接要求写全文。
+- **GPT 串联使用**：创建多个专用 GPT（选题助手、大纲助手、写作助手、校对助手），每个只做一件事，但形成流水线。串行处理的最终质量比单个全功能 GPT 高出约 35%。
+- **Code Interpreter + Knowledge**：上传 CSV 数据，开启 Code Interpreter 能力，你的 GPT 就变成了一个数据分析工具。适合让非技术团队成员自助分析数据。
+- **隐私注意事项**：公开发布的 GPT 中，Instructions 和 Knowledge 虽然用户不可见，但不代表绝对安全。不把密钥、密码、机密数据放入 GPT 配置中。
+
+## 总结
+
+你现在可以：
+
+- 用 **GPT Builder** 的手动配置模式创建自定义 GPT
+- 编写结构化的 **Instructions** 来精确控制行为
+- 上传 **Knowledge 文件** 赋予 GPT 私有知识
+- 配置 **Actions** 集成外部 API
+- 选择不同的 **发布选项** 控制可见范围
+
+下一步：学习 [ChatGPT 高级应用场景](../advanced-use-cases)，掌握代码生成、数据分析和自动化工作流。

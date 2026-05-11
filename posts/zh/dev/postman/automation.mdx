@@ -1,0 +1,357 @@
+---
+title: Postman 自动化测试
+description: 用 Newman 和 CI/CD 实现 API 自动化测试流程
+field: dev
+software: postman
+level: advanced
+language: zh
+slug: automation
+date: 2026-05-11
+readTime: 18
+affiliateLinks:
+  - name: Postman Enterprise
+    url: https://www.postman.com/pricing
+    description: Postman Enterprise 高级安全与治理功能
+    vendor: Postman
+---
+
+> **适用版本**: Newman v6+ / Postman v11+ | **难度**: ★★★☆☆ | **预估用时**: 40-50 分钟
+
+## 每次发布前手动测 50 个接口？
+
+你的团队有 50 个 API 接口，每次发布前需要全部回归测试一遍。操作流程是：打开 Postman → 逐个点击集合中的请求 → 肉眼检查响应 → 确认通过。重复 50 次。一个人测完全部需要 30-40 分钟，而且经常漏测。更糟糕的是，CI 流水线中对 API 变更没有自动化检查——一个有问题的接口可能在部署几小时后才被发现。
+
+**Newman** 是 Postman 的命令行运行器。它让你把 Postman 集合变成自动化测试脚本，在终端中运行、生成测试报告，并集成到 GitHub Actions、Jenkins、GitLab CI 等任何 CI/CD 工具中。本教程将带你从 Newman 基础到完整的 CI 集成，构建一套可靠的 API 自动化测试体系。
+
+## 准备工作
+
+| 项目 | 要求 |
+|------|------|
+| Node.js | v18 或更高（Newman 基于 Node.js 运行） |
+| Postman 账号 | 免费即可，用于导出集合和环境文件 |
+| Newman | 通过 npm 全局安装 |
+| 测试集合 | 延续上篇教程的 JSONPlaceholder 集合（或使用你自己的项目集合） |
+| Git 仓库 | 用于 CI 集成演示 |
+
+**安装步骤**：
+1. 确认 Node.js 已安装：`node --version`（需 v18+）
+2. 全局安装 Newman：`npm install -g newman`
+3. 验证安装：`newman --version`（预期输出 v6.x）
+4. 可选——安装 HTML 报告插件：`npm install -g newman-reporter-htmlextra`
+5. 从 Postman 桌面版导出你的集合：
+   - 右键集合 → "Export" → 选择 Collection v2.1 格式 → 保存为 `JSONPlaceholder.postman_collection.json`
+
+## 核心操作流程
+
+### 1. Newman CLI 基础运行
+
+在终端中使用 Newman 运行 Postman 集合，验证安装和基本功能。
+
+```
+操作步骤：
+① 打开终端，切换到存放集合 JSON 文件的目录
+② 运行基本命令：
+
+   newman run JSONPlaceholder.postman_collection.json
+
+③ 观察终端输出
+④ 使用环境变量文件运行：
+
+   newman run JSONPlaceholder.postman_collection.json \
+     --environment JSONPlaceholder.postman_environment.json
+```
+
+**为什么用 Newman 而不是在 Postman 中运行？** Newman 不需要图形界面，可以集成到任何 CI/CD 流水线中。每次运行都是独立的环境，不受本地缓存影响。更重要的是，Newman 可以作为代码审查的一部分——集合文件提交到 Git，每个 PR 自动运行测试。
+
+**预期输出**：
+```
+┌─────────────────────────┬──────────┬──────────┐
+│          │ executed  │   failed  │
+│ iterations              │         1│         0│
+│ requests                │         5│         0│
+│ test-scripts            │         5│         0│
+│ prerequest-scripts      │         4│         0│
+│ assertions              │        20│         0│
+│ total run duration: 3.2s
+│ total data received: 12.5kB (approx)
+│ average response time: 312ms
+┌─────────────────────────┬──────────┬──────────┐
+│ #  ████████████████████ 100%
+```
+
+**停止条件**：如果任何请求失败，Newman 默认以非零退出码退出（对 CI 有用）。使用 `--suppress-exit-code` 可以强制以退出码 0 退出（不影响测试报告）。
+
+### 2. 请求链与变量传递
+
+实际 API 测试中，接口之间有依赖关系——登录获取 Token，然后用 Token 访问受保护的资源。通过 Postman 的 Tests 脚本可以实现请求链。
+
+```
+操作步骤：
+① 在 Postman 桌面版中创建一个新的集合 "Auth Flow"
+② 创建第一个请求 "Login"，发送 POST 到 https://jsonplaceholder.typicode.com/posts（模拟登录）
+③ 在 "Tests" 选项卡中写入：
+
+   // 从响应中提取模拟的 ID 作为 "token"
+   const jsonData = pm.response.json();
+   pm.collectionVariables.set("auth_token", jsonData.id.toString());
+   pm.collectionVariables.set("user_id", jsonData.userId.toString());
+
+   // 断言
+   pm.test("Login successful - status 201", () => {
+       pm.response.to.have.status(201);
+   });
+
+④ 创建第二个请求 "Get User Profile"
+   URL：https://jsonplaceholder.typicode.com/posts/{{user_id}}
+   无需手动设置 Token Header——从集合变量中自动获取
+
+⑤ 在 "Tests" 选项卡中：
+
+   pm.test("Profile returned for authenticated user", () => {
+       const data = pm.response.json();
+       pm.expect(data.id).to.eql(parseInt(pm.collectionVariables.get("user_id")));
+   });
+
+⑥ 保存并导出集合
+⑦ 使用 Newman 运行：
+
+   newman run AuthFlow.postman_collection.json \
+     --reporters cli,htmlextra
+```
+
+**为什么使用 `pm.collectionVariables` 而非 `pm.environment`？** 集合变量的作用域仅限于当前集合，不会污染全局或其他集合的环境。当集合导出为 JSON 时，变量值也被包含在内，Newman 运行时会自动使用。
+
+**预期输出**：Newman 按集合中的顺序依次执行请求。第一个请求（Login）执行后设置 `auth_token` 和 `user_id` 变量；第二个请求（Get User Profile）读取这些变量发送请求。所有断言通过，终端显示 0 failed。
+
+**停止条件**：如果 Login 请求失败，依赖的 Get User Profile 也会失败（返回 404 或断言失败）。Newman 会报告两个失败，但你需要在 Login 的断言中先确认认证失败时给出清晰的错误信息。
+
+### 3. 数据驱动测试
+
+同一个接口需要用多组不同的参数验证——正常数据、边界值、异常数据。数据驱动测试让你用 CSV 或 JSON 文件驱动测试数据。
+
+```
+操作步骤：
+① 创建一个 CSV 文件 test-data.csv：
+
+   title,body,userId,expectedStatus
+   Test Title,Test Body,1,201
+   空标题,,1,201
+   ,只有 body,2,201
+   xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx,超长标题测试,1,201
+
+② 创建 Postman 集合 "DataDrivenTest"，请求 POST {{base_url}}/posts
+③ Body 选项卡（raw JSON）中使用变量：
+
+   {
+     "title": "{{title}}",
+     "body": "{{body}}",
+     "userId": {{userId}}
+   }
+
+④ Tests 选项卡中写入：
+
+   pm.test("Status is " + pm.iterationData.get("expectedStatus"), () => {
+       pm.response.to.have.status(parseInt(pm.iterationData.get("expectedStatus")));
+   });
+
+   pm.test("Response has id field", () => {
+       pm.expect(pm.response.json()).to.have.property("id");
+   });
+
+⑤ 导出集合后使用 Newman 运行：
+
+   newman run DataDrivenTest.postman_collection.json \
+     --iteration-count 4 \
+     --iteration-data test-data.csv \
+     --reporters cli,htmlextra
+```
+
+**为什么用数据驱动？** 不写数据驱动时，测试 4 组数据需要复制 4 个几乎相同的请求——维护成本高、容易出错。数据驱动将测试逻辑和数据分离：1 个请求 + 1 个 CSV 文件 = 覆盖所有测试用例。
+
+**预期输出**：Newman 执行 4 次迭代，每次迭代使用 CSV 中对应行的数据。终端显示：
+```
+┌─────────────────────────┬──────────┬──────────┐
+│          │ executed  │   failed  │
+│ iterations              │         4│         0│
+│ requests                │         4│         0│
+│ assertions              │         8│         0│
+```
+
+**停止条件**：如果某次迭代的断言失败，Newman 继续执行剩余迭代（默认行为）。使用 `--stop-on-error` 可以在第一次失败时停止。
+
+### 4. 生成 HTML 测试报告
+
+CLI 报告适合开发者阅读，但团队和管理层需要可视化报告。`newman-reporter-htmlextra` 生成带图表和详细信息的 HTML 报告。
+
+```
+操作步骤：
+① 确保已安装 htmlextra 报告插件：
+
+   npm install -g newman-reporter-htmlextra
+
+② 运行 Newman 并指定 HTML 报告输出：
+
+   newman run JSONPlaceholder.postman_collection.json \
+     --environment JSONPlaceholder.postman_environment.json \
+     --reporters cli,htmlextra \
+     --reporter-htmlextra-export ./reports/api-test-report.html
+
+③ 用浏览器打开生成的 HTML 报告文件
+```
+
+**为什么需要 HTML 报告？** CLI 输出无法分享给非技术团队成员，也无法在 CI 构建摘要中保存历史记录。HTML 报告包含成功率图表、响应时间分布、失败请求的详细报错信息，可以归档作为发布审批依据。
+
+**预期输出**：
+- 在 `./reports/` 目录下生成 `api-test-report.html` 文件
+- 报告包含：
+  - **汇总**：总断言数、通过数、失败数、通过率
+  - **时间线**：每个请求的响应时间分布图
+  - **详细结果**：每个请求的 Headers、Body、测试结果
+  - **失败详情**：失败的断言和响应数据快照
+
+**停止条件**：如果报告目录不存在，Newman 会自动创建。确保 `--reporter-htmlextra-export` 路径中的目录有写入权限。
+
+### 5. CI/CD 集成（GitHub Actions）
+
+将 Newman 集成到 GitHub Actions 中，每次代码推送或 PR 自动运行 API 测试。
+
+```
+操作步骤：
+① 在项目根目录创建 .github/workflows/api-tests.yml
+② 写入以下内容：
+
+   name: API Tests
+   on:
+     push:
+       branches: [main, develop]
+     pull_request:
+       branches: [main]
+
+   jobs:
+     api-test:
+       runs-on: ubuntu-latest
+       steps:
+         - name: Checkout code
+           uses: actions/checkout@v4
+
+         - name: Setup Node.js
+           uses: actions/setup-node@v4
+           with:
+             node-version: 20
+
+         - name: Install Newman
+           run: npm install -g newman newman-reporter-htmlextra
+
+         - name: Run API Tests
+           run: |
+             newman run tests/collections/API-Tests.postman_collection.json \
+               --environment tests/environments/CI.postman_environment.json \
+               --reporters cli,htmlextra,junit \
+               --reporter-htmlextra-export reports/api-report.html \
+               --reporter-junit-export reports/junit-report.xml
+
+         - name: Upload test report
+           if: always()
+           uses: actions/upload-artifact@v4
+           with:
+             name: api-test-reports
+             path: reports/
+
+③ 将集合 JSON 和环境 JSON 文件提交到仓库的 tests/ 目录下
+④ 提交并推送 .github/workflows/api-tests.yml，观察 GitHub Actions 运行
+```
+
+**为什么用 GitHub Actions 而不用其他工具？** GitHub Actions 与 GitHub 仓库深度集成——PR 页面直接显示测试状态，失败的测试会阻止 Merge。你也可以用同样的方式集成到 Jenkins（通过 `newman run` 命令）、GitLab CI（使用 `image: node:20`）或任何支持 shell 命令的 CI 工具。
+
+**预期输出**：GitHub 仓库的 Actions 标签页显示工作流运行记录。每个 PR 的 Checks 区域显示 "API Tests" ✔ 或 ✘。点击详情可以查看 Newman 完整输出和下载 HTML 报告。
+
+**停止条件**：如果 Newman 以非零退出码退出（即测试有失败），GitHub Actions 工作流标记为失败。PR 页面显示 "Some checks were not successful"。
+
+**重要参数说明**：
+- `--reporters junit`：生成 JUnit 格式报告，GitHub Actions 可以解析并在 UI 中显示测试结果矩阵
+- `if: always()`：确保即使测试失败也上传报告，方便分析失败原因
+- `actions/upload-artifact@v4`：将测试报告保存为构建产物，可在 Actions 页面下载
+
+## Newman 命令与参数速查表
+
+| 命令/参数 | 示例 | 说明 |
+|-----------|------|------|
+| `newman run <collection>` | `newman run collection.json` | 运行 Postman 集合 |
+| `--environment <file>` | `--environment env.json` | 指定环境变量文件 |
+| `--iteration-count <n>` | `--iteration-count 5` | 迭代次数（数据驱动） |
+| `--iteration-data <file>` | `--iteration-data data.csv` | 数据驱动 CSV/JSON 文件 |
+| `--reporters <list>` | `--reporters cli,htmlextra` | 启用报告插件 |
+| `--reporter-htmlextra-export` | `--reporter-htmlextra-export ./report.html` | HTML 报告输出路径 |
+| `--reporter-junit-export` | `--reporter-junit-export ./junit.xml` | JUnit 格式报告输出 |
+| `--delay-request <ms>` | `--delay-request 100` | 请求间延迟（毫秒） |
+| `--timeout-request <ms>` | `--timeout-request 5000` | 请求超时（毫秒） |
+| `--suppress-exit-code` | `--suppress-exit-code` | 即使失败也返回退出码 0 |
+| `--stop-on-error` | `--stop-on-error` | 首次失败时停止执行 |
+| `--color <value>` | `--color off` | 颜色输出控制（on/off/auto） |
+| `--export-globals <file>` | `--export-globals globals.json` | 运行后导出全局变量 |
+| `--export-collection <file>` | `--export-collection out.json` | 运行后导出集合 |
+| `-d <file>` | `-d data.csv` | 迭代数据的简写形式 |
+
+## 常见问题排查
+
+**问题 1：Newman 运行报 `Error: Cannot find module 'newman-reporter-htmlextra'`**
+- **原因**：报告插件未安装，或安装在错误的 Node.js 环境中
+- **解决**：运行 `npm install -g newman-reporter-htmlextra` 全局安装。如果在 CI 中报错，检查 CI 配置文件中的 `npm install` 步骤是否安装了该包。确认 Newman 和插件在同一个 Node.js 版本下安装（使用 `npm ls -g newman` 和 `npm ls -g newman-reporter-htmlextra` 验证）
+
+**问题 2：集合变量在 Newman 中无法解析，但在 Postman 桌面版中正常**
+- **原因**：集合变量的 Initial Value 未设置（在 Postman 中只设置了 Current Value，导出时 Current Value 不会被包含在集合 JSON 中）
+- **解决**：在 Postman 中编辑集合变量时，确保 "Initial Value" 字段已填写，"Current Value" 只用于本地覆盖。导出集合时选择 "Collection v2.1" 格式（这种格式包含变量定义）。重新导出并替换 CI 仓库中的 JSON 文件
+
+**问题 3：数据驱动测试中 CSV 文件的列名未识别为变量**
+- **原因**：CSV 编码问题（BOM 头），或首行列名包含空格
+- **解决**：使用 UTF-8 without BOM 编码保存 CSV 文件。检查列名是否有前导/尾随空格——`"title "` 和 `"title"` 是不同的变量名。在终端用 `head -1 test-data.csv | cat -A` 检查是否有隐藏字符。推荐使用 VS Code 或 Sublime Text 保存 CSV
+
+**问题 4：Newman 运行 CI 时报 `ERR_CONNECTION_REFUSED`**
+- **原因**：CI 运行环境中无法访问 API 服务器（内网 API、localhost 服务未启动、或网络策略限制）
+- **解决**：如果 API 在 localhost 运行，确保 CI 中先启动 API 服务（在 same job 中使用 `services` 或 `jobs.<job_id>.services` 配置依赖服务）。对于内网 API，配置 CI 的网络代理或 VPN。使用公共 API（如 JSONPlaceholder）进行初步验证，排除环境因素
+
+**问题 5：HTML 报告中的断言都是 "passed"，但 CI 标记为失败**
+- **原因**：Newman 的退出码包含了网络错误（如 DNS 解析失败、连接超时），这些不属于断言失败，但 Newman 仍视为错误
+- **解决**：区分断言失败和基础设施失败。使用 `--suppress-exit-code` 让 Newman 总是以退出码 0 退出，然后在后续步骤中解析 JUnit XML 报告判断实际通过/失败。或者检查 Newman 的详细输出区分错误类型
+
+## 专家建议
+
+**性能数据**：一个包含 50 个请求的集合，在 CI 环境（GitHub Actions ubuntu-latest）中完整运行约需 45-90 秒（取决于 API 响应速度）。与端到端浏览器测试动辄 5-10 分钟相比，Newman API 测试的执行效率极高。
+
+**最佳实践**：
+- **集合文件纳入版本控制**：将 `.postman_collection.json` 和 `.postman_environment.json` 提交到 Git 仓库，与代码变更同步。建议放在 `tests/postman/` 目录下统一管理
+- **CI 中使用环境变量注入敏感数据**：不在 JSON 文件中硬编码 API Keys 和密码。在 Newman 命令中使用 `--env-var "api_key=${{ secrets.API_KEY }}"` 从 CI Secrets 注入。示例：
+  ```
+  newman run collection.json --env-var "token=${{ secrets.API_TOKEN }}"
+  ```
+- **分层测试策略**：在 CI 中设置多个 Newman 步骤：快速健康检查（5 个核心接口，每次提交运行）→ 完整回归测试（全部接口，每日运行）→ 压力测试（高并发场景，预发布触发）
+- **合理设置超时**：Newman 默认请求超时为 0（不超时），这在 CI 中可能导致 job 悬挂。始终设置 `--timeout-request 10000`（10 秒），避免网络问题阻塞整个流水线
+- **断言覆盖核心逻辑**：不要每字段断言（维护成本过高），优先覆盖：状态码、关键字段存在性、响应结构符合 Schema、响应时间在阈值内。使用 Postman 的 `ajv`（通过 `pm.expect(schema)`）做 Schema 验证
+
+**常见陷阱**：
+- **环境变量遗漏 Initial Value**：Postman 的 Current Value 是本地使用的，导出时不会包含。只有 Initial Value 会被导出到 JSON 中。所有在 Newman 中使用的变量都必须设置 Initial Value
+- **Certificate 问题**：CI 环境的系统证书可能不包含自签名证书。如果 API 使用自签名证书，在 Newman 中添加 `--insecure` 参数（仅限 CI 环境）
+- **忘记 `npm install -g`**：在 CI 的 package.json 中添加 Newman 作为 devDependency 而不是全局安装，确保版本一致性：
+  ```json
+  {
+    "devDependencies": {
+      "newman": "^6.0.0",
+      "newman-reporter-htmlextra": "^1.0.0"
+    }
+  }
+  ```
+  然后使用 `npx newman run ...` 执行
+
+## 总结
+
+你已经掌握了 Postman 自动化的完整技术栈：Newman CLI 基础运行、请求链与变量传递、数据驱动测试、HTML 报告生成和 CI/CD 集成。这套体系让你从手动点击 API 测试转变为自动化的、可重复的、与代码变更同步的测试流水线。
+
+**下一步**：
+- 在你的项目中创建 Postman 集合并配置 GitHub Actions 流水线
+- 探索 Newman 的更多参数：`--delay-request`、`--bail`、`--folder`（只运行集合中的特定文件夹）
+- 使用 Postman 的 Collection Format v2.1 文档编写自定义脚本生成集合
+- 学习 Postman Mock Server 在前端开发与后端 API 解耦中的应用
+
+---
+
+> 本文为 Postman 教程系列的一部分。查看 [Postman 更多教程](../) 了解更多内容。

@@ -1,0 +1,294 @@
+---
+title: "Word Mail Merge: Batch Documents in Minutes"
+description: Generate hundreds of documents from one template
+field: office
+software: word
+level: intermediate
+language: en
+slug: mail-merge
+date: 2026-05-11
+readTime: 13
+translationOf: /zh/office/word/mail-merge
+affiliateLinks:
+  - name: Microsoft 365
+    url: https://www.microsoft.com/microsoft-365
+    description: Office suite subscription
+    vendor: Microsoft
+---
+
+> **Version:** Microsoft 365 (compatible with Word 2024/2021/2019)  
+> **Difficulty:** ★★★☆☆ (3/5)  
+> **Time:** 35-45 minutes
+
+---
+
+It is the end of the quarter. You need to send personalized letters to 200 customers. Each letter needs the customer's name, address, account balance, and a customized greeting. Copy-pasting 200 times is not just tedious -- it is a quality risk. One wrong paste and a customer gets the wrong balance.
+
+Most people avoid mail merge because they think it is only for printing envelopes. In reality, mail merge is Word's most underused power feature. It can generate letters, emails, labels, envelopes, and even personalized PDFs -- all from a single template connected to a data source (Excel, Outlook contacts, or a database).
+
+This tutorial teaches you the end-to-end mail merge workflow: connecting a data source, inserting merge fields, applying conditional rules (IF/THEN/ELSE), creating labels, and distributing the final output as printed documents, emails, or individual files.
+
+---
+
+## Preparation
+
+- **Software:** Microsoft 365 desktop (required -- mail merge is not available in Word Online). For email merge, you also need a MAPI-compatible email client (Outlook).
+- **OS:** Windows 10/11 recommended. Mail merge on macOS has fewer options (no email merge, no individual PDF export).
+- **Data Source:** An Excel spreadsheet with column headers. Example columns: `FirstName`, `LastName`, `Address1`, `City`, `State`, `Zip`, `AccountBalance`, `ProductName`, `LastContactDate`. Minimum 10 rows of sample data.
+- **Main Document:** A Word document with the letter template (greeting paragraph, body with placeholders for personalized info, and a closing).
+- **Prerequisites:** Familiarity with basic Word formatting. Experience with Excel tables is helpful.
+- **Data Formatting Rule:** Save the Excel source as a .xlsx file. The first row must contain column headers. No merged cells. No blank rows within the data range. Format the range as an Excel Table (Ctrl+T) for easier data management.
+
+---
+
+## Core Workflow
+
+### Step 1: Prepare Your Data Source in Excel
+
+**Why:** Mail merge pulls records from a structured data source. The quality of your merge depends entirely on how clean your data is.
+
+**Excel data preparation checklist:**
+- Column headers in row 1 must be single words or words joined by underscores (e.g., `FirstName`, not `First Name` -- spaces in field names can cause issues).
+- Each row = one recipient.
+- Standardize address fields: separate columns for Street, City, State, ZIP.
+- No blank rows within the data table.
+- No merged cells.
+- Convert to Table: Select your range > Ctrl+T > OK.
+
+**Example data structure:**
+
+| FirstName | LastName | City | State | Amount |
+|---|---|---|---|---|
+| John | Smith | New York | NY | 1250.00 |
+| Maria | Garcia | Los Angeles | CA | 890.00 |
+
+**Expected result:** A clean Excel file with the first row as headers and no blank rows.
+
+**Stop condition:** You can open the Excel file, see column headers in row 1, and each row has complete data without blanks in key fields.
+
+### Step 2: Connect the Data Source to Word
+
+**Why:** This step tells Word where your recipient data lives and lets you select which records to include.
+
+**Start mail merge:**
+1. Open your Word letter template (or a blank document if starting from scratch).
+2. Go to **Mailings > Start Mail Merge > Letters** (this sets the document type).
+3. Go to **Mailings > Select Recipients > Use an Existing List**.
+4. Browse to your Excel file and select it.
+5. In the **Select Table** dialog, choose the worksheet (e.g., Sheet1$). Check "First row of data contains column headers."
+6. Click OK.
+
+**Filter recipients (optional but useful):**
+1. In Mailings > Edit Recipient List.
+2. Click the arrow next to a column header to filter (e.g., show only "State = CA").
+3. Uncheck individual rows to exclude specific recipients.
+4. Click OK.
+
+**Expected result:** Word now has access to your recipient data. The Mailings tab buttons are active.
+
+**Stop condition:** You can open the Mail Merge Recipients dialog and see your data rows with column headers.
+
+### Step 3: Insert Merge Fields into the Template
+
+**Why:** Merge fields are placeholders that Word replaces with actual data when you complete the merge.
+
+**Insert individual fields:**
+1. Place your cursor where you want the personalized text (e.g., the salutation line).
+2. Go to **Mailings > Insert Merge Field**.
+3. Select **FirstName**.
+4. Type a space, then insert **LastName** again from Insert Merge Field.
+5. Write the rest of the address block manually or use the **Address Block** button (which provides a pre-configured block for names and addresses).
+
+**Example letter template:**
+
+```
+«FirstName» «LastName»
+«Address1»
+«City», «State» «Zip»
+
+Dear «FirstName»,
+
+Thank you for being a valued customer. Your current account balance is $«Amount». As a special offer, we would like to offer you...
+
+Best regards,
+ABC Corporation
+```
+
+**Insert Address Block and Greeting Line (automated):**
+1. Click **Mailings > Address Block**.
+2. Select the recipient name format (e.g., "Mr. John Smith").
+3. Click **Mailings > Greeting Line**.
+4. Choose "Dear" and select the name format. For the "invalid" case, choose "Dear Sir or Madam."
+
+**Preview the merge fields:**
+1. Click **Mailings > Preview Results**.
+2. Step through records using the left/right arrows (or First/Last).
+3. Verify that names, addresses, and personalized values appear correctly.
+
+**Expected result:** Clicking Preview Results shows your Word document with real data replacing the merge fields.
+
+**Stop condition:** You can preview all records and each one shows correct personalized information.
+
+### Step 4: Add Conditional Rules (IF...THEN...ELSE)
+
+**Why:** Not all recipients get the same message. Premium customers get one offer, standard customers get another. Conditional rules let you personalize the content based on data values.
+
+**Insert an IF field:**
+1. Place your cursor where the conditional content should appear.
+2. Go to **Mailings > Rules > If...Then...Else**.
+3. In the dialog:
+   - **Field name:** Select `Amount` (or your data column).
+   - **Comparison:** Select `greater than or equal to`.
+   - **Compare to:** Enter `1000`.
+   - **Insert this text:** Enter "As a Gold-tier customer, you receive free priority support."
+   - **Otherwise insert this text:** Enter "Thank you for your continued business."
+4. Click OK.
+
+**Preview the conditional fields:**
+- Preview Results: Customers with Amount >= 1000 see the Gold-tier message; others see the standard message.
+
+**Other useful rules:**
+- **Fill-in:** Prompts for manual text during the merge (e.g., a reviewer's approval signature).
+- **Skip Record If:** Exclude records that meet a condition (e.g., skip customers with zero balance).
+- **Set Bookmark:** Stores a value for reuse later in the document.
+
+**Expected result:** Different recipients see different content based on their data values.
+
+**Stop condition:** You have set up at least one conditional rule and verified that two recipients with different values see different text.
+
+### Step 5: Create and Print Labels
+
+**Why:** Labels (mailing labels, product labels, name badges) use the same data source and merge mechanism, but require a different document setup.
+
+**Set up labels:**
+1. Go to **Mailings > Start Mail Merge > Labels**.
+2. In the Label Options dialog:
+   - **Label vendors:** Select "Avery US Letter" (most common) or the brand you use.
+   - **Product number:** Select your label size (e.g., 5160 for address labels, 30 per page).
+   - Click OK. Word creates a table grid matching the label layout.
+
+**Complete the label merge:**
+3. Connect the data source: Mailings > Select Recipients > Use an Existing List.
+4. Click **Mailings > Address Block** to insert the address layout.
+5. Click **Mailings > Update Labels** to copy the layout to all label cells.
+6. Click **Mailings > Preview Results** to verify.
+
+**Expected result:** A grid of labels with the first label showing the first record's data, repeated for all recipients.
+
+**Stop condition:** You see a full page of labels with names and addresses correctly placed within each label boundary.
+
+### Step 6: Complete the Merge -- Print, Email, or Individual Files
+
+**Why:** The final step sends the merged documents to their destination. You have three common options.
+
+**Option A -- Print directly:**
+1. Click **Mailings > Finish & Merge > Print Documents**.
+2. Choose: All, Current record, or a range.
+3. Word sends the merged output to the printer.
+
+**Option B -- Create individual documents (editable):**
+1. Click **Mailings > Finish & Merge > Edit Individual Documents**.
+2. Choose **All**.
+3. Word creates a new document with one page per recipient.
+4. Save as .docx or .pdf (File > Export > Create PDF).
+5. Word tip: For 200 recipients, save as PDF immediately -- a 200-page Word file is slow to navigate.
+
+**Option C -- Send as email (requires Outlook):**
+1. Click **Mailings > Finish & Merge > Send Email Messages**.
+2. **To:** Select the column containing email addresses.
+3. **Subject line:** Enter the subject (can include merge fields, e.g., "Special offer for «FirstName»").
+4. **Mail format:** Choose HTML or Plain Text.
+5. Click OK. Outlook sends individual emails to each recipient.
+
+**Expected result:** All recipients receive personalized documents -- either printed, as PDF pages, or as individual emails.
+
+**Stop condition:** You have successfully completed a merge using at least one output method (print, document, or email) and verified 3-4 output samples for correctness.
+
+---
+
+## Reference Table
+
+| Task | Menu Path | Notes |
+|---|---|---|
+| Start mail merge | Mailings > Start Mail Merge > Letters / Labels / Envelopes | Choose the document type first |
+| Select recipients | Mailings > Select Recipients > Use an Existing List | Supports Excel, Outlook, Access |
+| Insert merge field | Mailings > Insert Merge Field | Field names come from data source headers |
+| Address block | Mailings > Address Block | Pre-formatted name + address |
+| Greeting line | Mailings > Greeting Line | Pre-formatted salutation |
+| Rules > If...Then...Else | Mailings > Rules > If...Then...Else | Conditional content by field value |
+| Preview results | Mailings > Preview Results | Toggle between fields and real data |
+| Update labels | Mailings > Update Labels | Copies layout to all label cells |
+| Finish & Merge | Mailings > Finish & Merge | Print, Documents, or Email |
+
+**Mail Merge Field Reference:**
+
+| Rule | Path | Purpose |
+|---|---|---|
+| If...Then...Else | Rules > If...Then...Else | Conditional text based on data |
+| Fill-in | Rules > Fill-in | Prompt for manual input per record |
+| Skip Record If | Rules > Skip Record If | Exclude records matching condition |
+| Next Record | Rules > Next Record | Force next record (labels/envelopes) |
+| Merge Record # | Rules > Merge Record # | Insert record number |
+
+---
+
+## Troubleshooting
+
+### 1. Merge fields show as { MERGEFIELD } codes instead of data
+- **Symptom:** The document shows `{ MERGEFIELD FirstName }` instead of the actual name.
+- **Root cause:** The field codes are displayed instead of their results. This is a display toggle setting.
+- **Fix:** Press **Alt+F9** to toggle between field codes and field results. Alternatively, right-click the field code and select **Toggle Field Codes**. For the final merge, always use **Finish & Merge** rather than preview.
+
+### 2. "Word cannot open the data source" error
+- **Symptom:** When trying to select the Excel file, Word shows "Cannot open the data source."
+- **Root cause:** The Excel file is open in another program, or it's saved in an incompatible format (.xls instead of .xlsx).
+- **Fix:** Close the Excel file. If that doesn't work, save a copy of the Excel file as .xlsx (not .xls). Ensure the file is not on a network drive that restricts read access. As a workaround, save the data as a CSV file and connect to that.
+
+### 3. Numbers show incorrectly (e.g., 1250.00 shown as 1250)
+- **Symptom:** Currency or decimal values from Excel appear as whole numbers without decimals.
+- **Root cause:** The merge field inherits the format from the source data. Excel's number formatting is not automatically carried into Word.
+- **Fix:** In Word, right-click the merge field > **Toggle Field Codes**. You will see something like `{ MERGEFIELD Amount }`. Change it to `{ MERGEFIELD Amount \# "$,0.00" }`. Right-click > Update Field. Now $1,250.00 displays correctly. The `\#` switch specifies the numeric picture format.
+
+### 4. Extra blank lines when a field is empty
+- **Symptom:** If a recipient has no Company name, the address shows a blank line.
+- **Root cause:** Word inserts a paragraph break for each merge field, even if the field is empty.
+- **Fix:** Instead of putting each field on its own line, use the **Address Block** (which handles empty fields gracefully). Alternatively, use an IF field: `{ IF { MERGEFIELD Company } <> "" "{ MERGEFIELD Company }" "" }` -- but this is complex to write manually. The Address Block is simpler.
+
+### 5. Labels are misaligned when printed
+- **Symptom:** Printed labels do not align with the label sheet, offset by a few millimeters.
+- **Root cause:** The label product number selected in Word does not match the actual label sheet, or the printer's paper settings are wrong.
+- **Fix:** Verify the label product number on the label packaging (e.g., Avery 5160). In Mailings > Start Mail Merge > Labels > Label Options, select the exact product number. Check printer settings: Paper size must match the label sheet size (usually Letter or A4). For the first print, print a single page on plain paper and hold it against the label sheet to check alignment.
+
+---
+
+## Expert Tips
+
+**Real-World Impact:** A nonprofit organization used mail merge to send personalized donation thank-you letters to 5,000 donors. Previously, three staff members spent two full days on this task. With mail merge, one person completed it in 90 minutes. Error rate dropped from an estimated 5% to near zero.
+
+**Catalog Merge for Multi-Row Per Recipient:** If each recipient needs multiple lines (e.g., an invoice with line items), use **Mailings > Start Mail Merge > Directory**. This creates a directory-style output where multiple rows from the data source appear for each recipient, perfect for invoice line items, product catalogs, or roster listings.
+
+**Individual PDF Files per Recipient:** The "Edit Individual Documents" option creates one large file with all merged pages. To create one PDF per person, you need a third-party tool or a Word VBA macro. Search for "mail merge split to individual PDFs VBA" -- a common free macro creates separate files from a merged document.
+
+**Match Fields for Imported Header Mismatches:** If your data source uses different names than Word's Address Block expects (e.g., your column is "CustomerName" but Word expects "FirstName" and "LastName"), go to Mailings > Match Fields. Map your data columns to Word's standard address fields. Word remembers this mapping.
+
+**Save the Merged Document as a Template:** After setting up the merge template with fields and rules, save it as a .docx file (not .dotx) and reuse it each quarter. Just update the Excel data source and refresh. Go to **Mailings > Edit Recipient List > Refresh** to reload changed data.
+
+**Preview with Field Shading:** To see which parts of your document are merge fields, go to File > Options > Advanced > "Show document content" > "Field shading" > set to "Always." Merge fields will appear with a gray background, making them easy to spot.
+
+---
+
+## Summary
+
+In this tutorial you learned the complete mail merge workflow:
+- **Prepare a data source** -- clean Excel data with proper headers
+- **Connect Word to data** -- select recipients and filter as needed
+- **Insert merge fields** -- placeholders for personalized content
+- **Add conditional rules** -- IF/THEN/ELSE for targeted messaging
+- **Create labels** -- mailing labels from the same data source
+- **Complete the merge** -- print, email, or individual documents
+
+**Next steps:**
+- Explore Directory merge for catalog/invoice-style multi-row output
+- Learn Word document formatting to build better templates: [Document Formatting Guide](/en/office/word/document-formatting)
+- Automate mail merge with VBA for one-click PDF generation
+- Try Excel's data validation to keep your source data error-free

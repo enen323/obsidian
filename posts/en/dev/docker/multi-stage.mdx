@@ -1,0 +1,408 @@
+---
+title: Docker Multi-Stage Build Optimization
+description: Shrink images by 80% with multi-stage builds
+field: dev
+software: docker
+level: advanced
+language: en
+slug: multi-stage
+date: 2026-05-11
+readTime: 17
+translationOf: /zh/dev/docker/multi-stage
+affiliateLinks: []
+---
+
+> **Version**: Docker Engine 17.05+ (multi-stage builds introduced in 17.05)
+> **Difficulty**: ★★★☆☆ (Dockerfile basics and image concepts required)
+> **Time**: 25-35 min
+
+## Your 300MB Image Contains Only 10MB of Your Code
+
+A typical Node.js production image: `FROM node:18` (350MB), install dependencies (200MB), copy source code (2MB). The final image is ~550MB, and your actual business logic accounts for less than 0.5%.
+
+The same problem plagues Go, Java, and Python applications — the build toolchain, header files, and dev dependencies needed during compilation are completely unnecessary at runtime, yet they get bundled into the final image.
+
+**Multi-stage builds**, introduced in Docker 17.05, let you use multiple `FROM` statements in a single Dockerfile. Each `FROM` starts a new stage. You install all build tools and compile your code in the first stage, then copy only the compiled artifacts into a minimal base image in the final stage. The resulting image contains only the minimum set of files needed to run.
+
+According to Dockers official case studies, multi-stage builds typically reduce image size by 60-90%. This tutorial demonstrates the technique through three language-specific examples.
+
+## Prerequisites
+
+- **Docker Engine** 17.05+ (24+ recommended)
+- Basic Dockerfile writing skills
+- Familiarity with `docker build` and `docker images`
+- Each language example can be practiced independently — pick the one you know best
+
+## Practical Examples
+
+### Example 1: Node.js Application (most common)
+
+#### Single-stage build (baseline)
+
+```dockerfile
+# Dockerfile.single
+FROM node:18
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+EXPOSE 3000
+CMD ["node", "dist/index.js"]
+```
+
+Build and check size:
+
+```bash
+docker build -f Dockerfile.single -t node-app:single .
+docker images node-app
+# ~1.2GB (node:18 full + devDependencies + build artifacts)
+```
+
+#### Multi-stage build
+
+```dockerfile
+# Dockerfile
+# ====== Stage 1: Build ======
+FROM node:18 AS builder
+
+WORKDIR /app
+COPY package*.json ./
+# Install all dependencies (including devDependencies)
+RUN npm install
+COPY . .
+# Build (TypeScript compilation, bundling, etc.)
+RUN npm run build
+
+# ====== Stage 2: Run ======
+FROM node:18-alpine
+
+WORKDIR /app
+# Copy only the build output and production dependency manifest
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
+# Now install only production dependencies
+RUN npm install --production
+
+EXPOSE 3000
+CMD ["node", "dist/index.js"]
+```
+
+```bash
+docker build -t node-app:multi .
+docker images node-app
+# ~150MB (node:18-alpine ~120MB + production deps ~30MB)
+# ~85% reduction compared to single-stage
+```
+
+**Key lines**:
+- `FROM node:18 AS builder`: Name the stage; reference it later with `--from=builder`
+- `COPY --from=builder /app/dist ./dist`: Copy only the build output, not the 200MB dev `node_modules`
+- Final stage uses `node:18-alpine` (~120MB) instead of `node:18` (~350MB)
+
+#### Further optimization: dependency layer caching
+
+```dockerfile
+FROM node:18 AS builder
+WORKDIR /app
+
+# Step 1: Copy only dependency manifest and install
+# (dependencies rarely change; this layer is cached)
+COPY package*.json ./
+RUN npm install
+
+# Step 2: Copy source code and build
+# (source code changes often, but wont invalidate the npm install layer)
+COPY . .
+RUN npm run build
+
+FROM node:18-alpine
+WORKDIR /app
+
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package*.json ./
+RUN npm install --production
+
+EXPOSE 3000
+CMD ["node", "dist/index.js"]
+```
+
+**Why this matters**: As long as `package.json` does not change, `RUN npm install` uses the cached layer, reducing build time from 2 minutes to 5 seconds.
+
+### Example 2: Go Application (maximum reduction)
+
+Go compiles to a static binary with zero runtime dependencies, making it possible to achieve extremely small images.
+
+#### Multi-stage build
+
+```dockerfile
+# ====== Stage 1: Compile ======
+FROM golang:1.22-alpine AS builder
+
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+# CGO_ENABLED=0 disables CGO, ensuring static compilation
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/server ./cmd/server
+
+# ====== Stage 2: Run ======
+# Use scratch (completely empty image — contains only the binary)
+FROM scratch
+
+# Copy the compiled binary
+COPY --from=builder /app/server /server
+# Copy timezone data if needed
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+
+EXPOSE 8080
+CMD ["/server"]
+```
+
+```bash
+docker build -t go-app:multi .
+docker images go-app
+# ~15MB (Go binary is typically 10-20MB)
+# ~95% reduction compared to golang:1.22-alpine (~300MB+)
+```
+
+**Why `scratch`**: Scratch is a completely empty image — no OS layer, no shell, no package manager. For statically compiled languages like Go, this is the most secure and minimal base image: minimal attack surface.
+
+**Alternative `distroless` base image**: If your app needs SSL certificates, ca-certificates, or /etc/passwd, use Googles distroless images:
+
+```dockerfile
+FROM gcr.io/distroless/static-debian11:nonroot
+COPY --from=builder /app/server /server
+CMD ["/server"]
+```
+
+### Example 3: Python Application
+
+```dockerfile
+# ====== Stage 1: Build ======
+FROM python:3.12-slim AS builder
+
+WORKDIR /app
+COPY requirements.txt ./
+# Build wheels to /wheels directory
+RUN pip install --user --no-cache-dir -r requirements.txt
+
+# ====== Stage 2: Run ======
+FROM python:3.12-slim
+
+WORKDIR /app
+# Copy only the Python libraries, skip pip cache
+COPY --from=builder /root/.local /root/.local
+COPY . .
+
+# Ensure PATH includes user-installed Python packages
+ENV PATH=/root/.local/bin:$PATH
+
+EXPOSE 8000
+CMD ["gunicorn", "app:app"]
+```
+
+**Python optimization key**: Copy pip-installed dependencies from the `--user` install directory rather than `site-packages`. This avoids bringing pip cache, setuptools, and other build tools into the final image.
+
+**Comparison**: Single-stage `python:3.12-slim` + pip install => ~350MB; multi-stage => ~180MB (approx 50% reduction).
+
+## Base Image Comparison Table
+
+| Base Image | Size | Contents | Suitable For |
+|-----------|------|----------|--------------|
+| `scratch` | 0B | Completely empty | Go static binaries |
+| `alpine` | ~5MB | Alpine Linux + musl + apk | General (note musl vs glibc) |
+| `distroless` | ~15MB | Static libs + SSL certs | Go, Java, Python |
+| `debian:stable-slim` | ~80MB | Debian + glibc + apt | General (best compatibility) |
+| `ubuntu:22.04` | ~100MB | Ubuntu + glibc + apt | General |
+| `node:18-alpine` | ~120MB | Node.js + Alpine | Node.js |
+| `node:18` | ~350MB | Node.js + Debian | Node.js (compatibility first) |
+
+## Advanced Multi-Stage Techniques
+
+### 1. Named stages for shared caching
+
+```dockerfile
+FROM node:18-alpine AS deps
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --production
+
+FROM node:18-alpine AS build
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npm run build
+
+FROM node:18-alpine
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+CMD ["node", "dist/index.js"]
+```
+
+Dependency installation is extracted into its own stage. Multiple subsequent stages can reuse it.
+
+### 2. Target-specific builds (BuildKit)
+
+```dockerfile
+# syntax=docker/dockerfile:1.4
+FROM node:18-alpine AS base
+WORKDIR /app
+
+FROM base AS dev
+RUN npm install
+COPY . .
+CMD ["npm", "run", "dev"]
+
+FROM base AS prod
+COPY package*.json ./
+RUN npm ci --production
+COPY . .
+RUN npm run build
+CMD ["node", "dist/index.js"]
+```
+
+Build for a specific target:
+
+```bash
+# Dev image (all dev dependencies)
+docker build --target dev -t my-app:dev .
+
+# Production image (production dependencies only)
+docker build --target prod -t my-app:prod .
+```
+
+### 3. Advanced COPY --from usage
+
+```dockerfile
+# Copy from an external image
+COPY --from=nginx:alpine /etc/nginx/nginx.conf ./nginx.conf
+
+# Copy from a build context file
+COPY --from=/path/to/binary /app/server /server
+```
+
+## Troubleshooting
+
+### Issue 1: Image size did not decrease after multi-stage build
+
+**Symptom**: Despite writing a proper multi-stage Dockerfile, `docker images` still shows 500MB+.
+
+**Root cause**:
+- The final stage is still using a full-size base image (e.g., `FROM node:18` instead of `FROM node:18-alpine`)
+- `COPY --from=builder` is copying unnecessary files (e.g., the entire `/app` directory including `node_modules`)
+- Docker cached the old image — what you see is the old build
+
+**Diagnose and fix**:
+
+```bash
+# 1. Use docker image history to see each layers size
+docker image history my-app:multi
+
+# 2. Use the dive tool for visual layer analysis (highly recommended)
+docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock wagoodman/dive my-app:multi
+
+# 3. Make sure the final stage uses an alpine or slim base
+FROM node:18-alpine  # Not FROM node:18
+
+# 4. Double-check COPY paths
+COPY --from=builder /app/dist ./dist  # Not COPY --from=builder /app .
+```
+
+### Issue 2: Native Node.js modules fail on Alpine
+
+**Symptom**: Modules that require native compilation (e.g., `sharp`, `bcrypt`) fail with `Error: module initialization failed` or `Cannot find module` on `node:18-alpine`.
+
+**Root cause**: Alpine uses musl libc instead of glibc. Some native C++ extensions have no prebuilt musl binaries and need the full compilation toolchain.
+
+**Fix**:
+
+```dockerfile
+FROM node:18-alpine
+# Install system dependencies for native modules
+RUN apk add --no-cache python3 make g++
+
+# Alternative: switch to slim (Debian-based, uses glibc)
+# FROM node:18-slim
+```
+
+If compatibility is critical, use `node:18-slim` (~200MB) instead of `node:18-alpine`.
+
+### Issue 3: COPY --from fails with "file not found"
+
+**Symptom**: Build fails with `COPY --from=builder failed: file not found in build context or stage`.
+
+**Root cause**:
+- The file path in the previous stage is incorrect
+- The previous stage's build command output is in a different directory than expected
+- The previous stage's command failed silently (e.g., `npm run build` completed but output nothing)
+
+**Fix**:
+
+```dockerfile
+# Add a verification step in the builder stage
+FROM golang:1.22-alpine AS builder
+WORKDIR /app
+COPY . .
+RUN go build -o /app/server ./cmd/server && ls -la /app/server  # Verify the binary exists
+
+FROM scratch
+COPY --from=builder /app/server /server
+CMD ["/server"]
+```
+
+### Issue 4: BuildKit cache invalidation on every build
+
+**Symptom**: Even without changing `package.json`, `RUN npm install` re-executes every time.
+
+**Root cause**: The default Docker builder occasionally misjudges cache validity. File metadata changes (e.g., git operations altering timestamps) can also trigger cache misses.
+
+**Fix**:
+
+```bash
+# Enable BuildKit
+DOCKER_BUILDKIT=1 docker build -t my-app .
+
+# Or set it as default
+echo 'export DOCKER_BUILDKIT=1' >> ~/.bashrc
+```
+
+Add a syntax directive at the top of the Dockerfile:
+
+```dockerfile
+# syntax=docker/dockerfile:1.4
+FROM node:18-alpine AS builder
+```
+
+## Expert Tips
+
+- **Use dive for image analysis**: `dive` visualizes what each layer adds. Install: `brew install dive` on macOS or `docker run wagoodman/dive`. It is the single most useful tool for image size optimization.
+- **Focus on big layers, not layer count**: Reducing a 200MB layer matters far more than merging two 1KB layers. Docker supports up to 127 layers, but most applications never approach this limit.
+- **Dependency installation strategy**: For Node, use `npm ci` (2-3x faster and reproducible compared to `npm install`). For Python, use `pip install --no-cache-dir`. For Go, use `go mod download` to leverage caching. Core principle: put dependency installation BEFORE source code copy.
+- **Security considerations**: `scratch` and `distroless` images have no shell, so even if an attacker exploits an application vulnerability, they cannot obtain an interactive shell. This is defense-in-depth best practice. Add `docker scout` to your CI/CD pipeline:
+
+```bash
+docker scout quickview my-app:prod
+```
+
+- **CI/CD integration**: In CI pipelines, use BuildKits built-in cache mounts to accelerate builds:
+
+```dockerfile
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN --mount=type=cache,target=/root/.npm npm ci
+COPY . .
+RUN npm run build
+```
+
+## Summary
+
+This guide demonstrated multi-stage build patterns through three language examples: Node.js (build stage + alpine run stage, ~85% reduction), Go (build stage + scratch, ~95% reduction), and Python (layered pip install, ~50% reduction). Advanced techniques included named stages, BuildKit target-specific builds, and dive-based image analysis.
+
+Core pattern recap: **Build stage** (full toolchain + all dependencies) -> **Run stage** (minimal base image + production artifacts only).
+
+Next, explore [Docker Containerization Intro](/en/dev/docker/container-basics) to master fundamental Docker concepts.
